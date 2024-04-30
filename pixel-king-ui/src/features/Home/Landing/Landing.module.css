@@ -1,0 +1,25 @@
+.landing__container {
+
+}
+
+.landing__shadow__1 {
+    position: absolute;
+    width: 50vw;
+    height: 80vh;
+    top: -10vh;
+    left: -10vw;
+    background: var(--linear-gradient);
+    z-index: 0;
+    filter: blur(400px) opacity(0.2);
+}
+
+.landing__shadow__2 {
+    position: absolute;
+    width: 50vw;
+    height: 80vh;
+    bottom: -10vh;
+    right: -10vw;
+    background: var(--linear-gradient);
+    z-index: 0;
+    filter: blur(400px) opacity(0.2);
+}
