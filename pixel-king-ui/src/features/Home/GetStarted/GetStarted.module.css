@@ -1,0 +1,43 @@
+.about__section {
+    background-color: #121021;
+    position: relative;
+    margin-top: 10vw;
+}
+
+.about__container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.about__h1 {
+    /* add gradient color to the h1 */
+    background: linear-gradient(to right, #F72585, #8A4CF0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 5vw;
+    font-weight: 800;
+    text-align: center;
+    margin: 5vw 0;
+}
+
+.about__img {
+    width: 100vw;
+    height: 100vw;
+    object-position: bottom;
+}
+
+.about__btn {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 10vw;
+    background: linear-gradient(to right, #F72585, #8A4CF0);
+    color: #fff;
+    font-size: 1.5vw;
+    padding: 1vw 1.5vw;
+    border-radius: 100px;
+    cursor: pointer;
+    margin: 2vw 0;
+}
+
