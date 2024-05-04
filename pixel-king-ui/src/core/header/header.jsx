@@ -12,8 +12,8 @@ export default function Header() {
             <nav>
                 <ul className={styles.header__nav__list}>
                     <li><Link className={styles.header__link} to="/">Home</Link></li>
-                    <li><Link className={styles.header__link} to="/about">About</Link></li>
                     <li><Link className={styles.header__link} to="/wallpapers">Wallpapers</Link></li>
+                    <li><Link className={styles.header__link} to="/about">About</Link></li>
                     <li><Link className={styles.header__link} to="/license">License</Link></li>
                     <li><Link className={styles.header__link} to="/contact">Contact</Link></li>
                 </ul>
