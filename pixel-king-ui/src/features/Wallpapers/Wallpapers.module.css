@@ -33,6 +33,12 @@
     background-clip: padding-box, border-box;
     color: #a4a4a4;
     font-size: 0.8vw;
+    transition: 0.3s;
+}
+
+.submit__button:hover {
+    cursor: pointer;
+    color: white;
 }
 
 .device__type__container {
@@ -41,8 +47,40 @@
 }
 
 .device__type__btn {
+    display: grid;
+    place-items: center;
     background-color: transparent;
-    padding: 1vw;
-    width: 3vw;
+    width: 5vw;
     height: 3vw;
+    border: double 0.1vw transparent;
+    cursor: pointer;
+}
+
+.mobile__btn {
+    background-image: linear-gradient(#090A1F, #090A1F),
+    linear-gradient(to right, #8A4CF0, #F72585);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    border-left: solid 0.1vw #8A4CF0;
+    border-bottom-left-radius: 10vw;
+    border-top-left-radius: 10vw;
+}
+
+.desktop__btn {
+    background-image: linear-gradient(#090A1F, #090A1F),
+    linear-gradient(to right, #F72585, #8A4CF0);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    border-bottom-right-radius: 10vw;
+    border-top-right-radius: 10vw;
+}
+
+.mobile__btn__img {
+    width: 20%;
+    height: 100%;
+}
+
+.desktop__btn__img {
+    width: 35%;
+    height: 100%;
 }

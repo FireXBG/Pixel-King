@@ -1,0 +1,14 @@
+.images__container {
+    margin: 3vw;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 3.5vw;
+    place-items: center;
+}
+
+.image {
+    width: 15vw;
+    border-radius: 0.5vw;
+}
+
+
