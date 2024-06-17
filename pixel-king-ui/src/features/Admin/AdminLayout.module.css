@@ -1,0 +1,19 @@
+.header {
+    padding: 3vw 10vw;
+}
+
+.header nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header nav a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.header nav a:hover {
+    color: #f0f0f0;
+    text-decoration: underline;
+}
