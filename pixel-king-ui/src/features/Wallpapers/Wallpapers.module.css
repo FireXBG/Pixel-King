@@ -84,3 +84,36 @@
     width: 35%;
     height: 100%;
 }
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1vw;
+    gap: 1vw;
+    color: white;
+}
+
+.page__btn {
+    padding: 0.2vw 2vw;
+    border: double 0.1vw transparent;
+    border-radius: 4vw;
+    background-image: linear-gradient(#090A1F, #090A1F),
+    linear-gradient(to right, #F72585, #8A4CF0);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    color: #a4a4a4;
+    font-size: 0.8vw;
+    transition: 0.3s;
+    width: 8vw;
+    height: 2vw;
+}
+
+.page__btn:hover {
+    cursor: pointer;
+    color: white;
+}
+
+.page__btn:focus {
+    outline: none;
+}
