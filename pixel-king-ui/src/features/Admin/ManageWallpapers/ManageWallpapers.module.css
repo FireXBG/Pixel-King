@@ -1,0 +1,33 @@
+.manageWallpapersContainer {
+    padding: 2vw;
+}
+
+.wallpapersGrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2vw;
+    margin-top: 2vw;
+}
+
+.wallpaperItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1vw;
+    padding: 1vw;
+    background-color: #050613;
+    border-radius: 1vw;
+    box-shadow: 1px 1px 5px 1px rgba(0, 0, 0, 0.3);
+}
+
+.wallpaperImage {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 0.5vw;
+}
+
+.wallpaperActions {
+    display: flex;
+    gap: 1vw;
+}

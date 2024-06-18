@@ -1,8 +1,8 @@
 const AdminUser = require('../models/adminUserSchema.js');
-const AdminWallpapers = require('../models/adminWallpapersSchema.js'); // Ensure this import is correct
+const AdminWallpapers = require('../models/adminWallpapersSchema.js');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { uploadFile } = require('../config/googleDrive.js');
+const { uploadFile, getFile, deleteFile } = require('../config/googleDrive.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -22,7 +22,7 @@ exports.login = async (username, password) => {
         throw new Error('Invalid credentials');
     }
 
-    return jwt.sign({username}, process.env.JWT_SECRET, {expiresIn: '1h'});
+    return jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '1h' });
 }
 
 exports.uploadWallpaper = async (files, data) => {
@@ -57,7 +57,8 @@ exports.uploadWallpaper = async (files, data) => {
             const newWallpaper = new AdminWallpapers({
                 driveID: fileId,
                 tags: tags.split(' '), // Assuming tags are space-separated
-                view
+                view,
+                name: file.originalname
             });
 
             await newWallpaper.save();
@@ -69,5 +70,35 @@ exports.uploadWallpaper = async (files, data) => {
     } catch (error) {
         console.error('Error uploading files:', error);
         throw new Error('An error occurred while uploading files');
+    }
+}
+
+exports.getWallpapers = async () => {
+    try {
+        const wallpapers = await AdminWallpapers.find();
+        return wallpapers;
+    } catch (error) {
+        console.error('Error fetching wallpapers:', error);
+        throw new Error('An error occurred while fetching wallpapers');
+    }
+}
+
+exports.deleteWallpaper = async (wallpaperId) => {
+    try {
+        const wallpaper = await AdminWallpapers.findById(wallpaperId);
+        if (!wallpaper) {
+            throw new Error('Wallpaper not found');
+        }
+
+        // Delete the file from Google Drive
+        await deleteFile(wallpaper.driveID);
+
+        // Delete the wallpaper record from the database
+        await AdminWallpapers.findByIdAndDelete(wallpaperId);
+
+        console.log('Wallpaper deleted successfully:', wallpaperId);
+    } catch (error) {
+        console.error('Error deleting wallpaper:', error);
+        throw new Error('An error occurred while deleting the wallpaper');
     }
 }

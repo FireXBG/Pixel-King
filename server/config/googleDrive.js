@@ -70,17 +70,21 @@ async function uploadFile(filePath, mimeType, parentFolderId) {
     return response.data.id;
 }
 
-async function listFiles() {
+async function getFile(fileId) {
     const drive = google.drive({ version: 'v3', auth: oAuth2Client });
-    const response = await drive.files.list({
-        pageSize: 10,
-        fields: 'files(id, name)',
-    });
-    return response.data.files;
+    const response = await drive.files.get({ fileId, alt: 'media' }, { responseType: 'stream' });
+    return response.data;
+}
+
+async function deleteFile(fileId) {
+    const drive = google.drive({ version: 'v3', auth: oAuth2Client });
+    await drive.files.delete({ fileId });
+    console.log(`Deleted file ID: ${fileId}`);
 }
 
 module.exports = {
     initializeDrive,
     uploadFile,
-    listFiles,
+    getFile,
+    deleteFile,
 };

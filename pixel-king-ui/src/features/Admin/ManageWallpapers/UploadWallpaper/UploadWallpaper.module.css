@@ -14,7 +14,6 @@
     display: flex;
     flex-direction: column;
     gap: 5vh;
-    overflow-y: auto; /* Added for scrolling */
 }
 
 .upload__container h1 {
@@ -65,40 +64,21 @@
 
 .upload__container .preview {
     display: flex;
-    flex-direction: row; /* Change from column to row */
+    flex-direction: row;
     align-items: center;
     gap: 1vw;
 }
 
-.upload__container .previewImageContainer {
+.upload__container .preview img {
     width: 100px;
     height: 100px;
-    overflow: hidden;
+    object-fit: cover;
     border-radius: 0.5rem;
     border: 1px solid #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.upload__container .previewImage {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.upload__container .previewImageContainer.desktop {
-    width: 160px; /* 16:9 aspect ratio */
-    height: 90px;
-}
-
-.upload__container .previewImageContainer.mobile {
-    width: 90px; /* 9:16 aspect ratio */
-    height: 160px;
 }
 
 .upload__container .preview textarea {
-    width: calc(90vw - 200px); /* Adjust width to fit alongside image and buttons */
+    width: 90vw;
     padding: 1vw;
     border-radius: 0.5vw;
     border: 1px solid #090A1F;
@@ -113,7 +93,7 @@
 
 .upload__container .viewSelector {
     display: flex;
-    flex-direction: column;
+    justify-content: center;
     gap: 1vw;
 }
 
@@ -128,16 +108,17 @@
     margin-right: 0.5vw;
 }
 
-.admin__button {
-    padding: 1vw;
-    border-radius: 0.5vw;
-    background-color: #050613;
+.loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
     color: white;
-    cursor: pointer;
-    border: none;
-    align-self: center;
-}
-
-.admin__button:hover {
-    background-color: #090A1F;
+    font-size: 2rem;
+    z-index: 2;
 }
