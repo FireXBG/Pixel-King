@@ -82,10 +82,30 @@ async function getFile(fileId) {
     const drive = google.drive({ version: 'v3', auth: oAuth2Client });
     const response = await drive.files.get({
         fileId,
-        fields: 'id, name, thumbnailLink',
+        alt: 'media', // Specify 'media' to fetch file content
+    }, {
+        responseType: 'stream', // Ensure response is treated as stream
     });
-    return response.data;
+
+    return new Promise((resolve, reject) => {
+        const chunks = [];
+        response.data
+            .on('data', (chunk) => {
+                chunks.push(chunk);
+            })
+            .on('end', () => {
+                const buffer = Buffer.concat(chunks);
+                resolve({
+                    data: buffer,
+                    contentType: response.headers['content-type'], // Capture content-type for setting response header
+                });
+            })
+            .on('error', (error) => {
+                reject(error);
+            });
+    });
 }
+
 
 async function deleteFile(fileId) {
     const drive = google.drive({ version: 'v3', auth: oAuth2Client });

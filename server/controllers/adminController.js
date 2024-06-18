@@ -56,20 +56,23 @@ router.get('/wallpapers', async (req, res) => {
     }
 });
 
-// Route to serve a wallpaper image by ID
 router.get('/wallpapers/:id', async (req, res) => {
     const fileId = req.params.id;
 
     try {
-        const fileData = await getFile(fileId);
-        if (fileData.thumbnailLink) {
-            res.redirect(fileData.thumbnailLink);
-        } else {
-            res.status(404).json({ error: 'Thumbnail not available' });
+        const fileContent = await getFile(fileId); // Assuming this function retrieves file content
+        if (!fileContent) {
+            return res.status(404).json({ error: 'Wallpaper not found' });
         }
+
+        // Set appropriate content type header based on file type
+        res.set('Content-Type', fileContent.contentType); // Set correct content type (e.g., image/jpeg)
+
+        // Send file content as response
+        res.send(fileContent.data);
     } catch (error) {
-        console.error('Error fetching wallpaper image:', error);
-        res.status(500).json({ error: 'An error occurred while fetching the wallpaper image.' });
+        console.error('Error fetching wallpaper:', error);
+        res.status(500).json({ error: 'An error occurred while fetching the wallpaper' });
     }
 });
 

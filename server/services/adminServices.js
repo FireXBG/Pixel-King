@@ -71,11 +71,28 @@ exports.uploadWallpaper = async (files, data) => {
 exports.getWallpapers = async () => {
     try {
         const wallpapers = await AdminWallpapers.find();
-        return wallpapers;
+        const wallpapersWithFiles = await Promise.all(wallpapers.map(async (wallpaper) => {
+            const fileData = await getFileAsBase64(wallpaper.driveID); // Fetch file content as base64
+            return {
+                ...wallpaper.toObject(),
+                fileData,
+            };
+        }));
+        return wallpapersWithFiles;
     } catch (error) {
         console.error('Error fetching wallpapers:', error);
         throw new Error('An error occurred while fetching wallpapers');
     }
+}
+
+// Function to fetch file content from Google Drive as base64
+async function getFileAsBase64(fileId) {
+    const file = await getFile(fileId);
+    if (!file) {
+        throw new Error(`File not found: ${fileId}`);
+    }
+    const buffer = Buffer.from(file.data, 'base64');
+    return buffer.toString('base64');
 }
 
 exports.deleteWallpaper = async (wallpaperId) => {

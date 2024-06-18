@@ -1,11 +1,12 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import styles from './ManageWallpapers.module.css';
 import UploadWallpaper from './UploadWallpaper/UploadWallpaper';
-import { useState, useEffect } from 'react';
-import axios from 'axios';
 
 function ManageWallpapers() {
     const [uploadWallpapersMenu, setUploadWallpapersMenu] = useState(false);
     const [wallpapers, setWallpapers] = useState([]);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         fetchWallpapers();
@@ -17,6 +18,7 @@ function ManageWallpapers() {
             setWallpapers(response.data);
         } catch (error) {
             console.error('Error fetching wallpapers:', error);
+            setError('Failed to fetch wallpapers. Please try again later.');
         }
     };
 
@@ -44,10 +46,15 @@ function ManageWallpapers() {
             <button className='admin__button' onClick={toggleUploadMenu}>Upload Wallpapers</button>
             {uploadWallpapersMenu && <UploadWallpaper onSuccess={handleUploadSuccess} />}
 
+            {error && <div className="error-message">{error}</div>}
+
             <div className={styles.wallpapersGrid}>
                 {wallpapers.map((wallpaper) => (
                     <div key={wallpaper._id} className={styles.wallpaperItem}>
-                        <img src={`http://localhost:3001/admin/wallpapers/${wallpaper.driveID}`} alt={wallpaper.name} className={styles.wallpaperImage} />
+                        {/* Display image using base64 data */}
+                        {wallpaper.fileData && (
+                            <img src={`data:${wallpaper.contentType};base64,${wallpaper.fileData}`} alt={wallpaper.name} className={styles.wallpaperImage} />
+                        )}
                         <div className={styles.wallpaperActions}>
                             <button className='admin__button'>Edit</button>
                             <button className='admin__button' onClick={() => handleDelete(wallpaper._id)}>Delete</button>
