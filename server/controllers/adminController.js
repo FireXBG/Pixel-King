@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const adminServices = require('../services/adminServices');
-const { getFile, deleteFile } = require('../config/googleDrive');
+const { getFile } = require('../config/googleDrive');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -61,8 +61,12 @@ router.get('/wallpapers/:id', async (req, res) => {
     const fileId = req.params.id;
 
     try {
-        const fileStream = await getFile(fileId);
-        fileStream.pipe(res);
+        const fileData = await getFile(fileId);
+        if (fileData.thumbnailLink) {
+            res.redirect(fileData.thumbnailLink);
+        } else {
+            res.status(404).json({ error: 'Thumbnail not available' });
+        }
     } catch (error) {
         console.error('Error fetching wallpaper image:', error);
         res.status(500).json({ error: 'An error occurred while fetching the wallpaper image.' });

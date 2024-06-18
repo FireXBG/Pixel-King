@@ -64,15 +64,18 @@ async function uploadFile(filePath, mimeType, parentFolderId) {
     const response = await drive.files.create({
         resource: fileMetadata,
         media: media,
-        fields: 'id',
+        fields: 'id, thumbnailLink',
     });
     console.log(`Uploaded file ID: ${response.data.id}`);
-    return response.data.id;
+    return response.data;
 }
 
 async function getFile(fileId) {
     const drive = google.drive({ version: 'v3', auth: oAuth2Client });
-    const response = await drive.files.get({ fileId, alt: 'media' }, { responseType: 'stream' });
+    const response = await drive.files.get({
+        fileId,
+        fields: 'id, name, thumbnailLink',
+    });
     return response.data;
 }
 

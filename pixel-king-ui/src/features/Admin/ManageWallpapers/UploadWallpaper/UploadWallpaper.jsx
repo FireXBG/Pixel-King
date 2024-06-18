@@ -62,7 +62,6 @@ function UploadWallpaper({ onSuccess }) {
             });
 
             if (response.status === 200) {
-                alert('Files uploaded successfully');
                 setShowContainer(false);
                 onSuccess(); // Call the onSuccess function to update the parent component
             } else {
