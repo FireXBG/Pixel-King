@@ -5,7 +5,7 @@ const { authenticate } = require('@google-cloud/local-auth');
 
 const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
 const TOKEN_PATH = path.join(__dirname, 'token.json');
-const CREDENTIALS_PATH = path.join(__dirname, 'client_secret_126164523200-1kmpmvp42nlk1dsr6gseve5pthp74fee.apps.googleusercontent.com.json');
+const CREDENTIALS_PATH = path.join(__dirname, 'client_secret.json');
 
 let oAuth2Client;
 
@@ -61,14 +61,22 @@ async function uploadFile(filePath, mimeType, parentFolderId) {
         mimeType: mimeType,
         body: fs.createReadStream(filePath),
     };
-    const response = await drive.files.create({
-        resource: fileMetadata,
-        media: media,
-        fields: 'id, thumbnailLink',
-    });
-    console.log(`Uploaded file ID: ${response.data.id}`);
-    return response.data;
+
+    try {
+        const response = await drive.files.create({
+            resource: fileMetadata,
+            media: media,
+            fields: 'id',
+        });
+        console.log(`Uploaded file ID: ${response.data.id}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error uploading file to Google Drive:', error.message);
+        console.error('Error details:', error.response ? error.response.data : 'No response data');
+        throw new Error('Error uploading file to Google Drive');
+    }
 }
+
 
 async function getFile(fileId) {
     const drive = google.drive({ version: 'v3', auth: oAuth2Client });

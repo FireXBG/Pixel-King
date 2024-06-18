@@ -27,49 +27,33 @@ exports.login = async (username, password) => {
 
 exports.uploadWallpaper = async (files, data) => {
     try {
-        console.log('Uploading files:', files);
-        console.log('Metadata:', data);
+        const fileData = Object.keys(data).reduce((acc, key) => {
+            const [field, index] = key.split('_');
+            if (!acc[index]) {
+                acc[index] = {};
+            }
+            acc[index][field] = data[key];
+            return acc;
+        }, []);
 
-        const uploadResults = [];
-        for (const [index, file] of files.entries()) {
-            const tags = data[`tags_${index}`];
-            const view = data[`view_${index}`];
+        const uploadedFiles = await Promise.all(files.map(async (file, index) => {
+            const { path: filePath, mimetype } = file;
+            const { tags, view } = fileData[index];
 
-            // Log file and metadata
-            console.log(`File: ${file.originalname}`);
-            console.log(`Tags: ${tags}`);
-            console.log(`View: ${view}`);
-
-            // Determine the parent folder ID based on the view
             const parentFolderId = view === 'desktop' ? DESKTOP_FOLDER_ID : MOBILE_FOLDER_ID;
 
-            // Use the actual file path from multer
-            const tempFilePath = file.path;
+            const { id: driveID } = await uploadFile(filePath, mimetype, parentFolderId);
 
-            // Upload the file to Google Drive
-            const fileId = await uploadFile(tempFilePath, file.mimetype, parentFolderId);
-            uploadResults.push({ file: file.originalname, fileId });
+            return { driveID, tags, view };
+        }));
 
-            // Remove the temporary file
-            fs.unlinkSync(tempFilePath);
+        // Save the wallpaper records to the database
+        await AdminWallpapers.create(uploadedFiles);
 
-            // Save the file metadata to the database with the file ID
-            const newWallpaper = new AdminWallpapers({
-                driveID: fileId,
-                tags: tags.split(' '), // Assuming tags are space-separated
-                view,
-                name: file.originalname
-            });
-
-            await newWallpaper.save();
-
-            console.log('File uploaded successfully:', file.originalname);
-        }
-
-        return uploadResults;
+        console.log('Wallpapers uploaded successfully:', uploadedFiles);
     } catch (error) {
-        console.error('Error uploading files:', error);
-        throw new Error('An error occurred while uploading files');
+        console.error('Error uploading wallpaper:', error);
+        throw new Error('An error occurred while uploading the wallpaper');
     }
 }
 
