@@ -27,15 +27,26 @@ exports.login = async (username, password) => {
 
 exports.uploadWallpaper = async (files, data) => {
     try {
+        // Parse data to extract tags and view for each file
         const fileData = Object.keys(data).reduce((acc, key) => {
             const [field, index] = key.split('_');
             if (!acc[index]) {
                 acc[index] = {};
             }
-            acc[index][field] = data[key];
+            if (field === 'tags') {
+                if (!acc[index][field]) {
+                    acc[index][field] = [];
+                }
+                // Split tags string by spaces (or any other delimiter) and push them individually
+                const individualTags = data[key].split(' ').filter(tag => tag.trim() !== '');
+                acc[index][field].push(...individualTags);
+            } else {
+                acc[index][field] = data[key];
+            }
             return acc;
         }, []);
 
+        // Upload files and save records to database
         const uploadedFiles = await Promise.all(files.map(async (file, index) => {
             const { path: filePath, mimetype } = file;
             const { tags, view } = fileData[index];

@@ -80,6 +80,12 @@ router.post('/upload', upload.array('wallpapers'), async (req, res) => {
 
     try {
         const uploadResults = await adminServices.uploadWallpaper(files, data);
+
+        // Clean up temporary files after upload
+        files.forEach(file => {
+            fs.unlinkSync(file.path); // Delete each file synchronously
+        });
+
         res.status(200).json({ message: 'Files uploaded successfully', uploadResults });
     } catch (error) {
         console.error('Error uploading files:', error);
