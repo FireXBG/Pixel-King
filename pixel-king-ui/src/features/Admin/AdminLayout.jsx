@@ -10,7 +10,7 @@ function AdminLayout() {
                     <Link to='/admin/users'>Manage Users</Link>
                 </nav>
             </header>
-            <main>
+            <main className={styles.main__container}>
                 <Outlet />
             </main>
         </>

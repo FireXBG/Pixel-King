@@ -17,3 +17,7 @@
     color: #f0f0f0;
     text-decoration: underline;
 }
+
+.main__container {
+    padding: 3vw 10vw;
+}

@@ -51,10 +51,11 @@ async function initializeDrive() {
     oAuth2Client = await authorize();
 }
 
-async function uploadFile(filePath, mimeType) {
+async function uploadFile(filePath, mimeType, parentFolderId) {
     const drive = google.drive({ version: 'v3', auth: oAuth2Client });
     const fileMetadata = {
         name: path.basename(filePath),
+        parents: [parentFolderId],
     };
     const media = {
         mimeType: mimeType,
@@ -65,6 +66,7 @@ async function uploadFile(filePath, mimeType) {
         media: media,
         fields: 'id',
     });
+    console.log(`Uploaded file ID: ${response.data.id}`);
     return response.data.id;
 }
 
