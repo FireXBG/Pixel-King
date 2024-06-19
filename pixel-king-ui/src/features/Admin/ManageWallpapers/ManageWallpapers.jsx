@@ -6,6 +6,7 @@ import UploadWallpaper from './UploadWallpaper/UploadWallpaper';
 function ManageWallpapers() {
     const [uploadWallpapersMenu, setUploadWallpapersMenu] = useState(false);
     const [wallpapers, setWallpapers] = useState([]);
+    const [deleting, setDeleting] = useState({});
     const [error, setError] = useState(null);
 
     useEffect(() => {
@@ -28,12 +29,15 @@ function ManageWallpapers() {
     };
 
     const handleDelete = async (wallpaperId) => {
+        setDeleting((prev) => ({ ...prev, [wallpaperId]: true }));
         try {
             await axios.delete(`http://localhost:3001/admin/wallpapers/${wallpaperId}`);
             fetchWallpapers(); // Fetch the updated list of wallpapers
         } catch (error) {
             console.error('Error deleting wallpaper:', error);
             alert('Failed to delete wallpaper');
+        } finally {
+            setDeleting((prev) => ({ ...prev, [wallpaperId]: false }));
         }
     };
 
@@ -46,18 +50,23 @@ function ManageWallpapers() {
             <button className='admin__button' onClick={toggleUploadMenu}>Upload Wallpapers</button>
             {uploadWallpapersMenu && <UploadWallpaper onSuccess={handleUploadSuccess} />}
 
-            {error && <div className="error-message">{error}</div>}
+            {error && <div className={styles.errorMessage}>{error}</div>}
 
             <div className={styles.wallpapersGrid}>
                 {wallpapers.map((wallpaper) => (
                     <div key={wallpaper._id} className={styles.wallpaperItem}>
-                        {/* Display thumbnail using base64 data */}
                         {wallpaper.thumbnailData && (
                             <img src={`data:${wallpaper.thumbnailContentType};base64,${wallpaper.thumbnailData}`} alt={wallpaper.name} className={styles.wallpaperImage} />
                         )}
                         <div className={styles.wallpaperActions}>
                             <button className='admin__button'>Edit</button>
-                            <button className='admin__button' onClick={() => handleDelete(wallpaper._id)}>Delete</button>
+                            <div className={styles.actionButtonContainer}>
+                                {deleting[wallpaper._id] ? (
+                                    <div className={styles.loader}></div>
+                                ) : (
+                                    <button className='admin__button' onClick={() => handleDelete(wallpaper._id)}>Delete</button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 ))}
