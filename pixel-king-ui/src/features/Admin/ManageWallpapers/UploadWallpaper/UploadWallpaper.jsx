@@ -149,19 +149,22 @@ function UploadWallpaperComponent({ onSuccess }) {
         setCompleted(false);
         setShowCompletedText(false);
 
-        const formData = new FormData();
-        originalFiles.forEach((file, index) => {
+        const formDataArray = originalFiles.map((file, index) => {
+            const formData = new FormData();
             formData.append('wallpapers', file);
             formData.append(`tags_${index}`, tags[index] || '');
             formData.append(`view_${index}`, view[index] || 'desktop');
+            return formData;
         });
 
         try {
-            await axios.post('http://localhost:3001/admin/upload', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
+            await Promise.all(formDataArray.map(async (formData) => {
+                await axios.post('http://localhost:3001/admin/upload', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+            }));
         } catch (error) {
             console.error('Error uploading files:', error);
             alert('Error uploading files');

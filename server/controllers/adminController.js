@@ -40,6 +40,7 @@ router.post('/login', async (req, res) => {
 router.get('/wallpapers', async (req, res) => {
     try {
         const wallpapers = await adminServices.getWallpapers();
+        console.log('Fetched wallpapers:', wallpapers.length)
         res.status(200).json(wallpapers);
     } catch (error) {
         console.error('Error fetching wallpapers:', error);
@@ -55,6 +56,7 @@ router.get('/wallpapers/:id', async (req, res) => {
             return res.status(404).json({ error: 'Wallpaper not found' });
         }
         res.set('Content-Type', fileContent.contentType);
+        console.log('Fetched wallpaper:', fileId)
         res.send(fileContent.data);
     } catch (error) {
         console.error('Error fetching wallpaper:', error);
@@ -70,10 +72,9 @@ router.post('/upload', upload.array('wallpapers'), async (req, res) => {
     const io = getIO(); // Get the io instance
 
     try {
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            const tags = data[`tags_${i}`] ? data[`tags_${i}`].split(' ').filter(tag => tag.trim() !== '') : [];
-            const view = data[`view_${i}`] || 'desktop';
+        await Promise.all(files.map(async (file, index) => {
+            const tags = data[`tags_${index}`] ? data[`tags_${index}`].split(' ').filter(tag => tag.trim() !== '') : [];
+            const view = data[`view_${index}`] || 'desktop';
 
             const uploadResult = await adminServices.uploadWallpaper(file, tags, view);
             uploadResults.push(uploadResult);
@@ -85,7 +86,7 @@ router.post('/upload', upload.array('wallpapers'), async (req, res) => {
             io.emit('uploadProgress', {
                 progress: ((uploadResults.length) / totalFiles) * 100
             });
-        }
+        }));
 
         // Emit complete event after all files are uploaded
         io.emit('uploadComplete');
@@ -106,6 +107,7 @@ router.post('/upload', upload.array('wallpapers'), async (req, res) => {
         res.status(500).json({ error: 'An error occurred while uploading files. Please try again later.' });
     }
 });
+
 
 router.delete('/wallpapers/:id', async (req, res) => {
     const wallpaperId = req.params.id;
