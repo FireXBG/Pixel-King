@@ -6,7 +6,7 @@ const { uploadFile, getFile, deleteFile, createAndUploadThumbnail } = require('.
 
 const DESKTOP_FOLDER_ID = '1mQ0ZRO1pHOV0KoeifLHlzYJcWMXWw-SM';
 const MOBILE_FOLDER_ID = '1lgxNXp83lPkk_z0pIxxsSkwDfqXCkKVT';
-const THUMBNAIL_FOLDER_ID = '1azk9JqO-pF5O3jAvzlYIlA8dZsRnNyma'; // Your provided thumbnail folder ID
+const THUMBNAIL_FOLDER_ID = '1azk9JqO-pF5O3jAvzlYIlA8dZsRnNyma';
 
 exports.login = async (username, password) => {
     const user = await AdminUser.findOne({ username });
@@ -24,45 +24,31 @@ exports.login = async (username, password) => {
     return jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '1h' });
 };
 
-exports.uploadWallpaper = async (files, data) => {
+exports.uploadWallpaper = async (file, tags, view) => {
     try {
-        const fileData = Object.keys(data).reduce((acc, key) => {
-            const [field, index] = key.split('_');
-            if (!acc[index]) {
-                acc[index] = {};
-            }
-            if (field === 'tags') {
-                if (!acc[index][field]) {
-                    acc[index][field] = [];
-                }
-                const individualTags = data[key].split(' ').filter(tag => tag.trim() !== '');
-                acc[index][field].push(...individualTags);
-            } else {
-                acc[index][field] = data[key];
-            }
-            return acc;
-        }, []);
+        const { path: filePath, mimetype } = file;
+        const parentFolderId = view === 'desktop' ? DESKTOP_FOLDER_ID : MOBILE_FOLDER_ID;
+        const { id: driveID } = await uploadFile(filePath, mimetype, parentFolderId);
 
-        const uploadedFiles = await Promise.all(files.map(async (file, index) => {
-            const { path: filePath, mimetype } = file;
-            const { tags, view } = fileData[index];
+        // Ensure createAndUploadThumbnail returns an object with id
+        const thumbnailResponse = await createAndUploadThumbnail(filePath, THUMBNAIL_FOLDER_ID);
+        const thumbnailID = thumbnailResponse.id;
 
-            const parentFolderId = view === 'desktop' ? DESKTOP_FOLDER_ID : MOBILE_FOLDER_ID;
-            const { id: driveID } = await uploadFile(filePath, mimetype, parentFolderId);
+        if (!thumbnailID) {
+            throw new Error('Thumbnail ID is missing');
+        }
 
-            const thumbnailID = await createAndUploadThumbnail(filePath, THUMBNAIL_FOLDER_ID);
+        const newWallpaper = { driveID, thumbnailID, tags, view };
+        await AdminWallpapers.create(newWallpaper);
 
-            return { driveID, thumbnailID, tags, view };
-        }));
-
-        await AdminWallpapers.create(uploadedFiles);
-
-        console.log('Wallpapers uploaded successfully:', uploadedFiles);
+        console.log('Wallpaper uploaded successfully:', newWallpaper);
+        return newWallpaper;
     } catch (error) {
         console.error('Error uploading wallpaper:', error);
         throw new Error('An error occurred while uploading the wallpaper');
     }
 };
+
 
 exports.getWallpapers = async () => {
     try {

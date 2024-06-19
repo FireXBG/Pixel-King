@@ -1,14 +1,28 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
-import styles from './UploadWallpaper.module.css';
+import { io } from 'socket.io-client';
+import styles from './UploadWallpaper.module.css'
 
-function UploadWallpaper({ onSuccess }) {
+const socket = io('http://localhost:3001'); // Adjust this URL to match your server
+
+function UploadWallpaperComponent({ onSuccess }) {
     const [originalFiles, setOriginalFiles] = useState([]);
     const [previewFiles, setPreviewFiles] = useState([]);
     const [tags, setTags] = useState({});
     const [view, setView] = useState({});
     const [loading, setLoading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
     const [showContainer, setShowContainer] = useState(true);
+
+    useEffect(() => {
+        socket.on('uploadProgress', (data) => {
+            setUploadProgress(data.progress);
+        });
+
+        return () => {
+            socket.off('uploadProgress');
+        };
+    }, []);
 
     const resizeImage = (file, maxWidth, maxHeight, quality) => {
         return new Promise((resolve) => {
@@ -96,6 +110,7 @@ function UploadWallpaper({ onSuccess }) {
         }
 
         setLoading(true);
+        setUploadProgress(0);
 
         const formData = new FormData();
         originalFiles.forEach((file, index) => {
@@ -105,18 +120,14 @@ function UploadWallpaper({ onSuccess }) {
         });
 
         try {
-            const response = await axios.post('http://localhost:3001/admin/upload', formData, {
+            await axios.post('http://localhost:3001/admin/upload', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                },
+                }
             });
 
-            if (response.status === 200) {
-                setShowContainer(false);
-                onSuccess(); // Call the onSuccess function to update the parent component
-            } else {
-                alert('Failed to upload files');
-            }
+            setShowContainer(false);
+            onSuccess();
         } catch (error) {
             console.error('Error uploading files:', error);
             alert('Error uploading files');
@@ -174,14 +185,14 @@ function UploadWallpaper({ onSuccess }) {
                             ))}
                         </div>
                         <button className="admin__button" type="submit" disabled={loading}>
-                            {loading ? 'Uploading...' : 'Upload'}
+                            {loading ? `Uploading... ${Math.round(uploadProgress)}%` : 'Upload'}
                         </button>
                     </form>
-                    {loading && <div className={styles.loading}>Loading...</div>}
+                    {loading && <div className={styles.loading}>Loading... {Math.round(uploadProgress)}%</div>}
                 </div>
             )}
         </>
     );
 }
 
-export default UploadWallpaper;
+export default UploadWallpaperComponent;

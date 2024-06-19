@@ -79,27 +79,21 @@ async function uploadFile(filePath, mimeType, parentFolderId) {
     }
 }
 
-async function createAndUploadThumbnail(filePath, thumbnailFolderId) {
+async function createAndUploadThumbnail(filePath, parentFolderId) {
     const drive = google.drive({ version: 'v3', auth: oAuth2Client });
+    const thumbnailPath = path.join(__dirname, 'thumbnail.jpg');
 
-    // Generate the thumbnail in-memory
-    const thumbnailBuffer = await sharp(filePath)
+    await sharp(filePath)
         .resize(220)
-        .jpeg({ quality: 80 })
-        .toBuffer();
-
-    const bufferStream = new Readable();
-    bufferStream.push(thumbnailBuffer);
-    bufferStream.push(null);
+        .toFile(thumbnailPath);
 
     const fileMetadata = {
         name: 'thumbnail_' + path.basename(filePath),
-        parents: [thumbnailFolderId],
+        parents: [parentFolderId],
     };
-
     const media = {
         mimeType: 'image/jpeg',
-        body: bufferStream,  // Ensure this is a readable stream
+        body: fs.createReadStream(thumbnailPath),
     };
 
     try {
@@ -119,7 +113,8 @@ async function createAndUploadThumbnail(filePath, thumbnailFolderId) {
         });
 
         console.log(`Uploaded thumbnail ID: ${response.data.id}`);
-        return response.data.id;
+        fs.unlinkSync(thumbnailPath); // Delete the local thumbnail file
+        return response.data; // Ensure it returns { id, webContentLink }
     } catch (error) {
         console.error('Error uploading thumbnail to Google Drive:', error.message);
         console.error('Error details:', error.response ? error.response.data : 'No response data');
