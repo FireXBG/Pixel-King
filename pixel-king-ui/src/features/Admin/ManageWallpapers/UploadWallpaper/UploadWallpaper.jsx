@@ -15,11 +15,19 @@ function UploadWallpaperComponent({ onSuccess }) {
     const [targetProgress, setTargetProgress] = useState(0);
     const [showContainer, setShowContainer] = useState(true);
 
+    const easeInOut = (current, target, factor = 0.1) => {
+        if (current < target) {
+            return Math.min(current + factor * (target - current), target);
+        } else {
+            return Math.max(current - factor * (current - target), target);
+        }
+    };
+
     useEffect(() => {
         const interval = setInterval(() => {
             setUploadProgress((prevProgress) => {
-                if (prevProgress < targetProgress) {
-                    return prevProgress + 1;
+                if (prevProgress !== targetProgress) {
+                    return easeInOut(prevProgress, targetProgress);
                 } else {
                     clearInterval(interval);
                     return prevProgress;
@@ -142,13 +150,11 @@ function UploadWallpaperComponent({ onSuccess }) {
                 },
             });
 
+            setTargetProgress(100);
             setTimeout(() => {
-                setTargetProgress(100);
-                setTimeout(() => {
-                    setShowContainer(false);
-                    onSuccess();
-                }, 500); // Delay to show 100% progress
-            }, 500); // Delay to ensure smooth animation
+                setShowContainer(false);
+                onSuccess();
+            }, 1000); // Delay to show 100% progress
         } catch (error) {
             console.error('Error uploading files:', error);
             alert('Error uploading files');
