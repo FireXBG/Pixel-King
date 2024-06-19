@@ -86,12 +86,28 @@ router.post('/upload', upload.array('wallpapers'), async (req, res) => {
 
         // Clean up temporary files after upload
         files.forEach(file => {
-            fs.unlinkSync(file.path); // Delete each file synchronously
+            try {
+                fs.unlinkSync(file.path); // Delete each file synchronously
+                console.log(`Deleted temp file: ${file.path}`);
+            } catch (err) {
+                console.error(`Error deleting temp file: ${file.path}`, err);
+            }
         });
 
         res.status(200).json({ message: 'Files uploaded successfully', uploadResults });
     } catch (error) {
         console.error('Error uploading files:', error);
+
+        // Attempt to clean up temp files in case of an error
+        files.forEach(file => {
+            try {
+                fs.unlinkSync(file.path); // Delete each file synchronously
+                console.log(`Deleted temp file: ${file.path}`);
+            } catch (err) {
+                console.error(`Error deleting temp file: ${file.path}`, err);
+            }
+        });
+
         res.status(500).json({
             error: 'An error occurred while uploading files. Please try again later.'
         });
