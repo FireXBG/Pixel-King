@@ -3,15 +3,71 @@ import axios from 'axios';
 import styles from './UploadWallpaper.module.css';
 
 function UploadWallpaper({ onSuccess }) {
-    const [files, setFiles] = useState([]);
+    const [originalFiles, setOriginalFiles] = useState([]);
+    const [previewFiles, setPreviewFiles] = useState([]);
     const [tags, setTags] = useState({});
     const [view, setView] = useState({});
     const [loading, setLoading] = useState(false);
     const [showContainer, setShowContainer] = useState(true);
 
-    const handleFileChange = (e) => {
+    const resizeImage = (file, maxWidth, maxHeight, quality) => {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height *= maxWidth / width;
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width *= maxHeight / height;
+                            height = maxHeight;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob(
+                        (blob) => {
+                            resolve(blob);
+                        },
+                        'image/jpeg',
+                        quality
+                    );
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    };
+
+    const handleFileChange = async (e) => {
         const newFiles = Array.from(e.target.files);
-        setFiles(newFiles);
+        const resizedFiles = await Promise.all(
+            newFiles.map((file) => resizeImage(file, 800, 600, 0.7))
+        );
+        setOriginalFiles(newFiles);
+        setPreviewFiles(resizedFiles);
+    };
+
+    const handleDrop = async (e) => {
+        e.preventDefault();
+        const newFiles = Array.from(e.dataTransfer.files);
+        const resizedFiles = await Promise.all(
+            newFiles.map((file) => resizeImage(file, 800, 600, 0.7))
+        );
+        setOriginalFiles(newFiles);
+        setPreviewFiles(resizedFiles);
     };
 
     const handleTagsChange = (e, index) => {
@@ -28,19 +84,13 @@ function UploadWallpaper({ onSuccess }) {
         }));
     };
 
-    const handleDrop = (e) => {
-        e.preventDefault();
-        const newFiles = Array.from(e.dataTransfer.files);
-        setFiles(newFiles);
-    };
-
     const handleDragOver = (e) => {
         e.preventDefault();
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (files.length === 0) {
+        if (originalFiles.length === 0) {
             alert('Please select a file to upload');
             return;
         }
@@ -48,7 +98,7 @@ function UploadWallpaper({ onSuccess }) {
         setLoading(true);
 
         const formData = new FormData();
-        files.forEach((file, index) => {
+        originalFiles.forEach((file, index) => {
             formData.append('wallpapers', file);
             formData.append(`tags_${index}`, tags[index] || '');
             formData.append(`view_${index}`, view[index] || 'desktop');
@@ -88,7 +138,7 @@ function UploadWallpaper({ onSuccess }) {
                         <label htmlFor="wallpaper">Click me or drag files to upload</label>
                         <input type="file" id="wallpaper" name="wallpaper" multiple onChange={handleFileChange} />
                         <div className={styles.previews}>
-                            {files.map((file, index) => (
+                            {previewFiles.map((file, index) => (
                                 <div key={index} className={styles.preview}>
                                     <div className={styles.previewImageContainer}>
                                         <img src={URL.createObjectURL(file)} alt={`preview ${index}`} className={styles.previewImage} />

@@ -51,9 +51,9 @@ function ManageWallpapers() {
             <div className={styles.wallpapersGrid}>
                 {wallpapers.map((wallpaper) => (
                     <div key={wallpaper._id} className={styles.wallpaperItem}>
-                        {/* Display image using base64 data */}
-                        {wallpaper.fileData && (
-                            <img src={`data:${wallpaper.contentType};base64,${wallpaper.fileData}`} alt={wallpaper.name} className={styles.wallpaperImage} />
+                        {/* Display thumbnail using base64 data */}
+                        {wallpaper.thumbnailData && (
+                            <img src={`data:${wallpaper.thumbnailContentType};base64,${wallpaper.thumbnailData}`} alt={wallpaper.name} className={styles.wallpaperImage} />
                         )}
                         <div className={styles.wallpaperActions}>
                             <button className='admin__button'>Edit</button>

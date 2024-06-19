@@ -2,6 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const { google } = require('googleapis');
 const { authenticate } = require('@google-cloud/local-auth');
+const sharp = require('sharp');
+const { Readable } = require('stream');
 
 const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
 const TOKEN_PATH = path.join(__dirname, 'token.json');
@@ -77,27 +79,82 @@ async function uploadFile(filePath, mimeType, parentFolderId) {
     }
 }
 
+async function createAndUploadThumbnail(filePath, thumbnailFolderId) {
+    const drive = google.drive({ version: 'v3', auth: oAuth2Client });
+
+    // Generate the thumbnail in-memory
+    const thumbnailBuffer = await sharp(filePath)
+        .resize(220)
+        .jpeg({ quality: 80 })
+        .toBuffer();
+
+    const bufferStream = new Readable();
+    bufferStream.push(thumbnailBuffer);
+    bufferStream.push(null);
+
+    const fileMetadata = {
+        name: 'thumbnail_' + path.basename(filePath),
+        parents: [thumbnailFolderId],
+    };
+
+    const media = {
+        mimeType: 'image/jpeg',
+        body: bufferStream,  // Ensure this is a readable stream
+    };
+
+    try {
+        const response = await drive.files.create({
+            resource: fileMetadata,
+            media: media,
+            fields: 'id, webContentLink',
+        });
+
+        // Make the thumbnail publicly accessible
+        await drive.permissions.create({
+            fileId: response.data.id,
+            requestBody: {
+                role: 'reader',
+                type: 'anyone',
+            },
+        });
+
+        console.log(`Uploaded thumbnail ID: ${response.data.id}`);
+        return response.data.id;
+    } catch (error) {
+        console.error('Error uploading thumbnail to Google Drive:', error.message);
+        console.error('Error details:', error.response ? error.response.data : 'No response data');
+        throw new Error('Error uploading thumbnail to Google Drive');
+    }
+}
 
 async function getFile(fileId) {
     const drive = google.drive({ version: 'v3', auth: oAuth2Client });
     const response = await drive.files.get({
         fileId,
-        alt: 'media', // Specify 'media' to fetch file content
+        fields: 'id, name, mimeType, thumbnailLink',
+    });
+
+    const contentResponse = await drive.files.get({
+        fileId,
+        alt: 'media',
     }, {
-        responseType: 'stream', // Ensure response is treated as stream
+        responseType: 'stream',
     });
 
     return new Promise((resolve, reject) => {
         const chunks = [];
-        response.data
+        contentResponse.data
             .on('data', (chunk) => {
                 chunks.push(chunk);
             })
             .on('end', () => {
                 const buffer = Buffer.concat(chunks);
                 resolve({
+                    id: response.data.id,
+                    name: response.data.name,
+                    mimeType: response.data.mimeType,
+                    thumbnailLink: response.data.thumbnailLink,
                     data: buffer,
-                    contentType: response.headers['content-type'], // Capture content-type for setting response header
                 });
             })
             .on('error', (error) => {
@@ -105,7 +162,6 @@ async function getFile(fileId) {
             });
     });
 }
-
 
 async function deleteFile(fileId) {
     const drive = google.drive({ version: 'v3', auth: oAuth2Client });
@@ -116,6 +172,7 @@ async function deleteFile(fileId) {
 module.exports = {
     initializeDrive,
     uploadFile,
+    createAndUploadThumbnail,
     getFile,
     deleteFile,
 };

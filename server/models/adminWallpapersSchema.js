@@ -5,6 +5,10 @@ const adminWallpapersSchema = new Schema({
         type: String,
         required: true
     },
+    thumbnailID: {
+        type: String,
+        required: true
+    },
     tags: {
         type: [String],
         required: true
