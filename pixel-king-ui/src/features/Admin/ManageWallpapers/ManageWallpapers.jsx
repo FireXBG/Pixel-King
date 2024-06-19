@@ -7,6 +7,7 @@ function ManageWallpapers() {
     const [uploadWallpapersMenu, setUploadWallpapersMenu] = useState(false);
     const [wallpapers, setWallpapers] = useState([]);
     const [deleting, setDeleting] = useState({});
+    const [loading, setLoading] = useState(true); // Add loading state
     const [error, setError] = useState(null);
 
     useEffect(() => {
@@ -14,12 +15,15 @@ function ManageWallpapers() {
     }, []);
 
     const fetchWallpapers = async () => {
+        setLoading(true); // Set loading to true before fetching
         try {
             const response = await axios.get('http://localhost:3001/admin/wallpapers');
             setWallpapers(response.data);
         } catch (error) {
             console.error('Error fetching wallpapers:', error);
             setError('Failed to fetch wallpapers. Please try again later.');
+        } finally {
+            setLoading(false); // Set loading to false after fetching
         }
     };
 
@@ -52,25 +56,31 @@ function ManageWallpapers() {
 
             {error && <div className={styles.errorMessage}>{error}</div>}
 
-            <div className={styles.wallpapersGrid}>
-                {wallpapers.map((wallpaper) => (
-                    <div key={wallpaper._id} className={styles.wallpaperItem}>
-                        {wallpaper.thumbnailData && (
-                            <img src={`data:${wallpaper.thumbnailContentType};base64,${wallpaper.thumbnailData}`} alt={wallpaper.name} className={styles.wallpaperImage} />
-                        )}
-                        <div className={styles.wallpaperActions}>
-                            <button className='admin__button'>Edit</button>
-                            <div className={styles.actionButtonContainer}>
-                                {deleting[wallpaper._id] ? (
-                                    <div className={styles.loader}></div>
-                                ) : (
-                                    <button className='admin__button' onClick={() => handleDelete(wallpaper._id)}>Delete</button>
-                                )}
+            {loading ? (
+                <div className={styles.loaderContainer}>
+                    <div className={styles.loader}></div>
+                </div>
+            ) : (
+                <div className={styles.wallpapersGrid}>
+                    {wallpapers.map((wallpaper) => (
+                        <div key={wallpaper._id} className={styles.wallpaperItem}>
+                            {wallpaper.thumbnailData && (
+                                <img src={`data:${wallpaper.thumbnailContentType};base64,${wallpaper.thumbnailData}`} alt={wallpaper.name} className={styles.wallpaperImage} />
+                            )}
+                            <div className={styles.wallpaperActions}>
+                                <button className='admin__button'>Edit</button>
+                                <div className={styles.actionButtonContainer}>
+                                    {deleting[wallpaper._id] ? (
+                                        <div className={styles.loader}></div>
+                                    ) : (
+                                        <button className='admin__button' onClick={() => handleDelete(wallpaper._id)}>Delete</button>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
