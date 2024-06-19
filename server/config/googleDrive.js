@@ -85,7 +85,7 @@ async function createAndUploadThumbnail(filePath, parentFolderId) {
     const thumbnailPath = path.join(__dirname, `thumbnail-${uuidv4()}.jpg`);
 
     await sharp(filePath)
-        .resize(220)
+        .resize(1000)
         .toFile(thumbnailPath);
 
     const fileMetadata = {

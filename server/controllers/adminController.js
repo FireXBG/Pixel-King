@@ -38,9 +38,11 @@ router.post('/login', async (req, res) => {
 });
 
 router.get('/wallpapers', async (req, res) => {
+    const view = req.query.view || 'desktop'; // Default to 'desktop' if not specified
+    console.log(`Fetching wallpapers for view: ${view}`);
     try {
-        const wallpapers = await adminServices.getWallpapers();
-        console.log('Fetched wallpapers:', wallpapers.length)
+        const wallpapers = await adminServices.getWallpapersByView(view);
+        console.log(`Fetched ${view} wallpapers:`, wallpapers.length);
         res.status(200).json(wallpapers);
     } catch (error) {
         console.error('Error fetching wallpapers:', error);
@@ -56,7 +58,7 @@ router.get('/wallpapers/:id', async (req, res) => {
             return res.status(404).json({ error: 'Wallpaper not found' });
         }
         res.set('Content-Type', fileContent.contentType);
-        console.log('Fetched wallpaper:', fileId)
+        console.log('Fetched wallpaper:', fileId);
         res.send(fileContent.data);
     } catch (error) {
         console.error('Error fetching wallpaper:', error);
@@ -75,6 +77,7 @@ router.post('/upload', upload.array('wallpapers'), async (req, res) => {
         await Promise.all(files.map(async (file, index) => {
             const tags = data[`tags_${index}`] ? data[`tags_${index}`].split(' ').filter(tag => tag.trim() !== '') : [];
             const view = data[`view_${index}`] || 'desktop';
+            console.log(`Uploading file with view: ${view}`); // Log the view to check
 
             const uploadResult = await adminServices.uploadWallpaper(file, tags, view);
             uploadResults.push(uploadResult);

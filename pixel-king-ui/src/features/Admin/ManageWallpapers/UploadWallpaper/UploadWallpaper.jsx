@@ -126,10 +126,10 @@ function UploadWallpaperComponent({ onSuccess }) {
         }));
     };
 
-    const handleViewChange = (e, index) => {
+    const handleViewChange = (e, index, value) => {
         setView((prevView) => ({
             ...prevView,
-            [index]: e.target.value
+            [index]: value
         }));
     };
 
@@ -149,22 +149,19 @@ function UploadWallpaperComponent({ onSuccess }) {
         setCompleted(false);
         setShowCompletedText(false);
 
-        const formDataArray = originalFiles.map((file, index) => {
-            const formData = new FormData();
+        const formData = new FormData();
+        originalFiles.forEach((file, index) => {
             formData.append('wallpapers', file);
             formData.append(`tags_${index}`, tags[index] || '');
             formData.append(`view_${index}`, view[index] || 'desktop');
-            return formData;
         });
 
         try {
-            await Promise.all(formDataArray.map(async (formData) => {
-                await axios.post('http://localhost:3001/admin/upload', formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
-                });
-            }));
+            await axios.post('http://localhost:3001/admin/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
         } catch (error) {
             console.error('Error uploading files:', error);
             alert('Error uploading files');
@@ -203,7 +200,7 @@ function UploadWallpaperComponent({ onSuccess }) {
                                                 name={`view_${index}`}
                                                 value="desktop"
                                                 checked={view[index] === 'desktop'}
-                                                onChange={(e) => handleViewChange(e, index)}
+                                                onChange={(e) => handleViewChange(e, index, 'desktop')}
                                             />
                                             Desktop (16:9)
                                         </label>
@@ -213,7 +210,7 @@ function UploadWallpaperComponent({ onSuccess }) {
                                                 name={`view_${index}`}
                                                 value="mobile"
                                                 checked={view[index] === 'mobile'}
-                                                onChange={(e) => handleViewChange(e, index)}
+                                                onChange={(e) => handleViewChange(e, index, 'mobile')}
                                             />
                                             Mobile (9:16)
                                         </label>

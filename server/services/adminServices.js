@@ -30,7 +30,6 @@ exports.uploadWallpaper = async (file, tags, view) => {
         const parentFolderId = view === 'desktop' ? DESKTOP_FOLDER_ID : MOBILE_FOLDER_ID;
         const { id: driveID } = await uploadFile(filePath, mimetype, parentFolderId);
 
-        // Ensure createAndUploadThumbnail returns an object with id
         const thumbnailResponse = await createAndUploadThumbnail(filePath, THUMBNAIL_FOLDER_ID);
         const thumbnailID = thumbnailResponse.id;
 
@@ -53,6 +52,24 @@ exports.uploadWallpaper = async (file, tags, view) => {
 exports.getWallpapers = async () => {
     try {
         const wallpapers = await AdminWallpapers.find();
+        const wallpapersWithThumbnails = await Promise.all(wallpapers.map(async (wallpaper) => {
+            const thumbnailData = await getFile(wallpaper.thumbnailID); // Fetch only thumbnail content and metadata
+            return {
+                ...wallpaper.toObject(),
+                thumbnailData: thumbnailData.data.toString('base64'), // Base64 encoded thumbnail data
+                thumbnailContentType: thumbnailData.mimeType,
+            };
+        }));
+        return wallpapersWithThumbnails;
+    } catch (error) {
+        console.error('Error fetching wallpapers:', error);
+        throw new Error('An error occurred while fetching wallpapers');
+    }
+};
+
+exports.getWallpapersByView = async (view) => {
+    try {
+        const wallpapers = await AdminWallpapers.find({ view });
         const wallpapersWithThumbnails = await Promise.all(wallpapers.map(async (wallpaper) => {
             const thumbnailData = await getFile(wallpaper.thumbnailID); // Fetch only thumbnail content and metadata
             return {

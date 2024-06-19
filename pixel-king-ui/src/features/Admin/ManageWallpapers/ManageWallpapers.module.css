@@ -1,61 +1,47 @@
 .manageWallpapersContainer {
     padding: 2vw;
+    color: white;
 }
 
-.wallpapersGrid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2vw;
-    margin-top: 2vw;
+.admin__button {
+    padding: 0.2vw 2vw;
+    border: double 0.1vw transparent;
+    border-radius: 4vw;
+    background-image: linear-gradient(#090A1F, #090A1F),
+    linear-gradient(to right, #F72585, #8A4CF0);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    color: #a4a4a4;
+    font-size: 0.8vw;
+    transition: 0.3s;
+    cursor: pointer;
 }
 
-.wallpaperItem {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1vw;
-    padding: 1vw;
-    background-color: #050613;
-    border-radius: 1vw;
-    box-shadow: 1px 1px 5px 1px rgba(0, 0, 0, 0.3);
+.admin__button:hover {
+    color: white;
 }
 
-.wallpaperImage {
-    width: 10vw;
-    height: 10vw;
-    object-fit: cover;
-    border-radius: 0.5vw;
-}
-
-.wallpaperActions {
-    display: flex;
-    gap: 1vw;
-}
-
-.actionButtonContainer {
-    width: 6vw; /* Adjust this width to match the button size */
-    height: 3vw; /* Adjust this height to match the button size */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative; /* Ensure it remains in the same place */
-}
-
-.loader {
-    border: 4px solid #f3f3f3; /* Light grey */
-    border-top: 4px solid #3498db; /* Blue */
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    animation: spin 2s linear infinite;
-    position: absolute; /* Position it absolutely within the container */
+.errorMessage {
+    color: red;
+    text-align: center;
+    margin-top: 1vw;
+    font-size: 1.2vw;
 }
 
 .loaderContainer {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh; /* Full height to center the loader vertically */
+    height: 10vw;
+}
+
+.loader {
+    border: 0.4vw solid #f3f3f3;
+    border-top: 0.4vw solid #3498db;
+    border-radius: 50%;
+    width: 3vw;
+    height: 3vw;
+    animation: spin 2s linear infinite;
 }
 
 @keyframes spin {
@@ -63,22 +49,187 @@
     100% { transform: rotate(360deg); }
 }
 
-.admin__button {
-    background-color: #3498db;
-    color: #fff;
-    border: none;
-    padding: 0.5vw 1vw;
-    border-radius: 0.5vw;
-    cursor: pointer;
+.wallpapersGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 2vw;
+    margin-top: 2vw;
+}
+
+.wallpaperItem {
+    position: relative;
+    border: 0.1vw solid #8A4CF0;
+    border-radius: 1vw;
+    overflow: hidden;
+    text-align: center;
+    background: #090A1F;
+}
+
+.wallpaperImage {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.wallpaperActions {
+    padding: 1vw;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.actionButtonContainer {
+    display: flex;
+    align-items: center;
+}
+
+.filterContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1vw;
+    gap: 1vw;
+    color: white;
+}
+
+.filterContainer label {
     font-size: 1vw;
 }
 
-.admin__button:hover {
-    background-color: #2980b9;
+.filterContainer select {
+    padding: 0.2vw 2vw;
+    border: double 0.1vw transparent;
+    border-radius: 4vw;
+    background-image: linear-gradient(#090A1F, #090A1F),
+    linear-gradient(to right, #F72585, #8A4CF0);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    color: #a4a4a4;
+    font-size: 1vw;
+    transition: 0.3s;
 }
 
-.error-message {
-    color: red;
-    font-size: 1.2vw;
-    margin-top: 1vw;
+.filterContainer select:hover {
+    cursor: pointer;
+    color: white;
+}
+
+.search__container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 2vw;
+}
+
+.search {
+    width: 70vw;
+    height: 3vw;
+    padding: 0.2vw 0.2vw 0.2vw 2vw;
+    border: double 0.1vw transparent;
+    border-radius: 100px;
+    background-image: linear-gradient(#090A1F, #090A1F),
+    linear-gradient(to right, #F72585, #8A4CF0);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    color: #a4a4a4;
+    font-size: 0.8vw;
+}
+
+.search:focus {
+    outline: none;
+}
+
+.submit__button {
+    padding: 0.2vw 2vw;
+    border: double 0.1vw transparent;
+    border-radius: 4vw;
+    background-image: linear-gradient(#090A1F, #090A1F),
+    linear-gradient(to right, #F72585, #8A4CF0);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    color: #a4a4a4;
+    font-size: 0.8vw;
+    transition: 0.3s;
+}
+
+.submit__button:hover {
+    cursor: pointer;
+    color: white;
+}
+
+.device__type__container {
+    display: flex;
+    justify-content: center;
+}
+
+.device__type__btn {
+    display: grid;
+    place-items: center;
+    background-color: transparent;
+    width: 5vw;
+    height: 3vw;
+    border: double 0.1vw transparent;
+    cursor: pointer;
+}
+
+.mobile__btn {
+    background-image: linear-gradient(#090A1F, #090A1F),
+    linear-gradient(to right, #8A4CF0, #F72585);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    border-left: solid 0.1vw #8A4CF0;
+    border-bottom-left-radius: 10vw;
+    border-top-left-radius: 10vw;
+}
+
+.desktop__btn {
+    background-image: linear-gradient(#090A1F, #090A1F),
+    linear-gradient(to right, #F72585, #8A4CF0);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    border-bottom-right-radius: 10vw;
+    border-top-right-radius: 10vw;
+}
+
+.mobile__btn__img {
+    width: 20%;
+    height: 100%;
+}
+
+.desktop__btn__img {
+    width: 35%;
+    height: 100%;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1vw;
+    gap: 1vw;
+    color: white;
+}
+
+.page__btn {
+    padding: 0.2vw 2vw;
+    border: double 0.1vw transparent;
+    border-radius: 4vw;
+    background-image: linear-gradient(#090A1F, #090A1F),
+    linear-gradient(to right, #F72585, #8A4CF0);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    color: #a4a4a4;
+    font-size: 0.8vw;
+    transition: 0.3s;
+    width: 8vw;
+    height: 2vw;
+}
+
+.page__btn:hover {
+    cursor: pointer;
+    color: white;
+}
+
+.page__btn:focus {
+    outline: none;
 }
