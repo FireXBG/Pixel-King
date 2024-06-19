@@ -122,4 +122,29 @@
     color: white;
     font-size: 2rem;
     z-index: 2;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.loadingText {
+    transition: width 0.5s ease-in-out;
+}
+
+.admin__button {
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    padding: 0.5vw 1vw;
+    border-radius: 0.5vw;
+    cursor: pointer;
+    font-size: 1vw;
+}
+
+.admin__button:hover {
+    background-color: #2980b9;
+}
+
+.error-message {
+    color: red;
+    font-size: 1.2vw;
+    margin-top: 1vw;
 }

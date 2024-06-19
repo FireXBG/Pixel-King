@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
-import styles from './UploadWallpaper.module.css'
+import styles from './UploadWallpaper.module.css';
 
 const socket = io('http://localhost:3001'); // Adjust this URL to match your server
 
@@ -12,11 +12,27 @@ function UploadWallpaperComponent({ onSuccess }) {
     const [view, setView] = useState({});
     const [loading, setLoading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
+    const [targetProgress, setTargetProgress] = useState(0);
     const [showContainer, setShowContainer] = useState(true);
 
     useEffect(() => {
+        const interval = setInterval(() => {
+            setUploadProgress((prevProgress) => {
+                if (prevProgress < targetProgress) {
+                    return prevProgress + 1;
+                } else {
+                    clearInterval(interval);
+                    return prevProgress;
+                }
+            });
+        }, 50);
+
+        return () => clearInterval(interval);
+    }, [targetProgress]);
+
+    useEffect(() => {
         socket.on('uploadProgress', (data) => {
-            setUploadProgress(data.progress);
+            setTargetProgress(data.progress);
         });
 
         return () => {
@@ -123,11 +139,16 @@ function UploadWallpaperComponent({ onSuccess }) {
             await axios.post('http://localhost:3001/admin/upload', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                }
+                },
             });
 
-            setShowContainer(false);
-            onSuccess();
+            setTimeout(() => {
+                setTargetProgress(100);
+                setTimeout(() => {
+                    setShowContainer(false);
+                    onSuccess();
+                }, 500); // Delay to show 100% progress
+            }, 500); // Delay to ensure smooth animation
         } catch (error) {
             console.error('Error uploading files:', error);
             alert('Error uploading files');
@@ -188,7 +209,13 @@ function UploadWallpaperComponent({ onSuccess }) {
                             {loading ? `Uploading... ${Math.round(uploadProgress)}%` : 'Upload'}
                         </button>
                     </form>
-                    {loading && <div className={styles.loading}>Loading... {Math.round(uploadProgress)}%</div>}
+                    {loading && (
+                        <div className={styles.loading}>
+                            <div className={styles.loadingText}>
+                                Uploading... {Math.round(uploadProgress)}%
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
         </>
