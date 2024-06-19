@@ -4,6 +4,7 @@ const { google } = require('googleapis');
 const { authenticate } = require('@google-cloud/local-auth');
 const sharp = require('sharp');
 const { Readable } = require('stream');
+const { v4: uuidv4 } = require('uuid'); // Add this to generate unique IDs
 
 const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
 const TOKEN_PATH = path.join(__dirname, 'token.json');
@@ -81,7 +82,7 @@ async function uploadFile(filePath, mimeType, parentFolderId) {
 
 async function createAndUploadThumbnail(filePath, parentFolderId) {
     const drive = google.drive({ version: 'v3', auth: oAuth2Client });
-    const thumbnailPath = path.join(__dirname, 'thumbnail.jpg');
+    const thumbnailPath = path.join(__dirname, `thumbnail-${uuidv4()}.jpg`);
 
     await sharp(filePath)
         .resize(220)
