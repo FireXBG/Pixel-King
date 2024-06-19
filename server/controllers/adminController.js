@@ -66,7 +66,7 @@ router.post('/upload', upload.array('wallpapers'), async (req, res) => {
     const files = req.files;
     const data = req.body;
     const uploadResults = [];
-    const totalFiles = files.length * 2; // Each file will have an original and a thumbnail
+    const totalFiles = files.length; // Correct total files calculation
     const io = getIO(); // Get the io instance
 
     try {
@@ -83,9 +83,12 @@ router.post('/upload', upload.array('wallpapers'), async (req, res) => {
 
             // Send progress update
             io.emit('uploadProgress', {
-                progress: ((uploadResults.length * 2) / totalFiles) * 100
+                progress: ((uploadResults.length) / totalFiles) * 100
             });
         }
+
+        // Emit complete event after all files are uploaded
+        io.emit('uploadComplete');
 
         res.status(200).json({ message: 'Files uploaded successfully', uploadResults });
     } catch (error) {

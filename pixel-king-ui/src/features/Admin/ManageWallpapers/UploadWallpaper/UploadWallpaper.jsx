@@ -14,6 +14,8 @@ function UploadWallpaperComponent({ onSuccess }) {
     const [uploadProgress, setUploadProgress] = useState(0);
     const [targetProgress, setTargetProgress] = useState(0);
     const [showContainer, setShowContainer] = useState(true);
+    const [completed, setCompleted] = useState(false);
+    const [showCompletedText, setShowCompletedText] = useState(false);
 
     const easeInOut = (current, target, factor = 0.1) => {
         if (current < target) {
@@ -26,12 +28,7 @@ function UploadWallpaperComponent({ onSuccess }) {
     useEffect(() => {
         const interval = setInterval(() => {
             setUploadProgress((prevProgress) => {
-                if (prevProgress !== targetProgress) {
-                    return easeInOut(prevProgress, targetProgress);
-                } else {
-                    clearInterval(interval);
-                    return prevProgress;
-                }
+                return easeInOut(prevProgress, targetProgress);
             });
         }, 50);
 
@@ -43,20 +40,24 @@ function UploadWallpaperComponent({ onSuccess }) {
             setTargetProgress(data.progress);
         });
 
-        return () => {
-            socket.off('uploadProgress');
-        };
-    }, []);
+        socket.on('uploadComplete', () => {
+            setCompleted(true);
+            setTargetProgress(100);
+            setShowCompletedText(true);
 
-    useEffect(() => {
-        if (targetProgress === 100) {
-            const delay = setTimeout(() => {
+            const delayForCompletedText = setTimeout(() => {
                 setShowContainer(false);
                 onSuccess();
-            }, 1000); // Delay to ensure smooth animation and show 100% progress
-            return () => clearTimeout(delay);
-        }
-    }, [targetProgress, onSuccess]);
+            }, 1000); // Delay to ensure "Completed" text is shown for 1000ms
+
+            return () => clearTimeout(delayForCompletedText);
+        });
+
+        return () => {
+            socket.off('uploadProgress');
+            socket.off('uploadComplete');
+        };
+    }, [onSuccess]);
 
     const resizeImage = (file, maxWidth, maxHeight, quality) => {
         return new Promise((resolve) => {
@@ -145,6 +146,8 @@ function UploadWallpaperComponent({ onSuccess }) {
 
         setLoading(true);
         setUploadProgress(0);
+        setCompleted(false);
+        setShowCompletedText(false);
 
         const formData = new FormData();
         originalFiles.forEach((file, index) => {
@@ -159,8 +162,6 @@ function UploadWallpaperComponent({ onSuccess }) {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-
-            setTargetProgress(100);
         } catch (error) {
             console.error('Error uploading files:', error);
             alert('Error uploading files');
@@ -226,6 +227,11 @@ function UploadWallpaperComponent({ onSuccess }) {
                             <div className={styles.loadingText}>
                                 Uploading... {Math.round(uploadProgress)}%
                             </div>
+                        </div>
+                    )}
+                    {showCompletedText && (
+                        <div className={styles.completedText}>
+                            Completed
                         </div>
                     )}
                 </div>

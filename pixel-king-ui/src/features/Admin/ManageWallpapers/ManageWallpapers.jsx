@@ -28,7 +28,6 @@ function ManageWallpapers() {
     };
 
     const handleUploadSuccess = () => {
-        setUploadWallpapersMenu(false); // Close the upload menu
         fetchWallpapers(); // Fetch the updated list of wallpapers
     };
 

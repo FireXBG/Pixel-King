@@ -148,3 +148,10 @@
     font-size: 1.2vw;
     margin-top: 1vw;
 }
+
+.completedText {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 18px;
+    color: green;
+}
