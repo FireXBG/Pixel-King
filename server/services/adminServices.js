@@ -53,19 +53,15 @@ exports.uploadWallpaper = async (file, tags, view) => {
 exports.getWallpapers = async () => {
     try {
         const wallpapers = await AdminWallpapers.find();
-        const wallpapersWithFiles = await Promise.all(wallpapers.map(async (wallpaper) => {
-            const fileData = await getFile(wallpaper.driveID);
-            const thumbnailData = await getFile(wallpaper.thumbnailID);
-
+        const wallpapersWithThumbnails = await Promise.all(wallpapers.map(async (wallpaper) => {
+            const thumbnailData = await getFile(wallpaper.thumbnailID); // Fetch only thumbnail content and metadata
             return {
                 ...wallpaper.toObject(),
-                fileData: fileData.data.toString('base64'),
-                contentType: fileData.mimeType,
-                thumbnailData: thumbnailData.data.toString('base64'),
+                thumbnailData: thumbnailData.data.toString('base64'), // Base64 encoded thumbnail data
                 thumbnailContentType: thumbnailData.mimeType,
             };
         }));
-        return wallpapersWithFiles;
+        return wallpapersWithThumbnails;
     } catch (error) {
         console.error('Error fetching wallpapers:', error);
         throw new Error('An error occurred while fetching wallpapers');
