@@ -48,6 +48,16 @@ function UploadWallpaperComponent({ onSuccess }) {
         };
     }, []);
 
+    useEffect(() => {
+        if (targetProgress === 100) {
+            const delay = setTimeout(() => {
+                setShowContainer(false);
+                onSuccess();
+            }, 1000); // Delay to ensure smooth animation and show 100% progress
+            return () => clearTimeout(delay);
+        }
+    }, [targetProgress, onSuccess]);
+
     const resizeImage = (file, maxWidth, maxHeight, quality) => {
         return new Promise((resolve) => {
             const reader = new FileReader();
@@ -151,10 +161,6 @@ function UploadWallpaperComponent({ onSuccess }) {
             });
 
             setTargetProgress(100);
-            setTimeout(() => {
-                setShowContainer(false);
-                onSuccess();
-            }, 1000); // Delay to show 100% progress
         } catch (error) {
             console.error('Error uploading files:', error);
             alert('Error uploading files');
