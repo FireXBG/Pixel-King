@@ -63,6 +63,7 @@
     overflow: hidden;
     text-align: center;
     background: #090A1F;
+    width: 15vw;
 }
 
 .wallpaperImage {
@@ -191,15 +192,6 @@
     border-top-right-radius: 10vw;
 }
 
-.mobile__btn__img {
-    width: 20%;
-    height: 100%;
-}
-
-.desktop__btn__img {
-    width: 35%;
-    height: 100%;
-}
 
 .pagination {
     display: flex;

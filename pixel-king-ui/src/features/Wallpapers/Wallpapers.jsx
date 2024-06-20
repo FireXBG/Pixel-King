@@ -10,6 +10,7 @@ export default function Wallpapers() {
     const [deviceType, setDeviceType] = useState('desktop');
     const [currentPage, setCurrentPage] = useState(1);
     const [wallpapers, setWallpapers] = useState([]);
+    const [loading, setLoading] = useState(false);
     const imagesPerPage = 20;
 
     useEffect(() => {
@@ -21,11 +22,14 @@ export default function Wallpapers() {
     }, []);
 
     const fetchWallpapers = async (type) => {
+        setLoading(true);
         try {
             const response = await axios.get(`http://localhost:3001/admin/wallpapers?view=${type}`);
             setWallpapers(response.data);
         } catch (error) {
             console.error('Error fetching wallpapers:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -59,11 +63,17 @@ export default function Wallpapers() {
                     </button>
                 </div>
             </div>
-            <section>
-                {deviceType === 'desktop' ? (
-                    <Desktop currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers} />
+            <section className={styles.wallpapersSection}>
+                {loading ? (
+                    <div className={styles.loaderContainer}>
+                        <div className={styles.loader}></div>
+                    </div>
                 ) : (
-                    <Mobile currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers} />
+                    deviceType === 'desktop' ? (
+                        <Desktop currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers} />
+                    ) : (
+                        <Mobile currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers} />
+                    )
                 )}
             </section>
             <div className={styles.pagination}>
