@@ -7,21 +7,18 @@ function ManageWallpapers() {
     const [uploadWallpapersMenu, setUploadWallpapersMenu] = useState(false);
     const [wallpapers, setWallpapers] = useState([]);
     const [deleting, setDeleting] = useState({});
-    const [loading, setLoading] = useState(true); // Add loading state
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [filter, setFilter] = useState('all');
+    const [filter, setFilter] = useState('desktop'); // Set default filter to 'desktop'
 
     useEffect(() => {
         fetchWallpapers();
     }, [filter]);
 
     const fetchWallpapers = async () => {
-        setLoading(true); // Set loading to true before fetching
+        setLoading(true);
         try {
-            let url = 'http://localhost:3001/admin/wallpapers';
-            if (filter !== 'all') {
-                url += `?view=${filter}`;
-            }
+            const url = `http://localhost:3001/admin/wallpapers?view=${filter}`;
             const response = await axios.get(url);
             const wallpapers = response.data.wallpapers || [];
             setWallpapers(wallpapers);
@@ -29,7 +26,7 @@ function ManageWallpapers() {
             console.error('Error fetching wallpapers:', error);
             setError('Failed to fetch wallpapers. Please try again later.');
         } finally {
-            setLoading(false); // Set loading to false after fetching
+            setLoading(false);
         }
     };
 
@@ -66,7 +63,6 @@ function ManageWallpapers() {
             <div className={styles.filterContainer}>
                 <label htmlFor="filter">Filter: </label>
                 <select id="filter" value={filter} onChange={handleFilterChange}>
-                    <option value="all">All</option>
                     <option value="desktop">Desktop</option>
                     <option value="mobile">Mobile</option>
                 </select>
