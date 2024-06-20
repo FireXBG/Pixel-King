@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import styles from './Wallpapers.module.css';
 import phoneIcon from '../../assets/phone.svg';
@@ -16,6 +16,7 @@ export default function Wallpapers() {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedWallpaper, setSelectedWallpaper] = useState(null);
     const imagesPerPage = 20;
+    const cancelTokenSource = useRef(null);
 
     useEffect(() => {
         fetchWallpapers(deviceType, currentPage, searchQuery, true);
@@ -26,19 +27,27 @@ export default function Wallpapers() {
         if (reset) {
             setWallpapers([]); // Clear current wallpapers if resetting
         }
+
+        if (cancelTokenSource.current) {
+            cancelTokenSource.current.cancel('Operation canceled due to new request.');
+        }
+
+        cancelTokenSource.current = axios.CancelToken.source();
+
         try {
             let url = `http://localhost:3001/admin/wallpapers?view=${type}&page=${page}&limit=${imagesPerPage}`;
             if (tags) {
                 url += `&tags=${tags}`;
             }
             console.log(`Fetching wallpapers for view: ${type}, page: ${page}, limit: ${imagesPerPage}, tags: ${tags}`);
-            const response = await axios.get(url);
+            const response = await axios.get(url, {
+                cancelToken: cancelTokenSource.current.token,
+            });
             console.log(`Fetched ${type} wallpapers:`, response.data.wallpapers);
             const fetchedWallpapers = response.data.wallpapers;
             setTotalPages(Math.ceil(response.data.totalCount / imagesPerPage));
             console.log(`Total pages: ${Math.ceil(response.data.totalCount / imagesPerPage)}`);
 
-            // Display fetched wallpapers one by one
             fetchedWallpapers.forEach((wallpaper, index) => {
                 setTimeout(() => {
                     setWallpapers(prev => {
@@ -51,7 +60,11 @@ export default function Wallpapers() {
                 }, index * 100); // Delay each wallpaper by 100ms
             });
         } catch (error) {
-            console.error('Error fetching wallpapers:', error);
+            if (axios.isCancel(error)) {
+                console.log('Request canceled', error.message);
+            } else {
+                console.error('Error fetching wallpapers:', error);
+            }
         } finally {
             setLoading(false);
         }
@@ -107,19 +120,18 @@ export default function Wallpapers() {
                 </div>
             </div>
             <section className={styles.wallpapersSection}>
-                {loading && wallpapers.length === 0 ? (
+                {loading && wallpapers.length === 0 && (
                     <div className={styles.loaderContainer}>
                         <div className={styles.loader}></div>
                     </div>
-                ) : (
-                    <>
-                        {deviceType === 'desktop' ? (
-                            <Desktop currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers} onWallpaperClick={openWallpaperDetails} />
-                        ) : (
-                            <Mobile currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers} onWallpaperClick={openWallpaperDetails} />
-                        )}
-                    </>
                 )}
+                <>
+                    {deviceType === 'desktop' ? (
+                        <Desktop currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers} onWallpaperClick={openWallpaperDetails} />
+                    ) : (
+                        <Mobile currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers} onWallpaperClick={openWallpaperDetails} />
+                    )}
+                </>
                 {loading && wallpapers.length > 0 && (
                     <div className={styles.loaderContainer}>
                         <div className={styles.loader}></div>

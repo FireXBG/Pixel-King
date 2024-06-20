@@ -1,16 +1,23 @@
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+.loader {
+    width: 80px;
+    height: 80px;
+    border: 10px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 10px solid #3498db;
+    animation: spin 2s linear infinite;
 }
 
-.wallpaperItem {
-    animation: fadeIn 0.5s ease-in-out;
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Loader Container */
+.loaderContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 10vw; /* Ensure loader container has a height to make loader visible */
 }
 
 /* Existing styles */
@@ -49,20 +56,6 @@
     justify-content: center;
     align-items: center;
     height: 10vw;
-}
-
-.loader {
-    border: 0.4vw solid #f3f3f3;
-    border-top: 0.4vw solid #3498db;
-    border-radius: 50%;
-    width: 3vw;
-    height: 3vw;
-    animation: spin 2s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
 }
 
 .wallpapersGrid {
