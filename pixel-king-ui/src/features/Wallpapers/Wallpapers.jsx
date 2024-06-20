@@ -18,11 +18,14 @@ export default function Wallpapers() {
     const imagesPerPage = 20;
 
     useEffect(() => {
-        fetchWallpapers(deviceType, currentPage, searchQuery);
-    }, [deviceType, currentPage]);
+        fetchWallpapers(deviceType, currentPage, searchQuery, true);
+    }, [deviceType, currentPage, searchQuery]);
 
-    const fetchWallpapers = async (type, page, tags) => {
+    const fetchWallpapers = async (type, page, tags, reset = false) => {
         setLoading(true);
+        if (reset) {
+            setWallpapers([]); // Clear current wallpapers if resetting
+        }
         try {
             let url = `http://localhost:3001/admin/wallpapers?view=${type}&page=${page}&limit=${imagesPerPage}`;
             if (tags) {
@@ -31,9 +34,22 @@ export default function Wallpapers() {
             console.log(`Fetching wallpapers for view: ${type}, page: ${page}, limit: ${imagesPerPage}, tags: ${tags}`);
             const response = await axios.get(url);
             console.log(`Fetched ${type} wallpapers:`, response.data.wallpapers);
-            setWallpapers(response.data.wallpapers);
+            const fetchedWallpapers = response.data.wallpapers;
             setTotalPages(Math.ceil(response.data.totalCount / imagesPerPage));
             console.log(`Total pages: ${Math.ceil(response.data.totalCount / imagesPerPage)}`);
+
+            // Display fetched wallpapers one by one
+            fetchedWallpapers.forEach((wallpaper, index) => {
+                setTimeout(() => {
+                    setWallpapers(prev => {
+                        // Avoid repetition by ensuring the wallpaper isn't already added
+                        if (!prev.some(w => w._id === wallpaper._id)) {
+                            return [...prev, wallpaper];
+                        }
+                        return prev;
+                    });
+                }, index * 100); // Delay each wallpaper by 100ms
+            });
         } catch (error) {
             console.error('Error fetching wallpapers:', error);
         } finally {
@@ -44,7 +60,7 @@ export default function Wallpapers() {
     function setDeviceTypeHandler(type) {
         setDeviceType(type);
         setCurrentPage(1);
-        fetchWallpapers(type, 1, searchQuery); // Ensure fetch on device type change
+        fetchWallpapers(type, 1, searchQuery, true); // Ensure fetch on device type change
     }
 
     function handlePageChange(page) {
@@ -54,7 +70,7 @@ export default function Wallpapers() {
 
     const handleSearch = () => {
         setCurrentPage(1);
-        fetchWallpapers(deviceType, 1, searchQuery);
+        fetchWallpapers(deviceType, 1, searchQuery, true);
     };
 
     const openWallpaperDetails = (wallpaper) => {
@@ -91,7 +107,7 @@ export default function Wallpapers() {
                 </div>
             </div>
             <section className={styles.wallpapersSection}>
-                {loading ? (
+                {loading && wallpapers.length === 0 ? (
                     <div className={styles.loaderContainer}>
                         <div className={styles.loader}></div>
                     </div>
@@ -103,6 +119,11 @@ export default function Wallpapers() {
                             <Mobile currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers} onWallpaperClick={openWallpaperDetails} />
                         )}
                     </>
+                )}
+                {loading && wallpapers.length > 0 && (
+                    <div className={styles.loaderContainer}>
+                        <div className={styles.loader}></div>
+                    </div>
                 )}
             </section>
             <div className={styles.pagination}>
