@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './WallpaperDetails.module.css';
 
 const resolutions = {
@@ -18,13 +18,23 @@ const resolutions = {
 };
 
 function WallpaperDetails({ wallpaper, onClose }) {
+    const [isClosing, setIsClosing] = useState(false);
+
+    const handleClose = () => {
+        setIsClosing(true);
+        setTimeout(() => {
+            onClose();
+            setIsClosing(false);
+        }, 300); // Match the animation duration
+    };
+
     const { thumbnailData, thumbnailContentType, tags, view } = wallpaper;
 
     return (
         <>
-            <div className={styles.overlay} onClick={onClose}></div>
-            <div className={styles.wallpaperDetails}>
-                <button className={styles.closeButton} onClick={onClose}>×</button>
+            <div className={styles.overlay} onClick={handleClose}></div>
+            <div className={`${styles.wallpaperDetails} ${isClosing ? styles.wallpaperDetailsClosing : ''}`}>
+                <button className={styles.closeButton} onClick={handleClose}>×</button>
                 <div className={styles.wallpaperPreview}>
                     <img src={`data:${thumbnailContentType};base64,${thumbnailData}`} alt="Wallpaper Preview" />
                 </div>

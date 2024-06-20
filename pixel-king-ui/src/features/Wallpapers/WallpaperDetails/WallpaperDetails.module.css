@@ -1,3 +1,25 @@
+@keyframes slideIn {
+    0% {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0;
+    }
+}
+
 .overlay {
     position: fixed;
     top: 0;
@@ -6,13 +28,24 @@
     height: 100%;
     background-color: rgba(0, 0, 0, 0.7);
     z-index: 999;
+    opacity: 0;
+    animation: fadeIn 0.3s forwards;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
 }
 
 .wallpaperDetails {
     position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%) scale(0.8);
     background-color: #1a1a2e;
     padding: 2.5vw;
     border-radius: 10px;
@@ -22,6 +55,11 @@
     max-height: 90vh;
     width: 90%;
     overflow: auto;
+    animation: slideIn 0.3s forwards;
+}
+
+.wallpaperDetailsClosing {
+    animation: slideOut 0.3s forwards;
 }
 
 .closeButton {
