@@ -5,6 +5,7 @@ import phoneIcon from '../../assets/phone.svg';
 import desktopIcon from '../../assets/computer.svg';
 import Desktop from './Desktop/Desktop';
 import Mobile from './Mobile/Mobile';
+import WallpaperDetails from './WallpaperDetails/WallpaperDetails';
 
 export default function Wallpapers() {
     const [deviceType, setDeviceType] = useState('desktop');
@@ -13,6 +14,7 @@ export default function Wallpapers() {
     const [loading, setLoading] = useState(false);
     const [totalPages, setTotalPages] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedWallpaper, setSelectedWallpaper] = useState(null);
     const imagesPerPage = 20;
 
     useEffect(() => {
@@ -55,6 +57,14 @@ export default function Wallpapers() {
         fetchWallpapers(deviceType, 1, searchQuery);
     };
 
+    const openWallpaperDetails = (wallpaper) => {
+        setSelectedWallpaper(wallpaper);
+    };
+
+    const closeWallpaperDetails = () => {
+        setSelectedWallpaper(null);
+    };
+
     return (
         <>
             <div className={styles.search__container}>
@@ -86,11 +96,13 @@ export default function Wallpapers() {
                         <div className={styles.loader}></div>
                     </div>
                 ) : (
-                    deviceType === 'desktop' ? (
-                        <Desktop currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers} />
-                    ) : (
-                        <Mobile currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers} />
-                    )
+                    <>
+                        {deviceType === 'desktop' ? (
+                            <Desktop currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers} onWallpaperClick={openWallpaperDetails} />
+                        ) : (
+                            <Mobile currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers} onWallpaperClick={openWallpaperDetails} />
+                        )}
+                    </>
                 )}
             </section>
             <div className={styles.pagination}>
@@ -110,6 +122,7 @@ export default function Wallpapers() {
                     Next
                 </button>
             </div>
+            {selectedWallpaper && <WallpaperDetails wallpaper={selectedWallpaper} onClose={closeWallpaperDetails} />}
         </>
     );
 }
