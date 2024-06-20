@@ -23,7 +23,8 @@ function ManageWallpapers() {
                 url += `?view=${filter}`;
             }
             const response = await axios.get(url);
-            setWallpapers(response.data);
+            const wallpapers = response.data.wallpapers || [];
+            setWallpapers(wallpapers);
         } catch (error) {
             console.error('Error fetching wallpapers:', error);
             setError('Failed to fetch wallpapers. Please try again later.');

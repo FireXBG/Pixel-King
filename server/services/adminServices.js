@@ -48,10 +48,19 @@ exports.uploadWallpaper = async (file, tags, view) => {
     }
 };
 
-
-exports.getWallpapers = async () => {
+exports.getWallpapersByViewAndTags = async (view, tags, page, limit) => {
     try {
-        const wallpapers = await AdminWallpapers.find();
+        const query = { view };
+        if (tags.length > 0) {
+            query.tags = { $in: tags };
+        }
+
+        const wallpapers = await AdminWallpapers.find(query)
+            .skip((page - 1) * limit)
+            .limit(limit);
+
+        const totalCount = await AdminWallpapers.countDocuments(query);
+
         const wallpapersWithThumbnails = await Promise.all(wallpapers.map(async (wallpaper) => {
             const thumbnailData = await getFile(wallpaper.thumbnailID); // Fetch only thumbnail content and metadata
             return {
@@ -60,25 +69,8 @@ exports.getWallpapers = async () => {
                 thumbnailContentType: thumbnailData.mimeType,
             };
         }));
-        return wallpapersWithThumbnails;
-    } catch (error) {
-        console.error('Error fetching wallpapers:', error);
-        throw new Error('An error occurred while fetching wallpapers');
-    }
-};
 
-exports.getWallpapersByView = async (view) => {
-    try {
-        const wallpapers = await AdminWallpapers.find({ view });
-        const wallpapersWithThumbnails = await Promise.all(wallpapers.map(async (wallpaper) => {
-            const thumbnailData = await getFile(wallpaper.thumbnailID); // Fetch only thumbnail content and metadata
-            return {
-                ...wallpaper.toObject(),
-                thumbnailData: thumbnailData.data.toString('base64'), // Base64 encoded thumbnail data
-                thumbnailContentType: thumbnailData.mimeType,
-            };
-        }));
-        return wallpapersWithThumbnails;
+        return { wallpapers: wallpapersWithThumbnails, totalCount };
     } catch (error) {
         console.error('Error fetching wallpapers:', error);
         throw new Error('An error occurred while fetching wallpapers');

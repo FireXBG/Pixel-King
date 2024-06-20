@@ -39,11 +39,16 @@ router.post('/login', async (req, res) => {
 
 router.get('/wallpapers', async (req, res) => {
     const view = req.query.view || 'desktop'; // Default to 'desktop' if not specified
-    console.log(`Fetching wallpapers for view: ${view}`);
+    const tags = req.query.tags ? req.query.tags.split(' ') : []; // Get tags from query, split by space
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+
+    console.log(`Fetching wallpapers for view: ${view}, page: ${page}, limit: ${limit}, tags: ${tags}`);
+
     try {
-        const wallpapers = await adminServices.getWallpapersByView(view);
+        const { wallpapers, totalCount } = await adminServices.getWallpapersByViewAndTags(view, tags, page, limit);
         console.log(`Fetched ${view} wallpapers:`, wallpapers.length);
-        res.status(200).json(wallpapers);
+        res.status(200).json({ wallpapers, totalCount });
     } catch (error) {
         console.error('Error fetching wallpapers:', error);
         res.status(500).json({ error: 'An error occurred while fetching wallpapers.' });
@@ -110,7 +115,6 @@ router.post('/upload', upload.array('wallpapers'), async (req, res) => {
         res.status(500).json({ error: 'An error occurred while uploading files. Please try again later.' });
     }
 });
-
 
 router.delete('/wallpapers/:id', async (req, res) => {
     const wallpaperId = req.params.id;

@@ -11,21 +11,27 @@ export default function Wallpapers() {
     const [currentPage, setCurrentPage] = useState(1);
     const [wallpapers, setWallpapers] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [totalPages, setTotalPages] = useState(1);
+    const [searchQuery, setSearchQuery] = useState('');
     const imagesPerPage = 20;
 
     useEffect(() => {
-        fetchWallpapers(deviceType);
-    }, [deviceType]);
+        fetchWallpapers(deviceType, currentPage, searchQuery);
+    }, [deviceType, currentPage]);
 
-    useEffect(() => {
-        fetchWallpapers(deviceType);
-    }, []);
-
-    const fetchWallpapers = async (type) => {
+    const fetchWallpapers = async (type, page, tags) => {
         setLoading(true);
         try {
-            const response = await axios.get(`http://localhost:3001/admin/wallpapers?view=${type}`);
-            setWallpapers(response.data);
+            let url = `http://localhost:3001/admin/wallpapers?view=${type}&page=${page}&limit=${imagesPerPage}`;
+            if (tags) {
+                url += `&tags=${tags}`;
+            }
+            console.log(`Fetching wallpapers for view: ${type}, page: ${page}, limit: ${imagesPerPage}, tags: ${tags}`);
+            const response = await axios.get(url);
+            console.log(`Fetched ${type} wallpapers:`, response.data.wallpapers);
+            setWallpapers(response.data.wallpapers);
+            setTotalPages(Math.ceil(response.data.totalCount / imagesPerPage));
+            console.log(`Total pages: ${Math.ceil(response.data.totalCount / imagesPerPage)}`);
         } catch (error) {
             console.error('Error fetching wallpapers:', error);
         } finally {
@@ -36,6 +42,7 @@ export default function Wallpapers() {
     function setDeviceTypeHandler(type) {
         setDeviceType(type);
         setCurrentPage(1);
+        fetchWallpapers(type, 1, searchQuery); // Ensure fetch on device type change
     }
 
     function handlePageChange(page) {
@@ -43,11 +50,21 @@ export default function Wallpapers() {
         window.scrollTo(0, 0);
     }
 
+    const handleSearch = () => {
+        setCurrentPage(1);
+        fetchWallpapers(deviceType, 1, searchQuery);
+    };
+
     return (
         <>
             <div className={styles.search__container}>
-                <input className={styles.search} placeholder='Example: Sci-Fi spaceships war' />
-                <button className={styles.submit__button}>Search</button>
+                <input
+                    className={styles.search}
+                    placeholder='Example: Sci-Fi spaceships war'
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <button className={styles.submit__button} onClick={handleSearch}>Search</button>
                 <div className={styles.device__type__container}>
                     <button
                         onClick={() => setDeviceTypeHandler('mobile')}
@@ -86,6 +103,7 @@ export default function Wallpapers() {
                 </button>
                 <span>{currentPage}</span>
                 <button
+                    disabled={currentPage >= totalPages}
                     className={styles.page__btn}
                     onClick={() => handlePageChange(currentPage + 1)}
                 >
