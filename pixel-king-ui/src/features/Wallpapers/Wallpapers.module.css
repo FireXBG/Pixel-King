@@ -17,7 +17,17 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 10vw; /* Ensure loader container has a height to make loader visible */
+    height: 100vh; /* Ensure loader container has full height to make loader visible */
+}
+
+/* Fade-in Animation for Wallpapers */
+@keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.wallpaperItem {
+    animation: fadeIn 0.5s ease-in-out;
 }
 
 /* Existing styles */
@@ -49,13 +59,6 @@
     text-align: center;
     margin-top: 1vw;
     font-size: 1.2vw;
-}
-
-.loaderContainer {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 10vw;
 }
 
 .wallpapersGrid {

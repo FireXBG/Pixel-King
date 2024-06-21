@@ -48,15 +48,15 @@ export default function Wallpapers() {
             setTotalPages(Math.ceil(response.data.totalCount / imagesPerPage));
             console.log(`Total pages: ${Math.ceil(response.data.totalCount / imagesPerPage)}`);
 
+            // Adding wallpapers with a fade-in animation
+            const newWallpapers = [];
             fetchedWallpapers.forEach((wallpaper, index) => {
                 setTimeout(() => {
-                    setWallpapers(prev => {
-                        // Avoid repetition by ensuring the wallpaper isn't already added
-                        if (!prev.some(w => w._id === wallpaper._id)) {
-                            return [...prev, wallpaper];
-                        }
-                        return prev;
-                    });
+                    newWallpapers.push(wallpaper);
+                    setWallpapers(prev => [...prev, ...newWallpapers]);
+                    if (index === 0) {
+                        setLoading(false);
+                    }
                 }, index * 100); // Delay each wallpaper by 100ms
             });
         } catch (error) {
@@ -65,7 +65,6 @@ export default function Wallpapers() {
             } else {
                 console.error('Error fetching wallpapers:', error);
             }
-        } finally {
             setLoading(false);
         }
     };
@@ -120,22 +119,19 @@ export default function Wallpapers() {
                 </div>
             </div>
             <section className={styles.wallpapersSection}>
-                {loading && wallpapers.length === 0 && (
+                {loading && (
                     <div className={styles.loaderContainer}>
                         <div className={styles.loader}></div>
                     </div>
                 )}
-                <>
-                    {deviceType === 'desktop' ? (
-                        <Desktop currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers} onWallpaperClick={openWallpaperDetails} />
-                    ) : (
-                        <Mobile currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers} onWallpaperClick={openWallpaperDetails} />
-                    )}
-                </>
-                {loading && wallpapers.length > 0 && (
-                    <div className={styles.loaderContainer}>
-                        <div className={styles.loader}></div>
-                    </div>
+                {!loading && (
+                    <>
+                        {deviceType === 'desktop' ? (
+                            <Desktop currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers} onWallpaperClick={openWallpaperDetails} />
+                        ) : (
+                            <Mobile currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers} onWallpaperClick={openWallpaperDetails} />
+                        )}
+                    </>
                 )}
             </section>
             <div className={styles.pagination}>
