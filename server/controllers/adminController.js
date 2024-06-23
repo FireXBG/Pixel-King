@@ -75,14 +75,18 @@ router.post('/upload', upload.array('wallpapers'), async (req, res) => {
     const files = req.files;
     const data = req.body;
     const uploadResults = [];
-    const totalFiles = files.length; // Correct total files calculation
+    const totalFiles = files.length;
     const io = getIO(); // Get the io instance
 
     try {
+        io.emit('uploadReceived'); // Emit event for backend received
+
         await Promise.all(files.map(async (file, index) => {
             const tags = data[`tags_${index}`] ? data[`tags_${index}`].split(' ').filter(tag => tag.trim() !== '') : [];
             const view = data[`view_${index}`] || 'desktop';
             console.log(`Uploading file with view: ${view}`); // Log the view to check
+
+            io.emit('uploadProcessing'); // Emit event for backend processing
 
             const uploadResult = await adminServices.uploadWallpaper(file, tags, view);
             uploadResults.push(uploadResult);
@@ -95,6 +99,8 @@ router.post('/upload', upload.array('wallpapers'), async (req, res) => {
                 progress: ((uploadResults.length) / totalFiles) * 100
             });
         }));
+
+        io.emit('uploadProcessed'); // Emit event for backend processing completed
 
         // Emit complete event after all files are uploaded
         io.emit('uploadComplete');
@@ -115,6 +121,7 @@ router.post('/upload', upload.array('wallpapers'), async (req, res) => {
         res.status(500).json({ error: 'An error occurred while uploading files. Please try again later.' });
     }
 });
+
 
 router.delete('/wallpapers/:id', async (req, res) => {
     const wallpaperId = req.params.id;

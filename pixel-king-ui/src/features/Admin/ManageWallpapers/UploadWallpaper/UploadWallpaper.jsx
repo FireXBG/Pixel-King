@@ -40,6 +40,18 @@ function UploadWallpaperComponent({ onSuccess }) {
             setTargetProgress(data.progress);
         });
 
+        socket.on('uploadReceived', () => {
+            setTargetProgress(25); // Set progress for "received by backend"
+        });
+
+        socket.on('uploadProcessing', () => {
+            setTargetProgress(50); // Set progress for "backend processing started"
+        });
+
+        socket.on('uploadProcessed', () => {
+            setTargetProgress(75); // Set progress for "backend processing completed"
+        });
+
         socket.on('uploadComplete', () => {
             setCompleted(true);
             setTargetProgress(100);
@@ -55,6 +67,9 @@ function UploadWallpaperComponent({ onSuccess }) {
 
         return () => {
             socket.off('uploadProgress');
+            socket.off('uploadReceived');
+            socket.off('uploadProcessing');
+            socket.off('uploadProcessed');
             socket.off('uploadComplete');
         };
     }, [onSuccess]);
