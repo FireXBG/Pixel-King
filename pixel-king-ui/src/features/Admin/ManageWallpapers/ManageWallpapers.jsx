@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import styles from './ManageWallpapers.module.css';
 import UploadWallpaper from './UploadWallpaper/UploadWallpaper';
+import EditTagsModal from './EditTagsModal/EditTagsModal';
 
 function ManageWallpapers() {
     const [uploadWallpapersMenu, setUploadWallpapersMenu] = useState(false);
@@ -12,6 +13,7 @@ function ManageWallpapers() {
     const [filter, setFilter] = useState('desktop'); // Set default filter to 'desktop'
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [editingWallpaper, setEditingWallpaper] = useState(null); // New state for editing wallpaper
     const imagesPerPage = 20;
 
     useEffect(() => {
@@ -64,6 +66,20 @@ function ManageWallpapers() {
         setCurrentPage(page);
     };
 
+    const handleEdit = (wallpaper) => {
+        setEditingWallpaper(wallpaper);
+    };
+
+    const handleSaveTags = async (wallpaperId, newTags) => {
+        try {
+            await axios.put(`http://localhost:3001/admin/wallpapers/${wallpaperId}`, { tags: newTags });
+            fetchWallpapers(); // Refresh the wallpapers list after saving
+        } catch (error) {
+            console.error('Error saving tags:', error);
+            alert('Failed to save tags');
+        }
+    };
+
     return (
         <div className={styles.manageWallpapersContainer}>
             <button className='admin__button' onClick={toggleUploadMenu}>Upload Wallpapers</button>
@@ -91,7 +107,7 @@ function ManageWallpapers() {
                                 <img src={`data:${wallpaper.thumbnailContentType};base64,${wallpaper.thumbnailData}`} alt={wallpaper.name} className={styles.wallpaperImage} />
                             )}
                             <div className={styles.wallpaperActions}>
-                                <button className='admin__button'>Edit</button>
+                                <button className='admin__button' onClick={() => handleEdit(wallpaper)}>Edit</button>
                                 <div className={styles.actionButtonContainer}>
                                     {deleting[wallpaper._id] ? (
                                         <div className={styles.loader}></div>
@@ -123,6 +139,14 @@ function ManageWallpapers() {
                         Next
                     </button>
                 </div>
+            )}
+
+            {editingWallpaper && (
+                <EditTagsModal
+                    wallpaper={editingWallpaper}
+                    onClose={() => setEditingWallpaper(null)}
+                    onSave={handleSaveTags}
+                />
             )}
         </div>
     );

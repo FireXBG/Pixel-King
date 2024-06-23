@@ -99,3 +99,14 @@ exports.deleteWallpaper = async (wallpaperId) => {
         throw new Error('An error occurred while deleting the wallpaper');
     }
 };
+
+exports.updateWallpaperTags = async (wallpaperId, newTags) => {
+    try {
+        await AdminWallpapers.findByIdAndUpdate(wallpaperId, { tags: newTags });
+        console.log('Tags updated successfully:', wallpaperId);
+    } catch (error) {
+        console.error('Error updating tags:', error);
+        throw new Error('An error occurred while updating the tags');
+    }
+};
+

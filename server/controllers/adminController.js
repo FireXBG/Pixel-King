@@ -136,4 +136,18 @@ router.delete('/wallpapers/:id', async (req, res) => {
     }
 });
 
+router.put('/wallpapers/:id', async (req, res) => {
+    const wallpaperId = req.params.id;
+    const newTags = req.body.tags;
+
+    try {
+        await adminServices.updateWallpaperTags(wallpaperId, newTags);
+        res.status(200).json({ message: 'Tags updated successfully' });
+    } catch (error) {
+        console.error('Error updating tags:', error);
+        res.status(500).json({ error: 'An error occurred while updating the tags.' });
+    }
+});
+
+
 module.exports = router;
