@@ -13,6 +13,11 @@ function EditTagsModal({ wallpaper, onClose, onSave }) {
         <div className={styles.modalOverlay}>
             <div className={styles.modalContent}>
                 <h2>Edit Tags</h2>
+                <img
+                    src={`data:${wallpaper.thumbnailContentType};base64,${wallpaper.thumbnailData}`}
+                    alt={wallpaper.name}
+                    className={styles.image}
+                />
                 <textarea
                     value={tags}
                     onChange={(e) => setTags(e.target.value)}
