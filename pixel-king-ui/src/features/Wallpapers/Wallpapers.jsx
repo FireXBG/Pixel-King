@@ -23,6 +23,8 @@ export default function Wallpapers() {
     }, [deviceType, currentPage, searchQuery]);
 
     const fetchWallpapers = async (type, page, tags, reset = false) => {
+        if (loading) return; // Prevent duplicate API calls
+
         setLoading(true);
         if (reset) {
             setWallpapers([]); // Clear current wallpapers if resetting
@@ -39,33 +41,44 @@ export default function Wallpapers() {
             if (tags) {
                 url += `&tags=${tags}`;
             }
-            console.log(`Fetching wallpapers for view: ${type}, page: ${page}, limit: ${imagesPerPage}, tags: ${tags}`);
+            console.log(`Requesting wallpapers for view: ${type}, page: ${page}, limit: ${imagesPerPage}, tags: ${tags}`);
             const response = await axios.get(url, {
                 cancelToken: cancelTokenSource.current.token,
             });
-            console.log(`Fetched ${type} wallpapers:`, response.data.wallpapers);
+            console.log(`Received response: `, response.data);
             const fetchedWallpapers = response.data.wallpapers;
             setTotalPages(Math.ceil(response.data.totalCount / imagesPerPage));
             console.log(`Total pages: ${Math.ceil(response.data.totalCount / imagesPerPage)}`);
 
-            // Adding wallpapers with a fade-in animation
-            const newWallpapers = [];
+            if (reset) {
+                setWallpapers([]); // Clear current wallpapers if resetting
+            }
+
+            let timeout = 0;
+
             fetchedWallpapers.forEach((wallpaper, index) => {
                 setTimeout(() => {
-                    newWallpapers.push(wallpaper);
-                    setWallpapers(prev => [...prev, ...newWallpapers]);
-                    if (index === 0) {
+                    setWallpapers(prev => {
+                        const uniqueWallpapers = [...prev, wallpaper].filter(
+                            (value, index, self) =>
+                                index === self.findIndex((w) => w._id === value._id)
+                        );
+                        console.log('Updated wallpapers state:', uniqueWallpapers); // Log the updated state
+                        return uniqueWallpapers;
+                    });
+                    if (index === fetchedWallpapers.length - 1) {
                         setLoading(false);
                     }
-                }, index * 100); // Delay each wallpaper by 100ms
+                }, timeout);
+                timeout += 100; // Delay each wallpaper by 100ms
             });
         } catch (error) {
             if (axios.isCancel(error)) {
                 console.log('Request canceled', error.message);
             } else {
                 console.error('Error fetching wallpapers:', error);
+                setLoading(false);
             }
-            setLoading(false);
         }
     };
 
@@ -77,11 +90,14 @@ export default function Wallpapers() {
 
     function handlePageChange(page) {
         setCurrentPage(page);
+        setWallpapers([]); // Clear current wallpapers when page changes
+        fetchWallpapers(deviceType, page, searchQuery, true);
         window.scrollTo(0, 0);
     }
 
     const handleSearch = () => {
         setCurrentPage(1);
+        setWallpapers([]); // Clear current wallpapers when search query changes
         fetchWallpapers(deviceType, 1, searchQuery, true);
     };
 
@@ -124,33 +140,33 @@ export default function Wallpapers() {
                         <div className={styles.loader}></div>
                     </div>
                 )}
-                {!loading && (
-                    <>
-                        {deviceType === 'desktop' ? (
-                            <Desktop currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers} onWallpaperClick={openWallpaperDetails} />
-                        ) : (
-                            <Mobile currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers} onWallpaperClick={openWallpaperDetails} />
-                        )}
-                    </>
-                )}
+                <div className={styles.wallpapersGrid}>
+                    {deviceType === 'desktop' ? (
+                        <Desktop currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers} onWallpaperClick={openWallpaperDetails} />
+                    ) : (
+                        <Mobile currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers} onWallpaperClick={openWallpaperDetails} />
+                    )}
+                </div>
             </section>
-            <div className={styles.pagination}>
-                <button
-                    disabled={currentPage === 1}
-                    className={styles.page__btn}
-                    onClick={() => handlePageChange(currentPage - 1)}
-                >
-                    Previous
-                </button>
-                <span>{currentPage}</span>
-                <button
-                    disabled={currentPage >= totalPages}
-                    className={styles.page__btn}
-                    onClick={() => handlePageChange(currentPage + 1)}
-                >
-                    Next
-                </button>
-            </div>
+            {!loading && wallpapers.length > 0 && (
+                <div className={styles.pagination}>
+                    <button
+                        disabled={currentPage === 1}
+                        className={styles.page__btn}
+                        onClick={() => handlePageChange(currentPage - 1)}
+                    >
+                        Previous
+                    </button>
+                    <span>{currentPage}</span>
+                    <button
+                        disabled={currentPage >= totalPages}
+                        className={styles.page__btn}
+                        onClick={() => handlePageChange(currentPage + 1)}
+                    >
+                        Next
+                    </button>
+                </div>
+            )}
             {selectedWallpaper && <WallpaperDetails wallpaper={selectedWallpaper} onClose={closeWallpaperDetails} />}
         </>
     );

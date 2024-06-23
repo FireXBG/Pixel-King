@@ -15,6 +15,10 @@
 /* Loader Container */
 .loaderContainer {
     display: flex;
+    position: fixed;
+    top: 20vh;
+    left: 50%;
+    transform: translateX(-50%);
     justify-content: center;
     align-items: center;
     height: 100vh; /* Ensure loader container has full height to make loader visible */
