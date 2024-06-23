@@ -57,7 +57,7 @@ exports.getWallpapersByViewAndTags = async (view, tags, page, limit) => {
 
         const totalCount = await AdminWallpapers.countDocuments(query);
 
-        // Calculate the correct skip value for reversed pagination
+        // Calculate the correct skip value for normal pagination
         const skip = (page - 1) * limit;
 
         const wallpapers = await AdminWallpapers.find(query)

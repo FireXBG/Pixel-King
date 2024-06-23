@@ -17,7 +17,7 @@ const adminWallpapersSchema = new Schema({
         type: String,
         required: true
     }
-});
+}, { timestamps: true }); // Add timestamps
 
 const AdminWallpapers = model('AdminWallpapers', adminWallpapersSchema);
 
