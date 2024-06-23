@@ -55,11 +55,15 @@ exports.getWallpapersByViewAndTags = async (view, tags, page, limit) => {
             query.tags = { $in: tags };
         }
 
-        const wallpapers = await AdminWallpapers.find(query)
-            .skip((page - 1) * limit)
-            .limit(limit);
-
         const totalCount = await AdminWallpapers.countDocuments(query);
+
+        // Calculate the correct skip value for reversed pagination
+        const skip = (page - 1) * limit;
+
+        const wallpapers = await AdminWallpapers.find(query)
+            .sort({ createdAt: -1 }) // Sort by creation date in descending order
+            .skip(skip)
+            .limit(limit);
 
         const wallpapersWithThumbnails = await Promise.all(wallpapers.map(async (wallpaper) => {
             const thumbnailData = await getFile(wallpaper.thumbnailID); // Fetch only thumbnail content and metadata

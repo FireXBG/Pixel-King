@@ -54,24 +54,8 @@ export default function Wallpapers() {
                 setWallpapers([]); // Clear current wallpapers if resetting
             }
 
-            let timeout = 0;
-
-            fetchedWallpapers.forEach((wallpaper, index) => {
-                setTimeout(() => {
-                    setWallpapers(prev => {
-                        const uniqueWallpapers = [...prev, wallpaper].filter(
-                            (value, index, self) =>
-                                index === self.findIndex((w) => w._id === value._id)
-                        );
-                        console.log('Updated wallpapers state:', uniqueWallpapers); // Log the updated state
-                        return uniqueWallpapers;
-                    });
-                    if (index === fetchedWallpapers.length - 1) {
-                        setLoading(false);
-                    }
-                }, timeout);
-                timeout += 100; // Delay each wallpaper by 100ms
-            });
+            setWallpapers(fetchedWallpapers);
+            setLoading(false);
         } catch (error) {
             if (axios.isCancel(error)) {
                 console.log('Request canceled', error.message);

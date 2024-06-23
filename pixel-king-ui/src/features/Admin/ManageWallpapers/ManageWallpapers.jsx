@@ -10,18 +10,22 @@ function ManageWallpapers() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [filter, setFilter] = useState('desktop'); // Set default filter to 'desktop'
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const imagesPerPage = 20;
 
     useEffect(() => {
         fetchWallpapers();
-    }, [filter]);
+    }, [filter, currentPage]);
 
     const fetchWallpapers = async () => {
         setLoading(true);
         try {
-            const url = `http://localhost:3001/admin/wallpapers?view=${filter}`;
+            const url = `http://localhost:3001/admin/wallpapers?view=${filter}&page=${currentPage}&limit=${imagesPerPage}`;
             const response = await axios.get(url);
             const wallpapers = response.data.wallpapers || [];
             setWallpapers(wallpapers);
+            setTotalPages(Math.ceil(response.data.totalCount / imagesPerPage));
         } catch (error) {
             console.error('Error fetching wallpapers:', error);
             setError('Failed to fetch wallpapers. Please try again later.');
@@ -53,6 +57,11 @@ function ManageWallpapers() {
 
     const handleFilterChange = (e) => {
         setFilter(e.target.value);
+        setCurrentPage(1); // Reset to first page on filter change
+    };
+
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
     };
 
     return (
@@ -93,6 +102,26 @@ function ManageWallpapers() {
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {!loading && wallpapers.length > 0 && (
+                <div className={styles.pagination}>
+                    <button
+                        disabled={currentPage === 1}
+                        className={styles.page__btn}
+                        onClick={() => handlePageChange(currentPage - 1)}
+                    >
+                        Previous
+                    </button>
+                    <span>{currentPage}</span>
+                    <button
+                        disabled={currentPage >= totalPages}
+                        className={styles.page__btn}
+                        onClick={() => handlePageChange(currentPage + 1)}
+                    >
+                        Next
+                    </button>
                 </div>
             )}
         </div>
