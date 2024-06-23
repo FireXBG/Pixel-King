@@ -1,8 +1,8 @@
-/* HTML: <div class="loader"></div> */
+/* Loader */
 .loader {
     width: 50px;
     aspect-ratio: 1;
-    --_c:no-repeat radial-gradient(farthest-side, #8a4cf0 92%,#0000);
+    --_c: no-repeat radial-gradient(farthest-side, #8a4cf0 92%, #0000);
     background:
             var(--_c) top,
             var(--_c) left,
@@ -11,7 +11,10 @@
     background-size: 12px 12px;
     animation: l7 1s infinite;
 }
-@keyframes l7 {to{transform: rotate(.5turn)}}
+
+@keyframes l7 {
+    to { transform: rotate(.5turn); }
+}
 
 /* Loader Container */
 .loaderContainer {
@@ -25,14 +28,23 @@
     height: 100vh; /* Ensure loader container has full height to make loader visible */
 }
 
-/* Fade-in Animation for Wallpapers */
+/* Fade-in and Fade-out Animations for Wallpapers */
 @keyframes fadeIn {
     0% { opacity: 0; transform: translateY(20px); }
     100% { opacity: 1; transform: translateY(0); }
 }
 
-.wallpaperItem {
+@keyframes fadeOut {
+    0% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(20px); }
+}
+
+.fade-in {
     animation: fadeIn 0.5s ease-in-out;
+}
+
+.fade-out {
+    animation: fadeOut 0.5s ease-in-out;
 }
 
 /* Existing styles */

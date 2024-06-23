@@ -15,6 +15,7 @@ export default function Wallpapers() {
     const [totalPages, setTotalPages] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedWallpaper, setSelectedWallpaper] = useState(null);
+    const [fadeClass, setFadeClass] = useState('fade-in'); // Add state for fade effect
     const imagesPerPage = 20;
     const cancelTokenSource = useRef(null);
 
@@ -54,8 +55,13 @@ export default function Wallpapers() {
                 setWallpapers([]); // Clear current wallpapers if resetting
             }
 
-            setWallpapers(fetchedWallpapers);
-            setLoading(false);
+            setFadeClass('fade-out'); // Trigger fade-out effect
+
+            setTimeout(() => {
+                setWallpapers(fetchedWallpapers);
+                setFadeClass('fade-in'); // Trigger fade-in effect after wallpapers are fetched
+                setLoading(false);
+            }, 500); // Match the duration of fade-out animation
         } catch (error) {
             if (axios.isCancel(error)) {
                 console.log('Request canceled', error.message);
@@ -124,7 +130,7 @@ export default function Wallpapers() {
                         <div className={styles.loader}></div>
                     </div>
                 )}
-                <div className={styles.wallpapersGrid}>
+                <div className={`${styles.wallpapersGrid} ${styles[fadeClass]}`}>
                     {deviceType === 'desktop' ? (
                         <Desktop currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers} onWallpaperClick={openWallpaperDetails} />
                     ) : (
