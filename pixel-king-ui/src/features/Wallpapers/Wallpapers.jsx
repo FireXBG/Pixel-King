@@ -15,15 +15,15 @@ export default function Wallpapers() {
     const [totalPages, setTotalPages] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedWallpaper, setSelectedWallpaper] = useState(null);
-    const [fadeClass, setFadeClass] = useState('fade-in'); // Add state for fade effect
+    const [fadeClass, setFadeClass] = useState(''); // Start with no fade class
     const imagesPerPage = 20;
     const cancelTokenSource = useRef(null);
 
     useEffect(() => {
-        fetchWallpapers(deviceType, currentPage, searchQuery, true);
+        fetchWallpapers(deviceType, currentPage, searchQuery, true, true);
     }, [deviceType, currentPage, searchQuery]);
 
-    const fetchWallpapers = async (type, page, tags, reset = false) => {
+    const fetchWallpapers = async (type, page, tags, reset = false, initialFetch = false) => {
         if (loading) return; // Prevent duplicate API calls
 
         setLoading(true);
@@ -55,13 +55,21 @@ export default function Wallpapers() {
                 setWallpapers([]); // Clear current wallpapers if resetting
             }
 
-            setFadeClass('fade-out'); // Trigger fade-out effect
-
-            setTimeout(() => {
+            if (initialFetch) {
+                // Immediate fade-in for the first fetch
                 setWallpapers(fetchedWallpapers);
-                setFadeClass('fade-in'); // Trigger fade-in effect after wallpapers are fetched
+                setFadeClass('fade-in');
                 setLoading(false);
-            }, 500); // Match the duration of fade-out animation
+            } else {
+                // Delay for fade-out and then fade-in
+                setFadeClass('fade-out'); // Trigger fade-out effect
+
+                setTimeout(() => {
+                    setWallpapers(fetchedWallpapers);
+                    setFadeClass('fade-in'); // Trigger fade-in effect after wallpapers are fetched
+                    setLoading(false);
+                }, 500); // Match the duration of fade-out animation
+            }
         } catch (error) {
             if (axios.isCancel(error)) {
                 console.log('Request canceled', error.message);
@@ -75,14 +83,17 @@ export default function Wallpapers() {
     function setDeviceTypeHandler(type) {
         setDeviceType(type);
         setCurrentPage(1);
-        fetchWallpapers(type, 1, searchQuery, true); // Ensure fetch on device type change
+        handlePageChange(1); // Ensure fetch on device type change
     }
 
     function handlePageChange(page) {
-        setCurrentPage(page);
-        setWallpapers([]); // Clear current wallpapers when page changes
-        fetchWallpapers(deviceType, page, searchQuery, true);
-        window.scrollTo(0, 0);
+        setFadeClass('fade-out'); // Trigger fade-out effect
+        setTimeout(() => {
+            setCurrentPage(page);
+            setWallpapers([]); // Clear current wallpapers when page changes
+            fetchWallpapers(deviceType, page, searchQuery, true);
+            window.scrollTo(0, 0);
+        }, 500); // Match the duration of fade-out animation
     }
 
     const handleSearch = () => {
