@@ -80,21 +80,24 @@ export default function Wallpapers() {
         }
     };
 
-    function setDeviceTypeHandler(type) {
-        setDeviceType(type);
-        setCurrentPage(1);
-        handlePageChange(1); // Ensure fetch on device type change
-    }
+    const setDeviceTypeHandler = (type) => {
+        setFadeClass('fade-out'); // Trigger fade-out effect
+        setTimeout(() => {
+            setDeviceType(type);
+            setCurrentPage(1);
+            fetchWallpapers(type, 1, searchQuery, true, true);
+            window.scrollTo(0, 0);
+        }, 500); // Match the duration of fade-out animation
+    };
 
-    function handlePageChange(page) {
+    const handlePageChange = (page) => {
         setFadeClass('fade-out'); // Trigger fade-out effect
         setTimeout(() => {
             setCurrentPage(page);
-            setWallpapers([]); // Clear current wallpapers when page changes
             fetchWallpapers(deviceType, page, searchQuery, true);
             window.scrollTo(0, 0);
         }, 500); // Match the duration of fade-out animation
-    }
+    };
 
     const handleSearch = () => {
         setCurrentPage(1);
