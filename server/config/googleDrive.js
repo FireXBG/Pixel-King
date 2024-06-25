@@ -3,7 +3,6 @@ const path = require('path');
 const { google } = require('googleapis');
 const { authenticate } = require('@google-cloud/local-auth');
 const sharp = require('sharp');
-const { Readable } = require('stream');
 const { v4: uuidv4 } = require('uuid'); // Add this to generate unique IDs
 
 const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
@@ -165,16 +164,32 @@ async function deleteFile(fileId) {
     console.log(`Deleted file ID: ${fileId}`);
 }
 
-async function resizeImage(imageBuffer, resolution) {
+async function resizeImage(imageBuffer, aspectRatio) {
     try {
-        const [width, height] = resolution.split('x').map(Number);
+        const [widthRatio, heightRatio] = aspectRatio.split(':').map(Number);
+
+        if (isNaN(widthRatio) || isNaN(heightRatio) || widthRatio <= 0 || heightRatio <= 0) {
+            throw new Error('Invalid aspect ratio provided');
+        }
+
+        // Calculate width and height based on the aspect ratio
+        let width, height;
+        if (widthRatio > heightRatio) {
+            width = 720; // or whatever value you want for the width
+            height = Math.round(width / (widthRatio / heightRatio));
+        } else {
+            height = 1280; // or whatever value you want for the height
+            width = Math.round(height * (widthRatio / heightRatio));
+        }
+
         const resizedImageBuffer = await sharp(imageBuffer)
-            .resize(width, height)
+            .resize(width, height, { fit: 'cover' }) // You can change 'cover' to 'contain' as per your requirement
             .toBuffer();
+
         return resizedImageBuffer;
     } catch (error) {
-        console.error('Error resizing image:', error);
-        throw new Error('Failed to resize image');
+        console.error('Error resizing image using Sharp:', error);
+        throw new Error('Error resizing image using Sharp');
     }
 }
 

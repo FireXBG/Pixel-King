@@ -174,8 +174,8 @@ router.post('/download', async (req, res) => {
             return res.status(404).json({ error: 'File content not found' });
         }
 
-        // Resize the image using the imported resizeImage function
-        const resizedImageBuffer = await resizeImage(fileContent.data, resolution);
+        // Ensure resolution matches the mobile aspect ratio
+        const resizedImageBuffer = await resizeImage(fileContent.data, '9:16'); // Adjust aspect ratio as needed
 
         res.status(200).json({
             base64Image: resizedImageBuffer.toString('base64'),
