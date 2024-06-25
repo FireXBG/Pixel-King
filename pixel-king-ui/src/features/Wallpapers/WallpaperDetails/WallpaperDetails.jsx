@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styles from './WallpaperDetails.module.css';
+import axios from 'axios';
 
 const resolutions = {
     desktop: [
@@ -19,6 +20,7 @@ const resolutions = {
 
 function WallpaperDetails({ wallpaper, onClose }) {
     const [isClosing, setIsClosing] = useState(false);
+    const [downloading, setDownloading] = useState(null);
 
     const handleClose = () => {
         setIsClosing(true);
@@ -26,6 +28,27 @@ function WallpaperDetails({ wallpaper, onClose }) {
             onClose();
             setIsClosing(false);
         }, 300); // Match the animation duration
+    };
+
+    const handleDownload = async (resolution, label) => {
+        setDownloading(label);
+        try {
+            const response = await axios.post('http://localhost:3001/admin/download', {
+                wallpaperId: wallpaper._id,
+                resolution: resolution.replace(' x ', 'x'),
+            });
+
+            const { base64Image, mimeType } = response.data;
+            const link = document.createElement('a');
+            link.href = `data:${mimeType};base64,${base64Image}`;
+            link.download = `${wallpaper._id}_${resolution}.jpg`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error) {
+            console.error('Error downloading wallpaper:', error);
+        }
+        setDownloading(null);
     };
 
     const { _id, thumbnailData, thumbnailContentType, tags, view } = wallpaper;
@@ -47,8 +70,12 @@ function WallpaperDetails({ wallpaper, onClose }) {
                         <ul>
                             {resolutions[view].map((res) => (
                                 <li key={res.label}>
-                                    <button className={styles.downloadButton}>
-                                        {res.label} ({res.resolution})
+                                    <button
+                                        className={styles.downloadButton}
+                                        onClick={() => handleDownload(res.resolution, res.label)}
+                                        disabled={downloading !== null}
+                                    >
+                                        {downloading === res.label ? 'Downloading...' : `${res.label} (${res.resolution})`}
                                     </button>
                                 </li>
                             ))}

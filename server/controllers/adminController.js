@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const adminServices = require('../services/adminServices');
-const { getFile } = require('../config/googleDrive');
+const { getFile, resizeImage } = require('../config/googleDrive');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const sharp = require('sharp');
 const { getIO } = require('../config/socket'); // Correctly import io instance
 
 const tempDir = path.join(__dirname, 'temp');
@@ -64,7 +65,6 @@ router.get('/wallpapers', async (req, res) => {
         res.status(500).json({ error: 'An error occurred while fetching wallpapers.' });
     }
 });
-
 
 router.get('/wallpapers/:id', async (req, res) => {
     const fileId = req.params.id;
@@ -159,5 +159,32 @@ router.put('/wallpapers/:id', async (req, res) => {
     }
 });
 
+router.post('/download', async (req, res) => {
+    const { wallpaperId, resolution } = req.body;
+    try {
+        const wallpaper = await adminServices.getWallpaperById(wallpaperId);
+        if (!wallpaper) {
+            console.log('Wallpaper not found');
+            return res.status(404).json({ error: 'Wallpaper not found' });
+        }
+
+        const fileContent = await getFile(wallpaper.driveID);
+        if (!fileContent) {
+            console.log('File content not found');
+            return res.status(404).json({ error: 'File content not found' });
+        }
+
+        // Resize the image using the imported resizeImage function
+        const resizedImageBuffer = await resizeImage(fileContent.data, resolution);
+
+        res.status(200).json({
+            base64Image: resizedImageBuffer.toString('base64'),
+            mimeType: fileContent.mimeType,
+        });
+    } catch (error) {
+        console.error('Error downloading wallpaper:', error);
+        res.status(500).json({ error: 'Failed to download wallpaper' });
+    }
+});
 
 module.exports = router;

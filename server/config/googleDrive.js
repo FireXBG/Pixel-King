@@ -165,10 +165,24 @@ async function deleteFile(fileId) {
     console.log(`Deleted file ID: ${fileId}`);
 }
 
+async function resizeImage(imageBuffer, resolution) {
+    try {
+        const [width, height] = resolution.split('x').map(Number);
+        const resizedImageBuffer = await sharp(imageBuffer)
+            .resize(width, height)
+            .toBuffer();
+        return resizedImageBuffer;
+    } catch (error) {
+        console.error('Error resizing image:', error);
+        throw new Error('Failed to resize image');
+    }
+}
+
 module.exports = {
     initializeDrive,
     uploadFile,
     createAndUploadThumbnail,
     getFile,
     deleteFile,
+    resizeImage
 };
