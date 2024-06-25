@@ -75,7 +75,7 @@ function WallpaperDetails({ wallpaper, onClose }) {
                                         onClick={() => handleDownload(res.resolution, res.label)}
                                         disabled={downloading !== null}
                                     >
-                                        {downloading === res.label ? 'Downloading...' : `${res.label} (${res.resolution})`}
+                                        {downloading === res.label ? 'Preparing your wallpaper...' : `${res.label} (${res.resolution})`}
                                     </button>
                                 </li>
                             ))}
