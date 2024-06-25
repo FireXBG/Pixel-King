@@ -160,7 +160,7 @@ router.put('/wallpapers/:id', async (req, res) => {
 });
 
 router.post('/download', async (req, res) => {
-    const { wallpaperId, resolution } = req.body;
+    const { wallpaperId, resolution, aspectRatio } = req.body;
     try {
         const wallpaper = await adminServices.getWallpaperById(wallpaperId);
         if (!wallpaper) {
@@ -174,8 +174,11 @@ router.post('/download', async (req, res) => {
             return res.status(404).json({ error: 'File content not found' });
         }
 
-        // Ensure resolution matches the mobile aspect ratio
-        const resizedImageBuffer = await resizeImage(fileContent.data, '9:16'); // Adjust aspect ratio as needed
+        // Parse the resolution
+        const [width, height] = resolution.split('x').map(Number);
+
+        // Resize the image to the specified resolution
+        const resizedImageBuffer = await resizeImage(fileContent.data, width, height);
 
         res.status(200).json({
             base64Image: resizedImageBuffer.toString('base64'),
@@ -186,5 +189,6 @@ router.post('/download', async (req, res) => {
         res.status(500).json({ error: 'Failed to download wallpaper' });
     }
 });
+
 
 module.exports = router;

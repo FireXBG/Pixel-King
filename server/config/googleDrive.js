@@ -164,28 +164,11 @@ async function deleteFile(fileId) {
     console.log(`Deleted file ID: ${fileId}`);
 }
 
-async function resizeImage(imageBuffer, aspectRatio) {
+async function resizeImage(imageBuffer, width, height) {
     try {
-        const [widthRatio, heightRatio] = aspectRatio.split(':').map(Number);
-
-        if (isNaN(widthRatio) || isNaN(heightRatio) || widthRatio <= 0 || heightRatio <= 0) {
-            throw new Error('Invalid aspect ratio provided');
-        }
-
-        // Calculate width and height based on the aspect ratio
-        let width, height;
-        if (widthRatio > heightRatio) {
-            width = 720; // or whatever value you want for the width
-            height = Math.round(width / (widthRatio / heightRatio));
-        } else {
-            height = 1280; // or whatever value you want for the height
-            width = Math.round(height * (widthRatio / heightRatio));
-        }
-
         const resizedImageBuffer = await sharp(imageBuffer)
-            .resize(width, height, { fit: 'cover' }) // You can change 'cover' to 'contain' as per your requirement
+            .resize(width, height, { fit: 'cover' }) // Resize to the given width and height
             .toBuffer();
-
         return resizedImageBuffer;
     } catch (error) {
         console.error('Error resizing image using Sharp:', error);

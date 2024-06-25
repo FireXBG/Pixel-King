@@ -4,17 +4,18 @@ import axios from 'axios';
 
 const resolutions = {
     desktop: [
-        { label: '1080p (Full HD)', resolution: '1920x1080', aspectRatio: '16:9' },
-        { label: '1440p (Quad HD)', resolution: '2560x1440', aspectRatio: '16:9' },
-        { label: '4K (Ultra HD)', resolution: '3840x2160', aspectRatio: '16:9' },
-        { label: '5K', resolution: '5120x2880', aspectRatio: '16:9' },
-        { label: '8K (Ultra HD)', resolution: '7680x4320', aspectRatio: '16:9' },
+        { label: '1080p (Full HD)', resolution: '1920x1080' },
+        { label: '1440p (Quad HD)', resolution: '2560x1440' },
+        { label: '4K (Ultra HD)', resolution: '3840x2160' },
+        { label: '5K', resolution: '5120x2880' },
+        { label: '8K (Ultra HD)', resolution: '7680x4320' },
     ],
     mobile: [
-        { label: '720p (HD)', resolution: '1280x720', aspectRatio: '16:9' },
-        { label: '1080p (Full HD)', resolution: '1920x1080', aspectRatio: '16:9' },
-        { label: '1440p (Quad HD)', resolution: '2560x1440', aspectRatio: '16:9' },
-        { label: '4K (Ultra HD)', resolution: '3840x2160', aspectRatio: '16:9' },
+        { label: '720p (HD)', resolution: '720x1280' },
+        { label: '1080p (Full HD)', resolution: '1080x1920' },
+        { label: '1440p (Quad HD)', resolution: '1440x2560' },
+        { label: '4K (Ultra HD)', resolution: '2160x3840' },
+        { label: '8K (Ultra HD)', resolution: '4320x7680' },
     ],
 };
 
@@ -52,7 +53,7 @@ function WallpaperDetails({ wallpaper, onClose }) {
         setDownloading(null);
     };
 
-    const { _id, thumbnailData, thumbnailContentType, tags } = wallpaper;
+    const { _id, thumbnailData, thumbnailContentType, tags, view } = wallpaper;
 
     return (
         <>
@@ -69,7 +70,7 @@ function WallpaperDetails({ wallpaper, onClose }) {
                     <div className={styles.downloadOptions}>
                         <strong>Download Options:</strong>
                         <ul>
-                            {resolutions.mobile.map((res) => (
+                            {resolutions[view].map((res) => (
                                 <li key={res.label}>
                                     <button
                                         className={styles.downloadButton}

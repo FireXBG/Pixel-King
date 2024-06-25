@@ -10,11 +10,11 @@ function ManageWallpapers() {
     const [deleting, setDeleting] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [filter, setFilter] = useState('desktop'); // Set default filter to 'desktop'
+    const [filter, setFilter] = useState('desktop');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [editingWallpaper, setEditingWallpaper] = useState(null); // New state for editing wallpaper
-    const [searchQuery, setSearchQuery] = useState(''); // New state for search query
+    const [editingWallpaper, setEditingWallpaper] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
     const imagesPerPage = 20;
 
     useEffect(() => {
@@ -38,14 +38,14 @@ function ManageWallpapers() {
     };
 
     const handleUploadSuccess = () => {
-        fetchWallpapers(); // Fetch the updated list of wallpapers
+        fetchWallpapers();
     };
 
     const handleDelete = async (wallpaperId) => {
         setDeleting((prev) => ({ ...prev, [wallpaperId]: true }));
         try {
             await axios.delete(`http://localhost:3001/admin/wallpapers/${wallpaperId}`);
-            fetchWallpapers(); // Fetch the updated list of wallpapers
+            fetchWallpapers();
         } catch (error) {
             console.error('Error deleting wallpaper:', error);
             alert('Failed to delete wallpaper');
@@ -60,7 +60,7 @@ function ManageWallpapers() {
 
     const handleFilterChange = (e) => {
         setFilter(e.target.value);
-        setCurrentPage(1); // Reset to first page on filter change
+        setCurrentPage(1);
     };
 
     const handlePageChange = (page) => {
@@ -74,7 +74,7 @@ function ManageWallpapers() {
     const handleSaveTags = async (wallpaperId, newTags) => {
         try {
             await axios.put(`http://localhost:3001/admin/wallpapers/${wallpaperId}`, { tags: newTags });
-            fetchWallpapers(); // Refresh the wallpapers list after saving
+            fetchWallpapers();
         } catch (error) {
             console.error('Error saving tags:', error);
             alert('Failed to save tags');
@@ -93,7 +93,7 @@ function ManageWallpapers() {
             const response = await axios.get(url);
             const wallpapers = response.data.wallpapers || [];
             setWallpapers(wallpapers);
-            setTotalPages(1); // When searching by ID, we expect a single result
+            setTotalPages(1);
         } catch (error) {
             console.error('Error searching wallpaper by ID:', error);
             setError('Failed to search wallpaper. Please try again later.');
