@@ -1,0 +1,47 @@
+@import url("https://use.typekit.net/sxm2lxq.css");
+
+:root {
+    --linear-gradient: linear-gradient(to right, #F72585, #8A4CF0);
+}
+
+@font-face {
+    font-family: 'blackpast';
+    src: url('../public/fonts/blackpast.ttf') format('opentype');
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    letter-spacing: 1px;
+}
+
+body {
+    background-color: #090A1F;
+    font-family: "nobel";
+}
+
+code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+a {
+    text-decoration: none;
+}
+
+.admin__button {
+    background-color: var(--linear-gradient);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    border: 2px solid #F72585;
+}
+
+.admin__button:hover {
+    background-color: #F72585;
+}
