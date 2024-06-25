@@ -110,3 +110,20 @@ exports.updateWallpaperTags = async (wallpaperId, newTags) => {
     }
 };
 
+exports.getWallpaperById = async (id) => {
+    try {
+        const wallpaper = await AdminWallpapers.findById(id);
+        if (!wallpaper) {
+            throw new Error('Wallpaper not found');
+        }
+        const thumbnailData = await getFile(wallpaper.thumbnailID);
+        return {
+            ...wallpaper.toObject(),
+            thumbnailData: thumbnailData.data.toString('base64'), // Base64 encoded thumbnail data
+            thumbnailContentType: thumbnailData.mimeType,
+        };
+    } catch (error) {
+        console.error('Error fetching wallpaper by ID:', error);
+        throw new Error('An error occurred while fetching the wallpaper');
+    }
+};

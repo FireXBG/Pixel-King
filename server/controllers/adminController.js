@@ -43,10 +43,19 @@ router.get('/wallpapers', async (req, res) => {
     const tags = req.query.tags ? req.query.tags.split(' ') : []; // Get tags from query, split by space
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
+    const id = req.query.id;
 
     console.log(`Fetching wallpapers for view: ${view}, page: ${page}, limit: ${limit}, tags: ${tags}`);
 
     try {
+        if (id) {
+            const wallpaper = await adminServices.getWallpaperById(id);
+            if (!wallpaper) {
+                return res.status(404).json({ error: 'Wallpaper not found' });
+            }
+            return res.status(200).json({ wallpapers: [wallpaper], totalCount: 1 });
+        }
+
         const { wallpapers, totalCount } = await adminServices.getWallpapersByViewAndTags(view, tags, page, limit);
         console.log(`Fetched ${view} wallpapers:`, wallpapers.length);
         res.status(200).json({ wallpapers, totalCount });
@@ -55,6 +64,7 @@ router.get('/wallpapers', async (req, res) => {
         res.status(500).json({ error: 'An error occurred while fetching wallpapers.' });
     }
 });
+
 
 router.get('/wallpapers/:id', async (req, res) => {
     const fileId = req.params.id;

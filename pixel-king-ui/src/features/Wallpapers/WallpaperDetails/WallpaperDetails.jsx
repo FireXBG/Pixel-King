@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import styles from './WallpaperDetails.module.css';
 
 const resolutions = {
@@ -28,7 +28,7 @@ function WallpaperDetails({ wallpaper, onClose }) {
         }, 300); // Match the animation duration
     };
 
-    const { thumbnailData, thumbnailContentType, tags, view } = wallpaper;
+    const { _id, thumbnailData, thumbnailContentType, tags, view } = wallpaper;
 
     return (
         <>
@@ -54,6 +54,9 @@ function WallpaperDetails({ wallpaper, onClose }) {
                             ))}
                         </ul>
                     </div>
+                </div>
+                <div className={styles.wallpaperId}>
+                    <strong>ID: </strong>{_id}
                 </div>
             </div>
         </>

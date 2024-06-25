@@ -14,6 +14,7 @@ function ManageWallpapers() {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [editingWallpaper, setEditingWallpaper] = useState(null); // New state for editing wallpaper
+    const [searchQuery, setSearchQuery] = useState(''); // New state for search query
     const imagesPerPage = 20;
 
     useEffect(() => {
@@ -80,6 +81,27 @@ function ManageWallpapers() {
         }
     };
 
+    const handleSearch = async () => {
+        if (!searchQuery) {
+            fetchWallpapers();
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const url = `http://localhost:3001/admin/wallpapers?view=${filter}&id=${searchQuery}`;
+            const response = await axios.get(url);
+            const wallpapers = response.data.wallpapers || [];
+            setWallpapers(wallpapers);
+            setTotalPages(1); // When searching by ID, we expect a single result
+        } catch (error) {
+            console.error('Error searching wallpaper by ID:', error);
+            setError('Failed to search wallpaper. Please try again later.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className={styles.manageWallpapersContainer}>
             <button className='admin__button' onClick={toggleUploadMenu}>Upload Wallpapers</button>
@@ -91,6 +113,14 @@ function ManageWallpapers() {
                     <option value="desktop">Desktop</option>
                     <option value="mobile">Mobile</option>
                 </select>
+                <input
+                    type="text"
+                    className={styles.search}
+                    placeholder="Search by ID"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <button className={styles.submit__button} onClick={handleSearch}>Search</button>
             </div>
 
             {error && <div className={styles.errorMessage}>{error}</div>}

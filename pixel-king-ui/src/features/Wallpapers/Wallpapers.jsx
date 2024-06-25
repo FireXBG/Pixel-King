@@ -104,6 +104,7 @@ export default function Wallpapers() {
 
     const openWallpaperDetails = (wallpaper) => {
         setSelectedWallpaper(wallpaper);
+        console.log(`Selected wallpaper ID: ${wallpaper._id}`);
     };
 
     const closeWallpaperDetails = () => {

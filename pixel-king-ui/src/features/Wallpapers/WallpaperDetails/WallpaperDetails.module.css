@@ -146,3 +146,9 @@
     background: linear-gradient(to right, #e32078, #6118d7);
     transform: scale(1.05);
 }
+
+.wallpaperId {
+    margin-top: 1vw;
+    font-size: 0.6vw;
+    color: rgba(138, 76, 240, 0.35);
+}
