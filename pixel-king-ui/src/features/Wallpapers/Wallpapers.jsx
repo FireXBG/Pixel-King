@@ -81,6 +81,7 @@ export default function Wallpapers() {
     };
 
     const setDeviceTypeHandler = (type) => {
+        if (loading) return; // Prevent switching views while loading
         setFadeClass('fade-out'); // Trigger fade-out effect
         setTimeout(() => {
             setDeviceType(type);
@@ -128,12 +129,14 @@ export default function Wallpapers() {
                     <button
                         onClick={() => setDeviceTypeHandler('mobile')}
                         className={`${styles.device__type__btn} ${styles.mobile__btn}`}
+                        disabled={loading} // Disable button while loading
                     >
                         <img className={styles.mobile__btn__img} src={phoneIcon} alt='mobile button' />
                     </button>
                     <button
                         onClick={() => setDeviceTypeHandler('desktop')}
                         className={`${styles.device__type__btn} ${styles.desktop__btn}`}
+                        disabled={loading} // Disable button while loading
                     >
                         <img className={styles.desktop__btn__img} src={desktopIcon} alt='desktop button' />
                     </button>
