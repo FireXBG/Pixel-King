@@ -342,4 +342,17 @@
         height: 10vw;
         border-width: 0.3vw;
     }
+
+    .pagination {
+        margin-top: 5vw;
+        gap: 7vw;
+    }
+
+    .page__btn {
+        width: 30vw;
+        height: 10vw;
+        font-size: 3.5vw;
+        border-width: 0.4vw;
+        border-radius: 100vw;
+    }
 }
