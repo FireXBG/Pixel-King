@@ -24,7 +24,7 @@ function ManageWallpapers() {
     const fetchWallpapers = async () => {
         setLoading(true);
         try {
-            const url = `http://localhost:3001/admin/wallpapers?view=${filter}&page=${currentPage}&limit=${imagesPerPage}`;
+            const url = `${process.env.REACT_APP_BACKEND_URL}/admin/wallpapers?view=${filter}&page=${currentPage}&limit=${imagesPerPage}`;
             const response = await axios.get(url);
             const wallpapers = response.data.wallpapers || [];
             setWallpapers(wallpapers);
@@ -44,7 +44,7 @@ function ManageWallpapers() {
     const handleDelete = async (wallpaperId) => {
         setDeleting((prev) => ({ ...prev, [wallpaperId]: true }));
         try {
-            await axios.delete(`http://localhost:3001/admin/wallpapers/${wallpaperId}`);
+            await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/admin/wallpapers/${wallpaperId}`);
             fetchWallpapers();
         } catch (error) {
             console.error('Error deleting wallpaper:', error);
@@ -73,7 +73,7 @@ function ManageWallpapers() {
 
     const handleSaveTags = async (wallpaperId, newTags) => {
         try {
-            await axios.put(`http://localhost:3001/admin/wallpapers/${wallpaperId}`, { tags: newTags });
+            await axios.put(`${process.env.REACT_APP_BACKEND_URL}/admin/wallpapers/${wallpaperId}`, { tags: newTags });
             fetchWallpapers();
         } catch (error) {
             console.error('Error saving tags:', error);
@@ -89,7 +89,7 @@ function ManageWallpapers() {
 
         setLoading(true);
         try {
-            const url = `http://localhost:3001/admin/wallpapers?view=${filter}&id=${searchQuery}`;
+            const url = `${process.env.REACT_APP_BACKEND_URL}/admin/wallpapers?view=${filter}&id=${searchQuery}`;
             const response = await axios.get(url);
             const wallpapers = response.data.wallpapers || [];
             setWallpapers(wallpapers);

@@ -24,11 +24,11 @@ export default function Wallpapers() {
     }, [deviceType, currentPage, searchQuery]);
 
     const fetchWallpapers = async (type, page, tags, reset = false, initialFetch = false) => {
-        if (loading) return; // Prevent duplicate API calls
+        if (loading) return;
 
         setLoading(true);
         if (reset) {
-            setWallpapers([]); // Clear current wallpapers if resetting
+            setWallpapers([]);
         }
 
         if (cancelTokenSource.current) {
@@ -38,7 +38,8 @@ export default function Wallpapers() {
         cancelTokenSource.current = axios.CancelToken.source();
 
         try {
-            let url = `http://localhost:3001/admin/wallpapers?view=${type}&page=${page}&limit=${imagesPerPage}`;
+            let url = `${process.env.REACT_APP_BACKEND_URL}/admin/wallpapers?view=${type}&page=${page}&limit=${imagesPerPage}`;
+            console.log(process.env.REACT_APP_BACKEND_URL)
             if (tags) {
                 url += `&tags=${tags}`;
             }
@@ -52,23 +53,21 @@ export default function Wallpapers() {
             console.log(`Total pages: ${Math.ceil(response.data.totalCount / imagesPerPage)}`);
 
             if (reset) {
-                setWallpapers([]); // Clear current wallpapers if resetting
+                setWallpapers([]);
             }
 
             if (initialFetch) {
-                // Immediate fade-in for the first fetch
                 setWallpapers(fetchedWallpapers);
                 setFadeClass('fade-in');
                 setLoading(false);
             } else {
-                // Delay for fade-out and then fade-in
-                setFadeClass('fade-out'); // Trigger fade-out effect
+                setFadeClass('fade-out');
 
                 setTimeout(() => {
                     setWallpapers(fetchedWallpapers);
-                    setFadeClass('fade-in'); // Trigger fade-in effect after wallpapers are fetched
+                    setFadeClass('fade-in');
                     setLoading(false);
-                }, 500); // Match the duration of fade-out animation
+                }, 500);
             }
         } catch (error) {
             if (axios.isCancel(error)) {
@@ -81,23 +80,23 @@ export default function Wallpapers() {
     };
 
     const setDeviceTypeHandler = (type) => {
-        if (loading) return; // Prevent switching views while loading
-        setFadeClass('fade-out'); // Trigger fade-out effect
+        if (loading) return;
+        setFadeClass('fade-out');
         setTimeout(() => {
             setDeviceType(type);
             setCurrentPage(1);
             fetchWallpapers(type, 1, searchQuery, true, true);
             window.scrollTo(0, 0);
-        }, 500); // Match the duration of fade-out animation
+        }, 500);
     };
 
     const handlePageChange = (page) => {
-        setFadeClass('fade-out'); // Trigger fade-out effect
+        setFadeClass('fade-out');
         setTimeout(() => {
             setCurrentPage(page);
             fetchWallpapers(deviceType, page, searchQuery, true);
             window.scrollTo(0, 0);
-        }, 500); // Match the duration of fade-out animation
+        }, 500);
     };
 
     const handleSearch = () => {
