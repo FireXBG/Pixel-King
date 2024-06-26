@@ -152,3 +152,48 @@
     font-size: 0.6vw;
     color: rgba(138, 76, 240, 0.35);
 }
+
+@media screen and (max-width: 768px) {
+    .wallpaperDetails {
+        max-width: 90vw;
+        padding: 5vw;
+        border-radius:5vw;
+    }
+
+    .wallpaperPreview img {
+        max-height: 37vh;
+        border-radius: 3vw;
+    }
+
+    .wallpaperInfo {
+        margin-top: 3vw;
+    }
+
+    .tags {
+        font-size: 1rem;
+    }
+
+    .downloadOptions strong {
+        font-size: 1.3rem;
+    }
+
+    .downloadOptions ul {
+        margin-top: 1vw;
+    }
+
+    .downloadButton {
+        padding: 2vw 4vw;
+        font-size: 3vw;
+        border-radius: 100vw;
+    }
+
+    .wallpaperId {
+        font-size: 2vw;
+    }
+
+    .closeButton {
+        top: 2vw;
+        right: 5vw;
+        font-size: 10vw;
+    }
+}
