@@ -9,7 +9,7 @@ import Mobile from './Mobile/Mobile';
 import WallpaperDetails from './WallpaperDetails/WallpaperDetails';
 
 export default function Wallpapers() {
-    const [deviceType, setDeviceType] = useState('desktop');
+    const [deviceType, setDeviceType] = useState(window.innerWidth < 768 ? 'mobile' : 'desktop');
     const [currentPage, setCurrentPage] = useState(1);
     const [wallpapers, setWallpapers] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -23,6 +23,21 @@ export default function Wallpapers() {
     useEffect(() => {
         fetchWallpapers(deviceType, currentPage, searchQuery, true, true);
     }, [deviceType, currentPage, searchQuery]);
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth < 768 && deviceType !== 'mobile') {
+                setDeviceType('mobile');
+            } else if (window.innerWidth >= 768 && deviceType !== 'desktop') {
+                setDeviceType('desktop');
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, [deviceType]);
 
     const fetchWallpapers = async (type, page, tags, reset = false, initialFetch = false) => {
         if (loading) return;
