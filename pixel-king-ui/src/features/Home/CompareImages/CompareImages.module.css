@@ -1,0 +1,65 @@
+.compare__main__container {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    padding: 5vw;
+    justify-content: space-between;
+    margin: 0; /* Ensure there is no margin creating gaps */
+}
+
+.compare__image__container {
+    width: 100%;
+    max-width: 40vw;
+}
+
+.compare__heading {
+    background: linear-gradient(to right, #F72585, #8A4CF0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 3vw;
+    font-weight: 800;
+    margin: 0; /* Ensure there is no margin creating gaps */
+}
+
+.compare__paragraph {
+    font-size: 1.5vw;
+    font-weight: 200;
+    color: white;
+    max-width: 30vw;
+    margin: 0; /* Ensure there is no margin creating gaps */
+}
+
+.details__container {
+    display: flex;
+    flex-direction: column;
+    gap: 2vw;
+}
+
+.shadow1, .shadow2, .shadow3 {
+    position: absolute;
+    width: 50vw;
+    height: 50vw;
+    z-index: -1;
+    filter: blur(30vw) opacity(0.1);
+    margin: 0; /* Ensure there is no margin creating gaps */
+    padding: 0; /* Ensure there is no padding creating gaps */
+}
+
+.shadow1 {
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #F72585;
+}
+
+.shadow2 {
+    top: 0;
+    left: 0;
+    background-color: #7925f7;
+}
+
+.shadow3 {
+    top: 10vw;
+    right: 0;
+    background-color: #2536f7;
+}
