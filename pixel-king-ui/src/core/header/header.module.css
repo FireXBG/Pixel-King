@@ -66,16 +66,19 @@
 }
 
 .burger {
+    position: absolute;
     display: none;
     flex-direction: column;
     cursor: pointer;
     z-index: 201;
+    right: 4vw;
+    top: -1vw;
 }
 
 .burger div {
     width: 8vw;
     height: 0.5vw;
-    background-color: #CBCBCB;
+    background: linear-gradient(to right, #8A4CF0, #F72585);
     margin: 0.8vw;
     transition: all 0.3s ease;
 }
@@ -102,9 +105,10 @@
 
 .close {
     position: absolute;
-    top: 4vw;
+    top: 0;
     right: 4vw;
-    font-size: 15vw;
+    font-size: 20vw;
+    font-weight: 200;
     cursor: pointer;
     color: #F72585;
     z-index: 202;
@@ -137,6 +141,22 @@
 }
 
 @media screen and (max-width: 768px) {
+    .header__logo_container {
+        gap: 2vw;
+        padding-top: 5vw;
+    }
+
+    .header_logo_text {
+        font-size: 6vw;
+        padding-left: 1.5vw;
+        padding-top: 1.3vw;
+        padding-bottom: 1vw;
+    }
+
+    .header__logo {
+        width: 6vw;
+    }
+
     .mobile_nav {
         display: flex;
     }
