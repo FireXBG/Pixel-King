@@ -3,6 +3,7 @@ import axios from 'axios';
 import styles from './Wallpapers.module.css';
 import phoneIcon from '../../assets/phone.svg';
 import desktopIcon from '../../assets/computer.svg';
+import searchIcon from '../../assets/search_icon.png';
 import Desktop from './Desktop/Desktop';
 import Mobile from './Mobile/Mobile';
 import WallpaperDetails from './WallpaperDetails/WallpaperDetails';
@@ -117,30 +118,36 @@ export default function Wallpapers() {
     return (
         <>
             <div className={styles.search__container}>
-                <input
-                    className={styles.search}
-                    placeholder='Example: Sci-Fi spaceships war'
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <button className={styles.submit__button} onClick={handleSearch}>Search</button>
+                <div className={styles.search__wrapper}>
+                    <input
+                        className={styles.search}
+                        placeholder="Search wallpapers..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyPress={(e) => {
+                            if (e.key === 'Enter') handleSearch();
+                        }} /* Optionally handle Enter key */
+                    />
+                    <button className={styles.search__button}><img className={styles.search__icon} src={searchIcon} alt='search button' /></button>
+                </div>
                 <div className={styles.device__type__container}>
                     <button
                         onClick={() => setDeviceTypeHandler('mobile')}
                         className={`${styles.device__type__btn} ${styles.mobile__btn}`}
                         disabled={loading} // Disable button while loading
                     >
-                        <img className={styles.mobile__btn__img} src={phoneIcon} alt='mobile button' />
+                        <img className={styles.mobile__btn__img} src={phoneIcon} alt="mobile button"/>
                     </button>
                     <button
                         onClick={() => setDeviceTypeHandler('desktop')}
                         className={`${styles.device__type__btn} ${styles.desktop__btn}`}
                         disabled={loading} // Disable button while loading
                     >
-                        <img className={styles.desktop__btn__img} src={desktopIcon} alt='desktop button' />
+                        <img className={styles.desktop__btn__img} src={desktopIcon} alt="desktop button"/>
                     </button>
                 </div>
             </div>
+
             <section className={styles.wallpapersSection}>
                 {loading && (
                     <div className={styles.loaderContainer}>
@@ -149,9 +156,11 @@ export default function Wallpapers() {
                 )}
                 <div className={`${styles.wallpapersGrid} ${styles[fadeClass]}`}>
                     {deviceType === 'desktop' ? (
-                        <Desktop currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers} onWallpaperClick={openWallpaperDetails} />
+                        <Desktop currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers}
+                                 onWallpaperClick={openWallpaperDetails}/>
                     ) : (
-                        <Mobile currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers} onWallpaperClick={openWallpaperDetails} />
+                        <Mobile currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers}
+                                onWallpaperClick={openWallpaperDetails}/>
                     )}
                 </div>
             </section>
@@ -174,7 +183,7 @@ export default function Wallpapers() {
                     </button>
                 </div>
             )}
-            {selectedWallpaper && <WallpaperDetails wallpaper={selectedWallpaper} onClose={closeWallpaperDetails} />}
+            {selectedWallpaper && <WallpaperDetails wallpaper={selectedWallpaper} onClose={closeWallpaperDetails}/>}
         </>
     );
 }
