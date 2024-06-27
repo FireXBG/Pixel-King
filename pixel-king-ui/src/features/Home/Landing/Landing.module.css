@@ -10,18 +10,6 @@
     rotate: 30deg;
 }
 
-/*.landing__shadow__2 {*/
-/*    position: absolute;*/
-/*    width: 50vw;*/
-/*    height: 80vh;*/
-/*    bottom: -10vh;*/
-/*    right: 0;*/
-/*    background: var(--linear-gradient);*/
-/*    z-index: 0;*/
-/*    filter: blur(400px) opacity(0.1);*/
-/*    overflow: hidden;*/
-/*}*/
-
 .landing__main__h1 {
     margin-top: 5vw;
     margin-left: 5vw;

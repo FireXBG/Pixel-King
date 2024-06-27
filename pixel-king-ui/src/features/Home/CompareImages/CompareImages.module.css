@@ -2,9 +2,8 @@
     position: relative;
     display: flex;
     align-items: flex-start;
-    padding: 5vw;
     justify-content: space-between;
-    margin: 0; /* Ensure there is no margin creating gaps */
+    padding: 5vw;
 }
 
 .compare__image__container {
@@ -18,7 +17,6 @@
     -webkit-text-fill-color: transparent;
     font-size: 3vw;
     font-weight: 800;
-    margin: 0; /* Ensure there is no margin creating gaps */
 }
 
 .compare__paragraph {
@@ -26,7 +24,6 @@
     font-weight: 200;
     color: white;
     max-width: 30vw;
-    margin: 0; /* Ensure there is no margin creating gaps */
 }
 
 .details__container {
@@ -35,31 +32,36 @@
     gap: 2vw;
 }
 
-.shadow1, .shadow2, .shadow3 {
-    position: absolute;
-    width: 50vw;
-    height: 50vw;
-    z-index: -1;
-    filter: blur(30vw) opacity(0.1);
-    margin: 0; /* Ensure there is no margin creating gaps */
-    padding: 0; /* Ensure there is no padding creating gaps */
-}
-
 .shadow1 {
+    position: absolute;
     top: 0;
     left: 50%;
     transform: translateX(-50%);
+    width: 50vw;
+    height: 20vw;
     background-color: #F72585;
+    z-index: -1;
+    filter: blur(30vw) opacity(0.1);
 }
 
 .shadow2 {
+    position: absolute;
     top: 0;
     left: 0;
+    width: 50vw;
+    height: 20vw;
     background-color: #7925f7;
+    z-index: -1;
+    filter: blur(30vw) opacity(0.3);
 }
 
 .shadow3 {
+    position: absolute;
     top: 10vw;
     right: 0;
+    width: 50vw;
+    height: 20vw;
     background-color: #2536f7;
+    z-index: -1;
+    filter: blur(30vw) opacity(0.1);
 }
