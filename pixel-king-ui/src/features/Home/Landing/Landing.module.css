@@ -1,6 +1,5 @@
 .landing__container {
     position: relative;
-    overflow: hidden;
 }
 
 .landing__shadow__1 {
@@ -35,6 +34,10 @@
 }
 
 @media screen and (max-width: 768px) {
+    .landing__container {
+        overflow: hidden;
+    }
+
     .landing__main__h1 {
         font-size: 18vw;
         margin-top: 20vw;
