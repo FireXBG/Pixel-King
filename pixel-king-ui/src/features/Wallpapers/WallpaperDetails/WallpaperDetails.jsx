@@ -35,7 +35,7 @@ function WallpaperDetails({ wallpaper, onClose }) {
         setDownloading(label);
         try {
             // Replace localhost:3001 with your actual backend URL
-            const response = await axios.post('http://localhost:3001/admin/download', {
+            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/admin/download`, {
                 wallpaperId: wallpaper._id,
                 resolution: resolution.resolution,
             });

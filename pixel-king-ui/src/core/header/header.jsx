@@ -1,8 +1,19 @@
+import React, { useState } from 'react';
 import logo from '../../assets/logo.png';
 import styles from './header.module.css';
 import { Link } from 'react-router-dom';
 
 export default function Header() {
+    const [menuOpen, setMenuOpen] = useState(false);
+
+    const toggleMenu = () => {
+        if (menuOpen) {
+            setMenuOpen(false);
+        } else {
+            setMenuOpen(true);
+        }
+    };
+
     return (
         <header className={styles.header}>
             <div className={styles.header__logo_container}>
@@ -18,6 +29,23 @@ export default function Header() {
                     <li><Link className={styles.header__link} to="/contact">Contact</Link></li>
                 </ul>
             </nav>
+            <div className={styles.mobile_nav}>
+                <div className={styles.burger} onClick={toggleMenu}>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+                <div className={`${styles.mobile_menu} ${menuOpen ? styles.open : ''}`}>
+                    <div className={styles.close} onClick={toggleMenu}>&times;</div>
+                    <ul className={styles.mobile_menu_list}>
+                        <li><Link className={styles.mobile_link} to="/" onClick={toggleMenu}>Home</Link></li>
+                        <li><Link className={styles.mobile_link} to="/wallpapers" onClick={toggleMenu}>Wallpapers</Link></li>
+                        <li><Link className={styles.mobile_link} to="/about" onClick={toggleMenu}>About</Link></li>
+                        <li><Link className={styles.mobile_link} to="/license" onClick={toggleMenu}>License</Link></li>
+                        <li><Link className={styles.mobile_link} to="/contact" onClick={toggleMenu}>Contact</Link></li>
+                    </ul>
+                </div>
+            </div>
         </header>
-    )
+    );
 }

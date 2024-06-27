@@ -5,7 +5,7 @@ let io;
 function initializeIO(server) {
     io = new Server(server, {
         cors: {
-            origin: "http://localhost:3000", // Adjust this to your client URL
+            origin: `${process.env.SERVER_IP}:3000`, // Adjust this to your client URL
             methods: ["GET", "POST"]
         }
     });

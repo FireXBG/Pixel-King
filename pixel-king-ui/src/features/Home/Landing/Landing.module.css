@@ -1,3 +1,7 @@
+.landing__container {
+    position: relative;
+}
+
 .landing__shadow__1 {
     position: absolute;
     width: 50vw;
@@ -9,18 +13,6 @@
     filter: blur(150px) opacity(0.12);
     rotate: 30deg;
 }
-
-/*.landing__shadow__2 {*/
-/*    position: absolute;*/
-/*    width: 50vw;*/
-/*    height: 80vh;*/
-/*    bottom: -10vh;*/
-/*    right: 0;*/
-/*    background: var(--linear-gradient);*/
-/*    z-index: 0;*/
-/*    filter: blur(400px) opacity(0.1);*/
-/*    overflow: hidden;*/
-/*}*/
 
 .landing__main__h1 {
     margin-top: 5vw;
@@ -39,4 +31,30 @@
     width: 50vw;
     top: 5vw;
     right: 0;
+}
+
+@media screen and (max-width: 768px) {
+    .landing__container {
+        overflow: hidden;
+    }
+
+    .landing__main__h1 {
+        font-size: 18vw;
+        margin-top: 20vw;
+        margin-left: 0;
+        text-align: center;
+    }
+
+    .landing_main_images {
+        /* Rotate without causing overflow */
+        width: 260vw;
+        top: 0;
+        left: 45%;
+        transform: translateX(-50%);
+        overflow: hidden;
+    }
+
+    .landing__container {
+        height: 100vh;
+    }
 }

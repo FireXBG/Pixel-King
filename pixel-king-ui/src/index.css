@@ -30,6 +30,11 @@ a {
     text-decoration: none;
 }
 
+p {
+    letter-spacing: 0.1vw;
+    line-height: 2vw;
+}
+
 .admin__button {
     background-color: var(--linear-gradient);
     color: white;

@@ -1,9 +1,11 @@
+/* General header styles */
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 2vw 4vw;
     z-index: 100;
+    background-color: #090A1F; /* Added background color */
 }
 
 .header__logo_container {
@@ -34,10 +36,10 @@
     display: flex;
     font-family: blackpast;
     font-size: 2vw;
-    background: linear-gradient(to right, #F72585, #8A4CF0);
+    background: linear-gradient(to right, #8A4CF0, #F72585);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    border-left: 0.2rem solid #F72585;
+    border-left: 0.2vw solid #F72585;
     padding-left: 1vw;
     padding-top: 0.65vw;
     padding-bottom: 0.5vw;
@@ -47,6 +49,123 @@
 .header__link {
     color: #CBCBCB;
     font-weight: 100;
-    z-index: 100;
     font-size: 1vw;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.header__link:hover {
+    color: #FFFFFF;
+}
+
+/* Mobile Navigation Styles */
+.mobile_nav {
+    display: none;
+    position: relative;
+    z-index: 200;
+}
+
+.burger {
+    position: absolute;
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    z-index: 201;
+    right: 1vw;
+    top: -1vw;
+}
+
+.burger div {
+    width: 8vw;
+    height: 0.5vw;
+    background: linear-gradient(to right, #8A4CF0, #F72585);
+    margin: 0.8vw;
+    transition: all 0.3s ease;
+}
+
+.mobile_menu {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #090A1F;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+    transform: translateX(100%);
+}
+
+.mobile_menu.open {
+    transform: translateX(0);
+}
+
+.close {
+    position: absolute;
+    top: 0;
+    right: 4vw;
+    font-size: 20vw;
+    font-weight: 200;
+    cursor: pointer;
+    color: #F72585;
+    z-index: 202;
+}
+
+.mobile_menu_list {
+    list-style: none;
+    padding: 0;
+    margin: -25vw 0 0;
+    width: 100%;
+    text-align: center;
+}
+
+.mobile_menu_list li {
+    margin: 7vw 0;
+}
+
+.mobile_link {
+    color: #CBCBCB;
+    font-size: 6vw;
+    text-decoration: none;
+    transition: color 0.3s, background-color 0.3s;
+}
+
+.mobile_link:hover {
+    color: #FFFFFF;
+    background-color: #8A4CF0;
+    border-radius: 2vw;
+    padding: 1vw;
+}
+
+@media screen and (max-width: 768px) {
+    .header__logo_container {
+        gap: 2vw;
+        padding-top: 5vw;
+    }
+
+    .header_logo_text {
+        font-size: 6vw;
+        padding-left: 1.5vw;
+        padding-top: 1.3vw;
+        padding-bottom: 1vw;
+    }
+
+    .header__logo {
+        width: 6vw;
+    }
+
+    .mobile_nav {
+        display: flex;
+    }
+
+    .burger {
+        display: flex;
+    }
+
+    .header__nav__list {
+        display: none;
+    }
 }

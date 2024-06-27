@@ -80,9 +80,10 @@
 
 .wallpapersGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(100vw, 1fr));
     gap: 2vw;
     margin-top: 2vw;
+    place-items: center;
 }
 
 .wallpaperItem {
@@ -148,24 +149,64 @@
     justify-content: center;
     margin-top: 20px;
     gap: 2vw;
+    position: relative; /* Ensure the container is positioned relative */
 }
 
 .search {
     width: 70vw;
     height: 3vw;
-    padding: 0.2vw 0.2vw 0.2vw 2vw;
+    padding: 0.2vw 3vw 0.2vw 2vw; /* Add padding on the right for the icon */
     border: double 0.1vw transparent;
-    border-radius: 100px;
+    border-right: none;
+    border-bottom-left-radius: 10vw;
+    border-top-left-radius: 10vw;
     background-image: linear-gradient(#090A1F, #090A1F),
     linear-gradient(to right, #F72585, #8A4CF0);
     background-origin: border-box;
     background-clip: padding-box, border-box;
     color: #a4a4a4;
     font-size: 0.8vw;
+    box-sizing: border-box; /* Ensure padding is included in the width calculation */
+}
+
+.search__wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 
 .search:focus {
     outline: none;
+}
+
+.search__button {
+    height: 3vw;
+    padding: 0 2vw; /* Adjust padding as needed */
+    border: double 0.1vw transparent;
+    border-bottom-right-radius: 10vw;
+    border-top-right-radius: 10vw;
+    border-left: none;
+    background-image: linear-gradient(#090A1F, #090A1F),
+    linear-gradient(to right, #8A4CF0, #F72585);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    color: #a4a4a4;
+    font-size: 0.8vw;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box; /* Ensure padding is included in the width calculation */
+}
+
+.search__button:hover {
+    cursor: pointer;
+}
+
+.search__icon {
+    width: 1.5vw;
+    height: 1.5vw;
+    object-fit: contain;
 }
 
 .submit__button {
@@ -261,4 +302,57 @@
 
 .page__btn:focus {
     outline: none;
+}
+
+@media screen and (max-width: 768px) {
+    .search__container {
+        flex-direction: column;
+        align-items: center;
+        gap: 5vw;
+    }
+
+    .search {
+        width: 80vw;
+        height: 12vw;
+        font-size: 2.5vw;
+        font-weight: 500;
+        padding-left: 5vw;
+        padding-right: 12vw; /* Add more padding on the right for the icon */
+        border-width: 0.4vw;
+        border-bottom-right-radius: 0;
+        border-top-right-radius: 0;
+    }
+
+    .search__button {
+        height: 12vw;
+        font-size: 2.5vw;
+        border-width: 0.4vw;
+        margin-left: -0.2vw;
+        padding-right: 5vw;
+    }
+
+    .search__icon {
+        width: 5vw;
+        height: 5vw;
+
+    }
+
+    .device__type__btn {
+        width: 15vw;
+        height: 10vw;
+        border-width: 0.3vw;
+    }
+
+    .pagination {
+        margin-top: 5vw;
+        gap: 7vw;
+    }
+
+    .page__btn {
+        width: 30vw;
+        height: 10vw;
+        font-size: 3.5vw;
+        border-width: 0.4vw;
+        border-radius: 100vw;
+    }
 }

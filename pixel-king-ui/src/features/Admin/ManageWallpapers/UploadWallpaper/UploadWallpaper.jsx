@@ -3,7 +3,7 @@ import axios from 'axios';
 import { io } from 'socket.io-client';
 import styles from './UploadWallpaper.module.css';
 
-const socket = io('http://localhost:3001'); // Adjust this URL to match your server
+const socket = io(`${process.env.REACT_APP_BACKEND_URL}`); // Adjust this URL to match your server
 
 function UploadWallpaperComponent({ onSuccess }) {
     const [originalFiles, setOriginalFiles] = useState([]);
@@ -157,7 +157,7 @@ function UploadWallpaperComponent({ onSuccess }) {
         });
 
         try {
-            await axios.post('http://localhost:3001/admin/upload', formData, {
+            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/admin/upload`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
