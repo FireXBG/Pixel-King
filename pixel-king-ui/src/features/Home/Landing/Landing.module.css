@@ -1,3 +1,8 @@
+.landing__container {
+    position: relative;
+    overflow: hidden;
+}
+
 .landing__shadow__1 {
     position: absolute;
     width: 50vw;
@@ -27,4 +32,26 @@
     width: 50vw;
     top: 5vw;
     right: 0;
+}
+
+@media screen and (max-width: 768px) {
+    .landing__main__h1 {
+        font-size: 18vw;
+        margin-top: 20vw;
+        margin-left: 0;
+        text-align: center;
+    }
+
+    .landing_main_images {
+        /* Rotate without causing overflow */
+        width: 260vw;
+        top: 0;
+        left: 45%;
+        transform: translateX(-50%);
+        overflow: hidden;
+    }
+
+    .landing__container {
+        height: 100vh;
+    }
 }
