@@ -41,3 +41,26 @@
     margin: 2vw 0;
 }
 
+@media screen and (max-width: 768px) {
+    .about__section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        overflow: hidden;
+    }
+
+    .about__h1 {
+        font-size: 10vw;
+    }
+
+    .about__img {
+        width: 200vw !important;
+        height: 80vh;
+        object-fit: contain;
+    }
+
+    .about__btn {
+        font-size: 5vw;
+        padding: 3vw 4vw;
+    }
+}

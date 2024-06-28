@@ -1,5 +1,6 @@
 import styles from './GetStarted.module.css';
 import img from '../../../assets/landing_get_started.png';
+import { Link } from 'react-router-dom';
 
 export default function () {
     return (
@@ -7,8 +8,8 @@ export default function () {
             <div className={styles.about__container}>
                 <h1 className={styles.about__h1}>GET STARTED</h1>
             </div>
-                <img className={styles.about__img} src={img}/>
-                <a className={styles.about__btn}>Explore Wallpapers</a>
+            <img className={styles.about__img} src={img}/>
+            <Link to="/wallpapers" className={styles.about__btn}>Explore Wallpapers</Link>
         </section>
     )
 }
