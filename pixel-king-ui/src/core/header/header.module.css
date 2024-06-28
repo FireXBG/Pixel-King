@@ -140,6 +140,21 @@
     padding: 1vw;
 }
 
+.header__nav__list li:last-child {
+    background: linear-gradient(to right, #8A4CF0, #F72585);
+    padding: 0.6vw 2vw;
+    border-radius: 100vw;
+    display: flex;
+}
+
+.header__nav__list li:last-child a{
+    font-weight: 500 !important;
+}
+
+.header__nav__list li:last-child:hover {
+    background: linear-gradient(to right, #F72585, #8A4CF0);
+}
+
 @media screen and (max-width: 768px) {
     .header__logo_container {
         gap: 2vw;
