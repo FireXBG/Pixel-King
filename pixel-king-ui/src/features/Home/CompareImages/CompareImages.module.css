@@ -65,3 +65,53 @@
     z-index: -1;
     filter: blur(30vw) opacity(0.1);
 }
+
+@media screen and (max-width: 768px) {
+    .compare__main__container {
+        flex-direction: column;
+        padding: 10vw;
+        gap: 10vw;
+    }
+
+    .details__container {
+        gap: 5vw;
+        align-items: center;
+    }
+
+    .compare__image__container {
+        max-width: 80vw;
+    }
+
+    .compare__heading {
+        font-size: 8vw;
+        text-align: center;
+        max-width: 90vw;
+    }
+
+    .compare__paragraph {
+        font-size: 5vw;
+        line-height: 8vw;
+        letter-spacing: 0.5vw;
+        max-width: 95vw;
+        text-align: center;
+    }
+
+    .shadow1 {
+        width: 80vw;
+        height: 100vw;
+        filter: blur(40vw) opacity(0.1);
+    }
+
+    .shadow2 {
+        top: 10vw;
+        width: 80vw;
+        height: 100vw;
+        filter: blur(40vw) opacity(0.05);
+    }
+
+    .shadow3 {
+        width: 80vw;
+        height: 100vw;
+        filter: blur(40vw) opacity(0.05);
+    }
+}
