@@ -141,7 +141,7 @@ exports.sendContactEmail = async (data) => {
     try {
         const mailOptions = {
             from: process.env.MAILING_ADDRESS,
-            to: process.env.MAILING_SMTP_RECEIVER, 
+            to: process.env.MAILING_SMTP_RECEIVER,
             subject: 'New message from Pixel-King support',
             html: `
                 <meta name="color-scheme" content="only">

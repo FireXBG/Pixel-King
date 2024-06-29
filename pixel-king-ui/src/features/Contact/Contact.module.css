@@ -68,3 +68,15 @@
 .form button:hover {
     cursor: pointer;
 }
+
+.successMessage {
+    color: green;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+.errorMessage {
+    color: red;
+    font-weight: bold;
+    margin-top: 20px;
+}
