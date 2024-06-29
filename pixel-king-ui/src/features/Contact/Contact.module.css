@@ -80,3 +80,49 @@
     font-weight: bold;
     margin-top: 20px;
 }
+
+@media screen and (max-width: 768px) {
+    .mainH1 {
+        font-size: 8vw;
+        margin-top: 10vw;
+    }
+
+    .contacts__wrapper {
+        margin: 5vw 5vw;
+        gap: 10vw;
+    }
+
+    .info__container {
+        max-width: 100%;
+        align-items: center;
+        text-align: center;
+    }
+
+    .form {
+        width: 100%;
+        padding: 5vw;
+        gap: 5vw;
+        border-radius: 6vw;
+    }
+
+    .form input {
+        padding: 2vw;
+        height: 10vw;
+    }
+
+    .form textarea {
+        padding: 2vw;
+        border-radius: 3vw;
+        height: 20vw;
+    }
+
+    .form button {
+        padding: 3vw 5vw;
+    }
+
+    .successMessage {
+        font-size: 4vw;
+        text-align: center;
+        width: 100vw;
+    }
+}
