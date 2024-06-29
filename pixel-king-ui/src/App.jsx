@@ -10,6 +10,7 @@ import ManageWallpapers from "./features/Admin/ManageWallpapers/ManageWallpapers
 import ManageUsers from "./features/Admin/ManageUsers/ManageUsers";
 import { AuthProvider } from './auth/AuthContext';
 import ProtectedRoute from './auth/ProtectedRoute';
+import Contact from "./features/Contact/Contact";
 
 function App() {
     return (
@@ -21,7 +22,7 @@ function App() {
                         <Route path="/" element={<Home />} />
                         <Route path="/wallpapers" element={<Wallpapers />} />
                         <Route path="/license" element={<License />} />
-                        <Route path="/contact" element={<h1>Contact Route</h1>} />
+                        <Route path="/contact" element={<Contact />} />
                         <Route path="/admin/login" element={<AdminLogin />} />
                         <Route path="/admin/*" element={
                             <ProtectedRoute>

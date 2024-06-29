@@ -2,6 +2,7 @@ const AdminUser = require('../models/adminUserSchema.js');
 const AdminWallpapers = require('../models/adminWallpapersSchema.js');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
 const { uploadFile, getFile, deleteFile, createAndUploadThumbnail } = require('../config/googleDrive.js');
 
 const DESKTOP_FOLDER_ID = '1mQ0ZRO1pHOV0KoeifLHlzYJcWMXWw-SM';
@@ -127,3 +128,50 @@ exports.getWallpaperById = async (id) => {
         throw new Error('An error occurred while fetching the wallpaper');
     }
 };
+
+exports.sendContactEmail = async (data) => {
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.MAILING_SMTP_ADDRESS,
+            pass: process.env.MAILING_SMTP_APP_PASS
+        }
+    });
+
+    try {
+        const mailOptions = {
+            from: process.env.MAILING_ADDRESS,
+            to: process.env.MAILING_SMTP_RECEIVER, 
+            subject: 'New message from Pixel-King support',
+            html: `
+                <meta name="color-scheme" content="only">
+                <div style="font-family: Arial, sans-serif; background-color: rgb(24, 26, 27); padding: 20px;">
+                    <div style="max-width: 600px; margin: auto; background-color: #252c33; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+                        <div style="background-color: rgb(13, 17, 23); color: rgb(255, 255, 255); padding: 20px; text-align: center;">
+                            <img src="https://i.imgur.com/QWZHeSJ.png" alt="Logo Carica Web" style="max-width: 150px; margin-bottom: 10px;">
+                            <h1 style="margin: 0; font-size: 24px;"><span style="color: #009fc2">Carica Web</span><br>Servizio di Mailing - The Central Park</h1>
+                        </div>
+                        <div style="padding: 20px;">
+                            <h2 style="color: rgb(255,255,255);">Nuovo messaggio da <span style="color: #009fc2">${data.name}</span></h2>
+                            <h3 style="color: #009fc2;">Dettagli di contatto:</h3>
+                            <p style="color: rgb(255,255,255);"><strong style="color: #ffffff">Email:</strong> ${data.email}</p>
+                            <h3 style="color: #009fc2;">Messaggio:</h3>
+                            <p style="color: #d0d0d0;">${data.message}</p>
+                            <hr style="border: 0; border-top: 1px solid rgb(36, 36, 36);">
+                            <p style="color: #d0d0d0; font-size: 12px; text-align: center;">
+                                This is an automated message, please DO NOT reply..<br>
+                                For more information ot support go to: <a href="http://www.carica.website" style="color: rgb(255,255,255);">www.carica.website</a><br>
+                                Best regards,<br>Carica Web
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `
+        };
+
+        let info = await transporter.sendMail(mailOptions);
+        console.log('Email sent: ' + info.response);
+    } catch (err) {
+        throw new Error(err.message);
+    }
+}
