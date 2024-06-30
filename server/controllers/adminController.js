@@ -201,6 +201,42 @@ router.post('/contact', async (req, res) => {
     }
 })
 
+router.get('/users', isAuthorized , async (req, res) => {
+    try {
+        const users = await adminServices.getAllUsers();
+        console.log('Fetched users:', users.length);
+        res.status(200).json({ users });
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.status(500).json({ error: 'An error occurred while fetching users.' });
+    }
+})
+
+router.post('/authorizeUser', isAuthorized, async (req, res) => {
+    const username = req.body.username;
+    const password = req.body.password;
+
+    try {
+        await adminServices.authorizeUser(username, password);
+        console.log('User authorized:', username);
+        res.status(200).json({ message: 'User authorized successfully' });
+    } catch (error) {
+        console.error('Error authorizing user:', error);
+        res.status(500).json({ error: 'An error occurred while authorizing user.' });
+    }
+})
+
+router.delete('/users/:username', async (req, res) => {
+    try {
+        const { username } = req.params;
+        await adminServices.deleteUser(username);
+        res.status(200).json({ message: 'User deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ error: 'An error occurred while deleting the user.' });
+    }
+});
+
 function isAuthorized(req, res, next) {
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1];

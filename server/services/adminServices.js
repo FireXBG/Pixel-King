@@ -176,6 +176,41 @@ exports.sendContactEmail = async (data) => {
     }
 }
 
+exports.authorizeUser = async (username, password) => {
+    try {
+        const userExists = await AdminUser.findOne({ username });
+        if(userExists) {
+            throw new Error('User already exists');
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 12);
+        const newUser = new AdminUser({ username, password: hashedPassword });
+        await newUser.save();
+    } catch (error) {
+        console.error('Error authorizing user:', error);
+        throw new Error('An error occurred while authorizing user');
+    }
+}
+
+exports.deleteUser = async (username) => {
+    try {
+        await AdminUser.findOneAndDelete({ username });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        throw new Error('An error occurred while deleting the user');
+    }
+};
+
+exports.getAllUsers = async () => {
+    try {
+        const users = await AdminUser.find();
+        return users.map(user => ({ username: user.username }));
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        throw new Error('An error occurred while fetching users');
+    }
+}
+
 exports.verifyToken = (token) => {
     try {
         if(!token) {
