@@ -20,29 +20,31 @@ export default function AddUser({ onClose, onUserAdded }) {
     };
 
     return (
-        <div className={styles.container}>
+        <div className={styles.addUserContainer}>
             <h1>Add User</h1>
-            {error && <p className={styles.error}>{error}</p>}
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>Username:</label>
+            {error && <p className={styles.addUserError}>{error}</p>}
+            <form onSubmit={handleSubmit} className={styles.addUserForm}>
+                <div className={styles.addUserFormGroup}>
+                    <label className={styles.addUserLabel}>Username:</label>
                     <input
                         type="text"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         required
+                        className={styles.addUserInput}
                     />
                 </div>
-                <div>
-                    <label>Password:</label>
+                <div className={styles.addUserFormGroup}>
+                    <label className={styles.addUserLabel}>Password:</label>
                     <input
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
+                        className={styles.addUserInput}
                     />
                 </div>
-                <button type="submit">Add User</button>
+                <button type="submit" className={styles.addUserButton}>Add User</button>
             </form>
         </div>
     );

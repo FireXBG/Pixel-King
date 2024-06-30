@@ -4,14 +4,14 @@ import styles from './UsersList.module.css';
 
 export default function UsersList({ users, onDeleteUser }) {
     return (
-        <div className={styles.container}>
+        <div className={styles.usersListContainer}>
             <h1>Users List</h1>
             <ul>
                 {users.map((user, index) => (
-                    <li key={index} className={styles.userItem}>
-                        Username: {user.username}
+                    <li key={index} className={styles.usersListItem}>
+                        {user.username}
                         <button
-                            className={styles.deleteButton}
+                            className={styles.usersListDeleteButton}
                             onClick={() => onDeleteUser(user.username)}
                         >
                             Delete
