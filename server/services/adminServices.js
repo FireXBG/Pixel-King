@@ -175,3 +175,17 @@ exports.sendContactEmail = async (data) => {
         throw new Error(err.message);
     }
 }
+
+exports.verifyToken = (token) => {
+    try {
+        if(!token) {
+            throw new Error('No token provided');
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        return decoded;
+    } catch (error) {
+        console.error('Error verifying token:', error);
+        throw new Error('Invalid token');
+    }
+}

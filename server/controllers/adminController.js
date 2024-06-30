@@ -82,7 +82,7 @@ router.get('/wallpapers/:id', async (req, res) => {
     }
 });
 
-router.post('/upload', upload.array('wallpapers'), async (req, res) => {
+router.post('/upload', isAuthorized, upload.array('wallpapers'), async (req, res) => {
     const files = req.files;
     const data = req.body;
     const uploadResults = [];
@@ -135,7 +135,7 @@ router.post('/upload', upload.array('wallpapers'), async (req, res) => {
     }
 });
 
-router.delete('/wallpapers/:id', async (req, res) => {
+router.delete('/wallpapers/:id', isAuthorized, async (req, res) => {
     const wallpaperId = req.params.id;
     try {
         await adminServices.deleteWallpaper(wallpaperId);
@@ -146,7 +146,7 @@ router.delete('/wallpapers/:id', async (req, res) => {
     }
 });
 
-router.put('/wallpapers/:id', async (req, res) => {
+router.put('/wallpapers/:id', isAuthorized, async (req, res) => {
     const wallpaperId = req.params.id;
     const newTags = req.body.tags;
 
@@ -200,5 +200,23 @@ router.post('/contact', async (req, res) => {
         res.status(500).json({ error: 'An error occurred while sending the email.' });
     }
 })
+
+function isAuthorized(req, res, next) {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ error: 'No token provided' });
+    }
+
+    try {
+        const decoded = adminServices.verifyToken(token);
+        req.user = decoded;
+        next();
+    } catch (error) {
+        console.error('Error verifying token:', error.message);
+        res.status(401).json({ error: 'Unauthorized' });
+    }
+}
 
 module.exports = router;
