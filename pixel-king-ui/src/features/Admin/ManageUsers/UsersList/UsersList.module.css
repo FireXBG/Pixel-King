@@ -1,0 +1,31 @@
+.usersListContainer {
+    padding: 20px;
+    color: white;
+}
+
+.usersListContainer h1 {
+    margin: 5vw 0;
+}
+
+
+.usersListItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1vw;
+    padding: 1vw;
+    border-bottom: 0.2vw solid #8A4CF0;
+}
+
+.usersListDeleteButton {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 0.6vw 2vw;
+    cursor: pointer;
+    border-radius: 0.5vw;
+}
+
+.usersListDeleteButton:hover {
+    background-color: darkred;
+}

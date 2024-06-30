@@ -36,25 +36,20 @@
 @media screen and (max-width: 768px) {
     .landing__container {
         overflow: hidden;
+        height: 60vh;
     }
 
     .landing__main__h1 {
-        font-size: 18vw;
-        margin-top: 20vw;
+        font-size: 19vw;
+        margin-top: 18vw;
         margin-left: 0;
         text-align: center;
+        line-height: 30vw;
+        font-weight: 800;
+        -webkit-text-stroke: 0.6vw transparent;
     }
 
     .landing_main_images {
-        /* Rotate without causing overflow */
-        width: 260vw;
-        top: 0;
-        left: 45%;
-        transform: translateX(-50%);
-        overflow: hidden;
-    }
-
-    .landing__container {
-        height: 100vh;
+        display: none;
     }
 }

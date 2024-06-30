@@ -91,6 +91,7 @@
     margin-bottom: 1vw;
     gap: 1vw;
     color: white;
+    margin-top: 2vw;
 }
 
 .filterContainer label {
@@ -118,7 +119,6 @@
 .search__container {
     display: flex;
     justify-content: center;
-    margin-top: 20px;
     gap: 2vw;
 }
 

@@ -1,0 +1,41 @@
+.addUserContainer {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+}
+
+.addUserError {
+    color: red;
+}
+
+.addUserForm {
+    display: flex;
+    flex-direction: column;
+}
+
+.addUserFormGroup {
+    margin-bottom: 10px;
+}
+
+.addUserLabel {
+    margin-bottom: 5px;
+}
+
+.addUserInput {
+    padding: 8px;
+    border: 1px solid #8A4CF0;
+    border-radius: 4px;
+}
+
+.addUserButton {
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: #8A4CF0;
+    color: white;
+    cursor: pointer;
+}
+
+.addUserButton:hover {
+    background-color: #6118d7;
+}
