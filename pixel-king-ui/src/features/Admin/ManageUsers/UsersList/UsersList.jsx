@@ -9,7 +9,7 @@ export default function UsersList({ users, onDeleteUser }) {
             <ul>
                 {users.map((user, index) => (
                     <li key={index} className={styles.userItem}>
-                        {user.username}
+                        Username: {user.username}
                         <button
                             className={styles.deleteButton}
                             onClick={() => onDeleteUser(user.username)}
