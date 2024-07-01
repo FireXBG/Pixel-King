@@ -1,12 +1,13 @@
-// socket.js
 const { Server } = require('socket.io');
 let io;
 
 function initializeIO(server) {
     io = new Server(server, {
         cors: {
-            origin: `${process.env.SERVER_IP}:3000`, // Adjust this to your client URL
-            methods: ["GET", "POST"]
+            origin: ['http://localhost:3000', 'https://pixel-king.com'], // Allow both localhost and your domain
+            methods: ["GET", "POST"],
+            allowedHeaders: ["Content-Type", "Authorization"],
+            credentials: true
         }
     });
 
