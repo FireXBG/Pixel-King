@@ -2,8 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const { google } = require('googleapis');
 const { authenticate } = require('@google-cloud/local-auth');
-const sharp = require('sharp');
-const { v4: uuidv4 } = require('uuid'); // Add this to generate unique IDs
+const Jimp = require('jimp');
+const { v4: uuidv4 } = require('uuid');
 
 const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
 const TOKEN_PATH = path.join(__dirname, 'token.json');
@@ -83,9 +83,8 @@ async function createAndUploadThumbnail(filePath, parentFolderId) {
     const drive = google.drive({ version: 'v3', auth: oAuth2Client });
     const thumbnailPath = path.join(__dirname, `thumbnail-${uuidv4()}.jpg`);
 
-    await sharp(filePath)
-        .resize(1000)
-        .toFile(thumbnailPath);
+    const image = await Jimp.read(filePath);
+    await image.resize(1000, Jimp.AUTO).writeAsync(thumbnailPath);
 
     const fileMetadata = {
         name: 'thumbnail_' + path.basename(filePath),
@@ -166,13 +165,14 @@ async function deleteFile(fileId) {
 
 async function resizeImage(imageBuffer, width, height) {
     try {
-        const resizedImageBuffer = await sharp(imageBuffer)
-            .resize(width, height, { fit: 'cover' }) // Resize to the given width and height
-            .toBuffer();
+        const image = await Jimp.read(imageBuffer);
+        image.resize(width, height);
+
+        const resizedImageBuffer = await image.getBufferAsync(Jimp.MIME_PNG);
         return resizedImageBuffer;
     } catch (error) {
-        console.error('Error resizing image using Sharp:', error);
-        throw new Error('Error resizing image using Sharp');
+        console.error('Error resizing image using Jimp:', error);
+        throw new Error('Error resizing image using Jimp');
     }
 }
 
