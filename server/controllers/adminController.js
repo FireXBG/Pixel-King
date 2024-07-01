@@ -6,6 +6,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const sharp = require('sharp');
+const rateLimit = require('express-rate-limit');
 const { getIO } = require('../config/socket'); // Correctly import io instance
 
 const tempDir = path.join(__dirname, 'temp');
@@ -23,7 +24,18 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-router.post('/login', async (req, res) => {
+const limiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 5, // limit each IP to 5 requests per windowMs
+    handler: (req, res) => {
+        res.status(429).json({
+            error: 'Too many requests',
+            message: 'Too many requests from this IP, please try again after a minute',
+        });
+    },
+});
+
+router.post('/login', limiter, async (req, res) => {
     const data = req.body;
     try {
         const token = await adminServices.login(data.username, data.password);
