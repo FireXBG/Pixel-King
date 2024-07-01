@@ -5,7 +5,7 @@ const { getFile, resizeImage } = require('../config/googleDrive');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const sharp = require('sharp');
+const Jimp = require('jimp'); // Use Jimp instead of Sharp
 const rateLimit = require('express-rate-limit');
 const { getIO } = require('../config/socket'); // Correctly import io instance
 
@@ -190,7 +190,10 @@ router.post('/download', async (req, res) => {
         const [width, height] = resolution.split('x').map(Number);
 
         // Resize the image to the specified resolution
-        const resizedImageBuffer = await resizeImage(fileContent.data, width, height);
+        const image = await Jimp.read(fileContent.data);
+        image.resize(width, height);
+
+        const resizedImageBuffer = await image.getBufferAsync(Jimp.MIME_PNG);
 
         res.status(200).json({
             base64Image: resizedImageBuffer.toString('base64'),
