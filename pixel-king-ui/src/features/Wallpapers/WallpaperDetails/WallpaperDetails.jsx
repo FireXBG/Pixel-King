@@ -40,7 +40,7 @@ function WallpaperDetails({ wallpaper, onClose }) {
         setDownloading(null);
     };
 
-    const { _id, tags, hdLink } = wallpaper;
+    const { _id, tags, driveID_HD } = wallpaper;
 
     return (
         <>
@@ -48,7 +48,7 @@ function WallpaperDetails({ wallpaper, onClose }) {
             <div className={`${styles.wallpaperDetails} ${isClosing ? styles.wallpaperDetailsClosing : ''}`}>
                 <button className={styles.closeButton} onClick={handleClose}>×</button>
                 <div className={styles.wallpaperPreview}>
-                    <img src={hdLink} alt="Wallpaper Preview" />
+                    <img src={`${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${driveID_HD}`} alt="Wallpaper Preview" />
                 </div>
                 <div className={styles.wallpaperInfo}>
                     <div className={styles.tags}>

@@ -1,0 +1,52 @@
+.container {
+    width: 80%;
+    margin: auto;
+    overflow: hidden;
+    padding: 2vw;
+    background: #fff;
+    box-shadow: 0 0 1vw rgba(0, 0, 0, 0.1);
+}
+
+.header {
+    color: #333;
+    margin-bottom: 1vw;
+}
+
+.paragraph {
+    color: #666;
+    margin-bottom: 1vw;
+}
+
+.list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.listItem {
+    background: #e4e4e4;
+    margin: 1vw 0;
+    padding: 1vw;
+}
+
+@media screen and (max-width: 768px) {
+    .container {
+        width: 100vw;
+        padding: 5vw 10vw;
+    }
+
+    .header {
+        font-size: 6vw;
+        margin-bottom: 5vw;
+    }
+
+    .paragraph {
+        font-size: 4vw;
+        line-height: 5vw;
+        margin-bottom: 5vw;
+    }
+
+    .listItem {
+        padding: 2vw;
+        margin-bottom: 5vw;
+    }
+}

@@ -7,6 +7,7 @@ import searchIcon from '../../assets/search_icon.png';
 import Desktop from './Desktop/Desktop';
 import Mobile from './Mobile/Mobile';
 import WallpaperDetails from './WallpaperDetails/WallpaperDetails';
+import AdComponent from '../../core/adComponent/adComponent';
 
 export default function Wallpapers() {
     const [deviceType, setDeviceType] = useState(window.innerWidth < 768 ? 'mobile' : 'desktop');
@@ -16,7 +17,7 @@ export default function Wallpapers() {
     const [totalPages, setTotalPages] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedWallpaper, setSelectedWallpaper] = useState(null);
-    const [fadeClass, setFadeClass] = useState(''); // Start with no fade class
+    const [fadeClass, setFadeClass] = useState('');
     const imagesPerPage = 20;
     const cancelTokenSource = useRef(null);
 
@@ -55,18 +56,14 @@ export default function Wallpapers() {
 
         try {
             let url = `${process.env.REACT_APP_BACKEND_URL}/api/wallpapers?view=${type}&page=${page}&limit=${imagesPerPage}`;
-            console.log(process.env.REACT_APP_BACKEND_URL)
             if (tags) {
                 url += `&tags=${tags}`;
             }
-            console.log(`Requesting wallpapers for view: ${type}, page: ${page}, limit: ${imagesPerPage}, tags: ${tags}`);
             const response = await axios.get(url, {
                 cancelToken: cancelTokenSource.current.token,
             });
-            console.log(`Received response: `, response.data);
             const fetchedWallpapers = response.data.wallpapers;
             setTotalPages(Math.ceil(response.data.totalCount / imagesPerPage));
-            console.log(`Total pages: ${Math.ceil(response.data.totalCount / imagesPerPage)}`);
 
             const imagePromises = fetchedWallpapers.map(wallpaper => {
                 return new Promise((resolve, reject) => {
@@ -89,7 +86,6 @@ export default function Wallpapers() {
                 setLoading(false);
             } else {
                 setFadeClass('fade-out');
-
                 setTimeout(() => {
                     setWallpapers(fetchedWallpapers);
                     setFadeClass('fade-in');
@@ -128,13 +124,12 @@ export default function Wallpapers() {
 
     const handleSearch = () => {
         setCurrentPage(1);
-        setWallpapers([]); // Clear current wallpapers when search query changes
+        setWallpapers([]);
         fetchWallpapers(deviceType, 1, searchQuery, true);
     };
 
     const openWallpaperDetails = (wallpaper) => {
         setSelectedWallpaper(wallpaper);
-        console.log(`Selected wallpaper ID: ${wallpaper._id}`);
     };
 
     const closeWallpaperDetails = () => {
@@ -152,7 +147,7 @@ export default function Wallpapers() {
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onKeyPress={(e) => {
                             if (e.key === 'Enter') handleSearch();
-                        }} /* Optionally handle Enter key */
+                        }}
                     />
                     <button className={styles.search__button}><img className={styles.search__icon} src={searchIcon} alt='search button' /></button>
                 </div>
@@ -160,14 +155,14 @@ export default function Wallpapers() {
                     <button
                         onClick={() => setDeviceTypeHandler('mobile')}
                         className={`${styles.device__type__btn} ${styles.mobile__btn}`}
-                        disabled={loading} // Disable button while loading
+                        disabled={loading}
                     >
                         <img className={styles.mobile__btn__img} src={phoneIcon} alt="mobile button"/>
                     </button>
                     <button
                         onClick={() => setDeviceTypeHandler('desktop')}
                         className={`${styles.device__type__btn} ${styles.desktop__btn}`}
-                        disabled={loading} // Disable button while loading
+                        disabled={loading}
                     >
                         <img className={styles.desktop__btn__img} src={desktopIcon} alt="desktop button"/>
                     </button>
@@ -191,24 +186,28 @@ export default function Wallpapers() {
                 </div>
             </section>
             {!loading && wallpapers.length > 0 && (
-                <div className={styles.pagination}>
-                    <button
-                        disabled={currentPage === 1}
-                        className={styles.page__btn}
-                        onClick={() => handlePageChange(currentPage - 1)}
-                    >
-                        Previous
-                    </button>
-                    <span>{currentPage}</span>
-                    <button
-                        disabled={currentPage >= totalPages}
-                        className={styles.page__btn}
-                        onClick={() => handlePageChange(currentPage + 1)}
-                    >
-                        Next
-                    </button>
-                </div>
+                <>
+                    <div className={styles.pagination}>
+                        <button
+                            disabled={currentPage === 1}
+                            className={styles.page__btn}
+                            onClick={() => handlePageChange(currentPage - 1)}
+                        >
+                            Previous
+                        </button>
+                        <span>{currentPage}</span>
+                        <button
+                            disabled={currentPage >= totalPages}
+                            className={styles.page__btn}
+                            onClick={() => handlePageChange(currentPage + 1)}
+                        >
+                            Next
+                        </button>
+                    </div>
+                    <AdComponent /> {/* Add the AdComponent here */}
+                </>
             )}
+
             {selectedWallpaper && <WallpaperDetails wallpaper={selectedWallpaper} onClose={closeWallpaperDetails}/>}
         </>
     );

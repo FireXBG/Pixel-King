@@ -11,6 +11,8 @@ import ManageUsers from "./features/Admin/ManageUsers/ManageUsers";
 import { AuthProvider } from './auth/AuthContext';
 import ProtectedRoute from './auth/ProtectedRoute';
 import Contact from "./features/Contact/Contact";
+import Footer from "./core/footer/footer";
+import Privacy from "./features/Privacy/Privacy";
 
 function App() {
     return (
@@ -23,6 +25,7 @@ function App() {
                         <Route path="/wallpapers" element={<Wallpapers />} />
                         <Route path="/license" element={<License />} />
                         <Route path="/contact" element={<Contact />} />
+                        <Route path='/privacy' element={<Privacy />} />
                         <Route path="/admin/login" element={<AdminLogin />} />
                         <Route path="/admin/*" element={
                             <ProtectedRoute>
@@ -33,6 +36,7 @@ function App() {
                             <Route path="users" element={<ManageUsers />} />
                         </Route>
                     </Routes>
+                    {window.location.pathname.indexOf('/admin') === -1 && <Footer />}
                 </>
             </AuthProvider>
         </BrowserRouter>
