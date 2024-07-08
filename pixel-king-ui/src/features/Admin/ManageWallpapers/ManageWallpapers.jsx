@@ -15,6 +15,7 @@ function ManageWallpapers() {
     const [totalPages, setTotalPages] = useState(1);
     const [editingWallpaper, setEditingWallpaper] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [imagesLoaded, setImagesLoaded] = useState(0);
     const imagesPerPage = 20;
 
     useEffect(() => {
@@ -23,6 +24,7 @@ function ManageWallpapers() {
 
     const fetchWallpapers = async () => {
         setLoading(true);
+        setImagesLoaded(0); // Reset image loading count
         try {
             const url = `${process.env.REACT_APP_BACKEND_URL}/api/wallpapers?view=${filter}&page=${currentPage}&limit=${imagesPerPage}`;
             const response = await axios.get(url);
@@ -32,8 +34,7 @@ function ManageWallpapers() {
         } catch (error) {
             console.error('Error fetching wallpapers:', error);
             setError('Failed to fetch wallpapers. Please try again later.');
-        } finally {
-            setLoading(false);
+            setLoading(false); // Stop loading if there's an error
         }
     };
 
@@ -100,10 +101,19 @@ function ManageWallpapers() {
         } catch (error) {
             console.error('Error searching wallpaper by ID:', error);
             setError('Failed to search wallpaper. Please try again later.');
-        } finally {
-            setLoading(false);
+            setLoading(false); // Stop loading if there's an error
         }
     };
+
+    const handleImageLoad = () => {
+        setImagesLoaded(prev => prev + 1);
+    };
+
+    useEffect(() => {
+        if (imagesLoaded === wallpapers.length) {
+            setLoading(false); // Stop loading when all images are loaded
+        }
+    }, [imagesLoaded, wallpapers.length]);
 
     return (
         <div className={styles.manageWallpapersContainer}>
@@ -133,12 +143,16 @@ function ManageWallpapers() {
                     <div className={styles.loader}></div>
                 </div>
             ) : (
-                <div className={styles.wallpapersGrid}>
+                <div className={`${styles.wallpapersGrid} ${styles.fadeIn}`}>
                     {wallpapers.map((wallpaper) => (
                         <div key={wallpaper._id} className={styles.wallpaperItem}>
                             {wallpaper.driveID_HD && (
-                                <img src={`${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaper.driveID_HD}`}
-                                     alt={wallpaper.name} className={styles.wallpaperImage}/>
+                                <img
+                                    src={`${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaper.driveID_HD}`}
+                                    alt={wallpaper.name}
+                                    className={styles.wallpaperImage}
+                                    onLoad={handleImageLoad}
+                                />
                             )}
                             <div className={styles.wallpaperActions}>
                                 <button className='admin__button' onClick={() => handleEdit(wallpaper)}>Edit</button>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import styles from './Wallpapers.module.css';
 import phoneIcon from '../../assets/phone.svg';
@@ -67,6 +67,17 @@ export default function Wallpapers() {
             const fetchedWallpapers = response.data.wallpapers;
             setTotalPages(Math.ceil(response.data.totalCount / imagesPerPage));
             console.log(`Total pages: ${Math.ceil(response.data.totalCount / imagesPerPage)}`);
+
+            const imagePromises = fetchedWallpapers.map(wallpaper => {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.src = `${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaper.driveID_HD}`;
+                    img.onload = resolve;
+                    img.onerror = reject;
+                });
+            });
+
+            await Promise.all(imagePromises);
 
             if (reset) {
                 setWallpapers([]);
@@ -172,10 +183,10 @@ export default function Wallpapers() {
                 <div className={`${styles.wallpapersGrid} ${styles[fadeClass]}`}>
                     {deviceType === 'desktop' ? (
                         <Desktop currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers}
-                                 onWallpaperClick={openWallpaperDetails}/>
+                                 onWallpaperClick={openWallpaperDetails} />
                     ) : (
                         <Mobile currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers}
-                                onWallpaperClick={openWallpaperDetails}/>
+                                onWallpaperClick={openWallpaperDetails} />
                     )}
                 </div>
             </section>
