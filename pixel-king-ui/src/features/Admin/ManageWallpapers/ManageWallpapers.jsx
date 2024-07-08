@@ -84,7 +84,6 @@ function ManageWallpapers() {
         }
     };
 
-
     const handleSearch = async () => {
         if (!searchQuery) {
             fetchWallpapers();
@@ -137,8 +136,8 @@ function ManageWallpapers() {
                 <div className={styles.wallpapersGrid}>
                     {wallpapers.map((wallpaper) => (
                         <div key={wallpaper._id} className={styles.wallpaperItem}>
-                            {wallpaper.thumbnailData && (
-                                <img src={`data:${wallpaper.thumbnailContentType};base64,${wallpaper.thumbnailData}`}
+                            {wallpaper.driveID_HD && (
+                                <img src={`${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaper.driveID_HD}`}
                                      alt={wallpaper.name} className={styles.wallpaperImage}/>
                             )}
                             <div className={styles.wallpaperActions}>
@@ -158,7 +157,6 @@ function ManageWallpapers() {
                         </div>
                     ))}
                 </div>
-
             )}
 
             {!loading && wallpapers.length > 0 && (

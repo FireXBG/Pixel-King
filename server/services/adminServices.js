@@ -54,28 +54,57 @@ exports.uploadWallpaper = async (file, tags, view, isPaid) => {
     try {
         const { path: filePath, mimetype } = file;
 
-        // First, upload the original 8K image without resizing
-        const originalUploadResult = await uploadFile(filePath, mimetype, await exports.getFolderId(view, '8K'));
+        let uploadResults = [];
 
-        const resolutions = [
-            { width: 1920, height: 1080, folder: 'HD' },
-            { width: 3840, height: 2160, folder: '4K' }
-        ];
+        // Upload logic based on the view
+        if (view === 'desktop') {
+            // First, upload the original 8K image without resizing
+            const originalUploadResult = await uploadFile(filePath, mimetype, await exports.getFolderId(view, '8K'));
 
-        const uploadResults = await Promise.all(resolutions.map(async (resolution) => {
-            const resizedBuffer = await resizeImage(fs.readFileSync(filePath), resolution.width, resolution.height);
-            const tempPath = path.join(tempDir, `temp-${uuidv4()}.png`);
-            fs.writeFileSync(tempPath, resizedBuffer);
+            const resolutions = [
+                { width: 1920, height: 1080, folder: 'HD' },
+                { width: 3840, height: 2160, folder: '4K' }
+            ];
 
-            const folderId = await exports.getFolderId(view, resolution.folder);
-            const uploadResult = await uploadFile(tempPath, mimetype, folderId);
+            uploadResults = await Promise.all(resolutions.map(async (resolution) => {
+                const resizedBuffer = await resizeImage(fs.readFileSync(filePath), resolution.width, resolution.height);
+                const tempPath = path.join(tempDir, `temp-${uuidv4()}.png`);
+                fs.writeFileSync(tempPath, resizedBuffer);
 
-            fs.unlinkSync(tempPath);
-            return { resolution: resolution.folder, driveID: uploadResult.id };
-        }));
+                const folderId = await exports.getFolderId(view, resolution.folder);
+                const uploadResult = await uploadFile(tempPath, mimetype, folderId);
 
-        // Add the original 8K image to the results
-        uploadResults.push({ resolution: '8K', driveID: originalUploadResult.id });
+                fs.unlinkSync(tempPath);
+                return { resolution: resolution.folder, driveID: uploadResult.id };
+            }));
+
+            // Add the original 8K image to the results
+            uploadResults.push({ resolution: '8K', driveID: originalUploadResult.id });
+
+        } else if (view === 'mobile') {
+            // First, upload the original 8K image without resizing (aspect ratio 9:16)
+            const originalUploadResult = await uploadFile(filePath, mimetype, await exports.getFolderId(view, '8K'));
+
+            const resolutions = [
+                { width: 1080, height: 1920, folder: 'HD' },
+                { width: 2160, height: 3840, folder: '4K' }
+            ];
+
+            uploadResults = await Promise.all(resolutions.map(async (resolution) => {
+                const resizedBuffer = await resizeImage(fs.readFileSync(filePath), resolution.width, resolution.height);
+                const tempPath = path.join(tempDir, `temp-${uuidv4()}.png`);
+                fs.writeFileSync(tempPath, resizedBuffer);
+
+                const folderId = await exports.getFolderId(view, resolution.folder);
+                const uploadResult = await uploadFile(tempPath, mimetype, folderId);
+
+                fs.unlinkSync(tempPath);
+                return { resolution: resolution.folder, driveID: uploadResult.id };
+            }));
+
+            // Add the original 8K image to the results
+            uploadResults.push({ resolution: '8K', driveID: originalUploadResult.id });
+        }
 
         const newWallpaper = {
             driveID_HD: uploadResults.find(res => res.resolution === 'HD').driveID,
@@ -96,6 +125,7 @@ exports.uploadWallpaper = async (file, tags, view, isPaid) => {
     }
 };
 
+
 exports.getWallpapersByViewAndTags = async (view, tags, page, limit) => {
     try {
         const query = { view };
@@ -105,20 +135,19 @@ exports.getWallpapersByViewAndTags = async (view, tags, page, limit) => {
 
         const totalCount = await AdminWallpapers.countDocuments(query);
 
-        // Calculate the correct skip value for normal pagination
         const skip = (page - 1) * limit;
 
         const wallpapers = await AdminWallpapers.find(query)
-            .sort({ createdAt: -1 }) // Sort by creation date in descending order
+            .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit);
 
         const wallpapersWithThumbnails = await Promise.all(wallpapers.map(async (wallpaper) => {
-            const thumbnailData = await getFile(wallpaper.thumbnailID); // Fetch only thumbnail content and metadata
+            // Construct the HD link
+            const hdLink = `https://drive.google.com/uc?export=view&id=${wallpaper.driveID_HD}`;
             return {
                 ...wallpaper.toObject(),
-                thumbnailData: thumbnailData.data.toString('base64'), // Base64 encoded thumbnail data
-                thumbnailContentType: thumbnailData.mimeType,
+                hdLink,
             };
         }));
 
