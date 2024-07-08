@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import styles from './ManageWallpapers.module.css';
 import UploadWallpaper from './UploadWallpaper/UploadWallpaper';
@@ -17,6 +17,7 @@ function ManageWallpapers() {
     const [searchQuery, setSearchQuery] = useState('');
     const [imagesLoaded, setImagesLoaded] = useState(0);
     const imagesPerPage = 20;
+    const cancelTokenSource = useRef(null);
 
     useEffect(() => {
         fetchWallpapers();
@@ -31,6 +32,18 @@ function ManageWallpapers() {
             const wallpapers = response.data.wallpapers || [];
             setWallpapers(wallpapers);
             setTotalPages(Math.ceil(response.data.totalCount / imagesPerPage));
+
+            const imagePromises = wallpapers.map(wallpaper => {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.src = `${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaper.driveID_HD}`;
+                    img.onload = resolve;
+                    img.onerror = reject;
+                });
+            });
+
+            await Promise.all(imagePromises);
+            setLoading(false); // Stop loading when all images are loaded
         } catch (error) {
             console.error('Error fetching wallpapers:', error);
             setError('Failed to fetch wallpapers. Please try again later.');
@@ -98,22 +111,24 @@ function ManageWallpapers() {
             const wallpapers = response.data.wallpapers || [];
             setWallpapers(wallpapers);
             setTotalPages(1);
+
+            const imagePromises = wallpapers.map(wallpaper => {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.src = `${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaper.driveID_HD}`;
+                    img.onload = resolve;
+                    img.onerror = reject;
+                });
+            });
+
+            await Promise.all(imagePromises);
+            setLoading(false); // Stop loading when all images are loaded
         } catch (error) {
             console.error('Error searching wallpaper by ID:', error);
             setError('Failed to search wallpaper. Please try again later.');
             setLoading(false); // Stop loading if there's an error
         }
     };
-
-    const handleImageLoad = () => {
-        setImagesLoaded(prev => prev + 1);
-    };
-
-    useEffect(() => {
-        if (imagesLoaded === wallpapers.length) {
-            setLoading(false); // Stop loading when all images are loaded
-        }
-    }, [imagesLoaded, wallpapers.length]);
 
     return (
         <div className={styles.manageWallpapersContainer}>
@@ -151,7 +166,6 @@ function ManageWallpapers() {
                                     src={`${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaper.driveID_HD}`}
                                     alt={wallpaper.name}
                                     className={styles.wallpaperImage}
-                                    onLoad={handleImageLoad}
                                 />
                             )}
                             <div className={styles.wallpaperActions}>
