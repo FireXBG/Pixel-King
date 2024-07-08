@@ -2,22 +2,11 @@ import React, { useState } from 'react';
 import styles from './WallpaperDetails.module.css';
 import axios from 'axios';
 
-const resolutions = {
-    desktop: [
-        { label: '1080p (Full HD)', resolution: '1920x1080' },
-        { label: '1440p (Quad HD)', resolution: '2560x1440' },
-        { label: '4K (Ultra HD)', resolution: '3840x2160' },
-        { label: '5K', resolution: '5120x2880' },
-        { label: '8K (Ultra HD)', resolution: '7680x4320' },
-    ],
-    mobile: [
-        { label: '720p (HD)', resolution: '720x1280' },
-        { label: '1080p (Full HD)', resolution: '1080x1920' },
-        { label: '1440p (Quad HD)', resolution: '1440x2560' },
-        { label: '4K (Ultra HD)', resolution: '2160x3840' },
-        { label: '8K (Ultra HD)', resolution: '4320x7680' },
-    ],
-};
+const resolutions = [
+    { label: '1080p (Full HD)', key: 'HD' },
+    { label: '4K (Ultra HD)', key: '4K' },
+    { label: '8K (Ultra HD)', key: '8K' },
+];
 
 function WallpaperDetails({ wallpaper, onClose }) {
     const [isClosing, setIsClosing] = useState(false);
@@ -31,29 +20,27 @@ function WallpaperDetails({ wallpaper, onClose }) {
         }, 300); // Match the animation duration
     };
 
-    const handleDownload = async (resolution, label) => {
-        setDownloading(label);
+    const handleDownload = async (resolution) => {
+        setDownloading(resolution.label);
         try {
-            // Replace localhost:3001 with your actual backend URL
-            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/admin/download`, {
-                wallpaperId: wallpaper._id,
-                resolution: resolution.resolution,
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaper[`driveID_${resolution.key}`]}`, {
+                responseType: 'blob'
             });
 
-            const { base64Image, mimeType } = response.data;
+            const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
-            link.href = `data:${mimeType};base64,${base64Image}`;
-            link.download = `${wallpaper._id}_${resolution.label}.jpg`;
+            link.href = url;
+            link.setAttribute('download', `${wallpaper._id}_${resolution.label}.jpg`);
             document.body.appendChild(link);
             link.click();
-            document.body.removeChild(link);
+            link.parentNode.removeChild(link);
         } catch (error) {
             console.error('Error downloading wallpaper:', error);
         }
         setDownloading(null);
     };
 
-    const { _id, thumbnailData, thumbnailContentType, tags, view } = wallpaper;
+    const { _id, tags, view, driveID_HD, thumbnailID } = wallpaper;
 
     return (
         <>
@@ -61,7 +48,7 @@ function WallpaperDetails({ wallpaper, onClose }) {
             <div className={`${styles.wallpaperDetails} ${isClosing ? styles.wallpaperDetailsClosing : ''}`}>
                 <button className={styles.closeButton} onClick={handleClose}>×</button>
                 <div className={styles.wallpaperPreview}>
-                    <img src={`data:${thumbnailContentType};base64,${thumbnailData}`} alt="Wallpaper Preview" />
+                    <img src={`${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${thumbnailID}`} alt="Wallpaper Preview" />
                 </div>
                 <div className={styles.wallpaperInfo}>
                     <div className={styles.tags}>
@@ -70,14 +57,14 @@ function WallpaperDetails({ wallpaper, onClose }) {
                     <div className={styles.downloadOptions}>
                         <strong>Download Options:</strong>
                         <ul>
-                            {resolutions[view].map((res) => (
-                                <li key={res.label}>
+                            {resolutions.map((res) => (
+                                <li key={res.key}>
                                     <button
                                         className={styles.downloadButton}
-                                        onClick={() => handleDownload(res, res.label)}
+                                        onClick={() => handleDownload(res)}
                                         disabled={downloading !== null}
                                     >
-                                        {downloading === res.label ? 'Downloading...' : `${res.label} (${res.resolution})`}
+                                        {downloading === res.label ? 'Downloading...' : `${res.label}`}
                                     </button>
                                 </li>
                             ))}

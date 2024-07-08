@@ -24,7 +24,7 @@ function ManageWallpapers() {
     const fetchWallpapers = async () => {
         setLoading(true);
         try {
-            const url = `${process.env.REACT_APP_BACKEND_URL}/admin/wallpapers?view=${filter}&page=${currentPage}&limit=${imagesPerPage}`;
+            const url = `${process.env.REACT_APP_BACKEND_URL}/api/wallpapers?view=${filter}&page=${currentPage}&limit=${imagesPerPage}`;
             const response = await axios.get(url);
             const wallpapers = response.data.wallpapers || [];
             setWallpapers(wallpapers);
@@ -44,7 +44,7 @@ function ManageWallpapers() {
     const handleDelete = async (wallpaperId) => {
         setDeleting((prev) => ({ ...prev, [wallpaperId]: true }));
         try {
-            await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/admin/wallpapers/${wallpaperId}`);
+            await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaperId}`);
             fetchWallpapers();
         } catch (error) {
             console.error('Error deleting wallpaper:', error);
@@ -71,15 +71,19 @@ function ManageWallpapers() {
         setEditingWallpaper(wallpaper);
     };
 
-    const handleSaveTags = async (wallpaperId, newTags) => {
+    const handleSaveTags = async (wallpaperId, newTags, newIsPaid) => {
         try {
-            await axios.put(`${process.env.REACT_APP_BACKEND_URL}/admin/wallpapers/${wallpaperId}`, { tags: newTags });
+            await axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaperId}`, {
+                tags: newTags,
+                isPaid: newIsPaid
+            });
             fetchWallpapers();
         } catch (error) {
             console.error('Error saving tags:', error);
             alert('Failed to save tags');
         }
     };
+
 
     const handleSearch = async () => {
         if (!searchQuery) {
@@ -89,7 +93,7 @@ function ManageWallpapers() {
 
         setLoading(true);
         try {
-            const url = `${process.env.REACT_APP_BACKEND_URL}/admin/wallpapers?view=${filter}&id=${searchQuery}`;
+            const url = `${process.env.REACT_APP_BACKEND_URL}/api/wallpapers?view=${filter}&id=${searchQuery}`;
             const response = await axios.get(url);
             const wallpapers = response.data.wallpapers || [];
             setWallpapers(wallpapers);
@@ -134,7 +138,8 @@ function ManageWallpapers() {
                     {wallpapers.map((wallpaper) => (
                         <div key={wallpaper._id} className={styles.wallpaperItem}>
                             {wallpaper.thumbnailData && (
-                                <img src={`data:${wallpaper.thumbnailContentType};base64,${wallpaper.thumbnailData}`} alt={wallpaper.name} className={styles.wallpaperImage} />
+                                <img src={`data:${wallpaper.thumbnailContentType};base64,${wallpaper.thumbnailData}`}
+                                     alt={wallpaper.name} className={styles.wallpaperImage}/>
                             )}
                             <div className={styles.wallpaperActions}>
                                 <button className='admin__button' onClick={() => handleEdit(wallpaper)}>Edit</button>
@@ -142,13 +147,18 @@ function ManageWallpapers() {
                                     {deleting[wallpaper._id] ? (
                                         <div className={styles.loader}></div>
                                     ) : (
-                                        <button className='admin__button' onClick={() => handleDelete(wallpaper._id)}>Delete</button>
+                                        <button className='admin__button'
+                                                onClick={() => handleDelete(wallpaper._id)}>Delete</button>
                                     )}
                                 </div>
+                            </div>
+                            <div>
+                                {wallpaper.isPaid ? 'Paid' : 'Free'}
                             </div>
                         </div>
                     ))}
                 </div>
+
             )}
 
             {!loading && wallpapers.length > 0 && (

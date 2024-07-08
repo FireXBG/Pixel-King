@@ -1,7 +1,15 @@
 const { Schema, model } = require('mongoose');
 
 const adminWallpapersSchema = new Schema({
-    driveID: {
+    driveID_HD: {
+        type: String,
+        required: true
+    },
+    driveID_4K: {
+        type: String,
+        required: true
+    },
+    driveID_8K: {
         type: String,
         required: true
     },
@@ -16,8 +24,12 @@ const adminWallpapersSchema = new Schema({
     view: {
         type: String,
         required: true
-    }
-}, { timestamps: true }); // Add timestamps
+    },
+    isPaid: {
+        type: Boolean,
+        required: true
+    },
+}, { timestamps: true });
 
 const AdminWallpapers = model('AdminWallpapers', adminWallpapersSchema);
 

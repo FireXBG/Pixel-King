@@ -10,6 +10,7 @@ function UploadWallpaperComponent({ onSuccess }) {
     const [previewFiles, setPreviewFiles] = useState([]);
     const [tags, setTags] = useState({});
     const [view, setView] = useState({});
+    const [isPaid, setIsPaid] = useState({});
     const [loading, setLoading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [targetProgress, setTargetProgress] = useState(0);
@@ -133,6 +134,13 @@ function UploadWallpaperComponent({ onSuccess }) {
         }));
     };
 
+    const handleIsPaidChange = (e, index) => {
+        setIsPaid((prevIsPaid) => ({
+            ...prevIsPaid,
+            [index]: e.target.checked
+        }));
+    };
+
     const handleDragOver = (e) => {
         e.preventDefault();
     };
@@ -154,10 +162,11 @@ function UploadWallpaperComponent({ onSuccess }) {
             formData.append('wallpapers', file);
             formData.append(`tags_${index}`, tags[index] || '');
             formData.append(`view_${index}`, view[index] || 'desktop');
+            formData.append(`isPaid_${index}`, isPaid[index] || false);
         });
 
         try {
-            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/admin/upload`, formData, {
+            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/upload`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -213,6 +222,17 @@ function UploadWallpaperComponent({ onSuccess }) {
                                                 onChange={(e) => handleViewChange(e, index, 'mobile')}
                                             />
                                             Mobile (9:16)
+                                        </label>
+                                    </div>
+                                    <div className={styles.viewSelector}>
+                                        <label>
+                                            <input
+                                                type="checkbox"
+                                                name={`isPaid_${index}`}
+                                                value="isPaid"
+                                                onChange={(e) => handleIsPaidChange(e, index)}
+                                            />
+                                            Paid
                                         </label>
                                     </div>
                                 </div>

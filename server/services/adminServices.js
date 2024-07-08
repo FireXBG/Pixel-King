@@ -3,7 +3,15 @@ const AdminWallpapers = require('../models/adminWallpapersSchema.js');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
-const { uploadFile, getFile, deleteFile, createAndUploadThumbnail } = require('../config/googleDrive.js');
+const { uploadFile, getFile, deleteFile, resizeImage } = require('../config/googleDrive.js');
+const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
+const path = require('path');
+const tempDir = path.join(__dirname, '..', 'temp');
+
+if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir);
+}
 
 const DESKTOP_FOLDER_ID = '1mQ0ZRO1pHOV0KoeifLHlzYJcWMXWw-SM';
 const MOBILE_FOLDER_ID = '1lgxNXp83lPkk_z0pIxxsSkwDfqXCkKVT';
@@ -25,20 +33,59 @@ exports.login = async (username, password) => {
     return jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '1h' });
 };
 
-exports.uploadWallpaper = async (file, tags, view) => {
+exports.getFolderId = async (view, resolutionFolder) => {
+    const folderIds = {
+        desktop: {
+            HD: '11Etva74Wrfef_W1YC-HUNQXXY43-Q_WH',
+            '4K': '1JINLh8j5qSocALSeu8M6iUN7HmgIyeQR',
+            '8K': '1qF5--v2yPKR_lmylFVwUes_MEYLKCygP',
+        },
+        mobile: {
+            HD: '1Gwbvbve3GUevuy0SCrUNsh89DUas5X0_',
+            '4K': '1Amm33GF3k5aNmAk-D5FFTtDPHoqz89gO',
+            '8K': '1QMHIhTej1TBiUJXj-kGBsoQgmDTI7wt1',
+        },
+    };
+
+    return folderIds[view][resolutionFolder];
+}
+
+exports.uploadWallpaper = async (file, tags, view, isPaid) => {
     try {
         const { path: filePath, mimetype } = file;
-        const parentFolderId = view === 'desktop' ? DESKTOP_FOLDER_ID : MOBILE_FOLDER_ID;
-        const { id: driveID } = await uploadFile(filePath, mimetype, parentFolderId);
 
-        const thumbnailResponse = await createAndUploadThumbnail(filePath, THUMBNAIL_FOLDER_ID);
-        const thumbnailID = thumbnailResponse.id;
+        // First, upload the original 8K image without resizing
+        const originalUploadResult = await uploadFile(filePath, mimetype, await exports.getFolderId(view, '8K'));
 
-        if (!thumbnailID) {
-            throw new Error('Thumbnail ID is missing');
-        }
+        const resolutions = [
+            { width: 1920, height: 1080, folder: 'HD' },
+            { width: 3840, height: 2160, folder: '4K' }
+        ];
 
-        const newWallpaper = { driveID, thumbnailID, tags, view };
+        const uploadResults = await Promise.all(resolutions.map(async (resolution) => {
+            const resizedBuffer = await resizeImage(fs.readFileSync(filePath), resolution.width, resolution.height);
+            const tempPath = path.join(tempDir, `temp-${uuidv4()}.png`);
+            fs.writeFileSync(tempPath, resizedBuffer);
+
+            const folderId = await exports.getFolderId(view, resolution.folder);
+            const uploadResult = await uploadFile(tempPath, mimetype, folderId);
+
+            fs.unlinkSync(tempPath);
+            return { resolution: resolution.folder, driveID: uploadResult.id };
+        }));
+
+        // Add the original 8K image to the results
+        uploadResults.push({ resolution: '8K', driveID: originalUploadResult.id });
+
+        const newWallpaper = {
+            driveID_HD: uploadResults.find(res => res.resolution === 'HD').driveID,
+            driveID_4K: uploadResults.find(res => res.resolution === '4K').driveID,
+            driveID_8K: uploadResults.find(res => res.resolution === '8K').driveID,
+            thumbnailID: uploadResults.find(res => res.resolution === 'HD').driveID, // Use the HD version for thumbnail
+            tags,
+            view,
+            isPaid
+        };
         await AdminWallpapers.create(newWallpaper);
 
         console.log('Wallpaper uploaded successfully:', newWallpaper);
@@ -89,8 +136,16 @@ exports.deleteWallpaper = async (wallpaperId) => {
             throw new Error('Wallpaper not found');
         }
 
-        await deleteFile(wallpaper.driveID);
-        await deleteFile(wallpaper.thumbnailID);
+        const { driveID_HD, driveID_4K, driveID_8K, thumbnailID } = wallpaper;
+
+        if (!driveID_HD || !driveID_4K || !driveID_8K || !thumbnailID) {
+            throw new Error('Wallpaper does not contain valid drive IDs or thumbnail ID');
+        }
+
+        await deleteFile(driveID_HD);
+        await deleteFile(driveID_4K);
+        await deleteFile(driveID_8K);
+        await deleteFile(thumbnailID);
 
         await AdminWallpapers.findByIdAndDelete(wallpaperId);
 
@@ -101,13 +156,13 @@ exports.deleteWallpaper = async (wallpaperId) => {
     }
 };
 
-exports.updateWallpaperTags = async (wallpaperId, newTags) => {
+exports.updateWallpaperTagsAndIsPaid = async (wallpaperId, newTags, isPaid) => {
     try {
-        await AdminWallpapers.findByIdAndUpdate(wallpaperId, { tags: newTags });
-        console.log('Tags updated successfully:', wallpaperId);
+        await AdminWallpapers.findByIdAndUpdate(wallpaperId, { tags: newTags, isPaid: isPaid });
+        console.log('Tags and isPaid status updated successfully:', wallpaperId);
     } catch (error) {
-        console.error('Error updating tags:', error);
-        throw new Error('An error occurred while updating the tags');
+        console.error('Error updating tags and isPaid status:', error);
+        throw new Error('An error occurred while updating the tags and isPaid status');
     }
 };
 

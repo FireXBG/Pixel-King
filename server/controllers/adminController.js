@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const adminServices = require('../services/adminServices');
-const { getFile, resizeImage } = require('../config/googleDrive');
+const { getFile } = require('../config/googleDrive');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const Jimp = require('jimp'); // Use Jimp instead of Sharp
+const Jimp = require('jimp');
 const rateLimit = require('express-rate-limit');
-const { getIO } = require('../config/socket'); // Correctly import io instance
+const { getIO } = require('../config/socket');
 
 const tempDir = path.join(__dirname, 'temp');
 if (!fs.existsSync(tempDir)) {
@@ -78,19 +78,18 @@ router.get('/wallpapers', async (req, res) => {
     }
 });
 
-router.get('/wallpapers/:id', async (req, res) => {
-    const fileId = req.params.id;
+router.get('/wallpapers/:driveId', async (req, res) => {
+    const { driveId } = req.params;
     try {
-        const fileContent = await getFile(fileId);
+        const fileContent = await getFile(driveId);
         if (!fileContent) {
-            return res.status(404).json({ error: 'Wallpaper not found' });
+            return res.status(404).json({ error: 'File not found' });
         }
-        res.set('Content-Type', fileContent.contentType);
-        console.log('Fetched wallpaper:', fileId);
+        res.set('Content-Type', fileContent.mimeType);
         res.send(fileContent.data);
     } catch (error) {
-        console.error('Error fetching wallpaper:', error);
-        res.status(500).json({ error: 'An error occurred while fetching the wallpaper' });
+        console.error('Error fetching file:', error);
+        res.status(500).json({ error: 'Failed to fetch file' });
     }
 });
 
@@ -98,18 +97,19 @@ router.post('/upload', isAuthorized, upload.array('wallpapers'), async (req, res
     const files = req.files;
     const data = req.body;
     const uploadResults = [];
-    const totalFiles = files.length; // Correct total files calculation
-    const io = getIO(); // Get the io instance
+    const totalFiles = files.length;
+    const io = getIO();
 
     try {
         await Promise.all(files.map(async (file, index) => {
             const tags = data[`tags_${index}`] ? data[`tags_${index}`].split(' ').filter(tag => tag.trim() !== '') : [];
             const view = data[`view_${index}`] || 'desktop';
-            console.log(`Uploading file with view: ${view}`); // Log the view to check
+            const isPaid = data[`isPaid_${index}`] === 'true';
+            console.log(`Uploading file with view: ${view}`);
 
             try {
-                const uploadResult = await adminServices.uploadWallpaper(file, tags, view);
-                uploadResults.push(uploadResult);
+                const resolutionResults = await adminServices.uploadWallpaper(file, tags, view, isPaid);
+                uploadResults.push(resolutionResults);
             } catch (uploadError) {
                 console.error(`Error uploading file ${file.path}:`, uploadError);
             } finally {
@@ -121,13 +121,11 @@ router.post('/upload', isAuthorized, upload.array('wallpapers'), async (req, res
                 }
             }
 
-            // Send progress update
             io.emit('uploadProgress', {
                 progress: ((uploadResults.length) / totalFiles) * 100
             });
         }));
 
-        // Emit complete event after all files are uploaded
         io.emit('uploadComplete');
 
         res.status(200).json({ message: 'Files uploaded successfully', uploadResults });
@@ -147,14 +145,17 @@ router.post('/upload', isAuthorized, upload.array('wallpapers'), async (req, res
     }
 });
 
-router.delete('/wallpapers/:id', isAuthorized, async (req, res) => {
+router.put('/wallpapers/:id', isAuthorized, async (req, res) => {
     const wallpaperId = req.params.id;
+    const newTags = req.body.tags;
+    const isPaid = req.body.isPaid;
+
     try {
-        await adminServices.deleteWallpaper(wallpaperId);
-        res.status(200).json({ message: 'Wallpaper deleted successfully' });
+        await adminServices.updateWallpaperTagsAndIsPaid(wallpaperId, newTags, isPaid); // Update service function to handle isPaid
+        res.status(200).json({ message: 'Tags and isPaid status updated successfully' });
     } catch (error) {
-        console.error('Error deleting wallpaper:', error);
-        res.status(500).json({ error: 'An error occurred while deleting the wallpaper.' });
+        console.error('Error updating tags and isPaid status:', error);
+        res.status(500).json({ error: 'An error occurred while updating the tags and isPaid status.' });
     }
 });
 
@@ -168,6 +169,17 @@ router.put('/wallpapers/:id', isAuthorized, async (req, res) => {
     } catch (error) {
         console.error('Error updating tags:', error);
         res.status(500).json({ error: 'An error occurred while updating the tags.' });
+    }
+});;
+
+router.delete('/wallpapers/:id', isAuthorized, async (req, res) => {
+    const wallpaperId = req.params.id;
+    try {
+        await adminServices.deleteWallpaper(wallpaperId);
+        res.status(200).json({ message: 'Wallpaper deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting wallpaper:', error);
+        res.status(500).json({ error: 'An error occurred while deleting the wallpaper.' });
     }
 });
 

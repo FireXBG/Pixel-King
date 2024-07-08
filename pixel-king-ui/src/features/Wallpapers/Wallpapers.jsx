@@ -54,7 +54,7 @@ export default function Wallpapers() {
         cancelTokenSource.current = axios.CancelToken.source();
 
         try {
-            let url = `${process.env.REACT_APP_BACKEND_URL}/admin/wallpapers?view=${type}&page=${page}&limit=${imagesPerPage}`;
+            let url = `${process.env.REACT_APP_BACKEND_URL}/api/wallpapers?view=${type}&page=${page}&limit=${imagesPerPage}`;
             console.log(process.env.REACT_APP_BACKEND_URL)
             if (tags) {
                 url += `&tags=${tags}`;

@@ -12,7 +12,7 @@ export default function AdminLogin() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/admin/login`, { username, password });
+            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/login`, { username, password });
             if (response.status === 200) {
                 login(response.data.token);
             } else {

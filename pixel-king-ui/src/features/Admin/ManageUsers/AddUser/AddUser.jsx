@@ -10,7 +10,7 @@ export default function AddUser({ onClose, onUserAdded }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/admin/authorizeUser`, { username, password });
+            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/authorizeUser`, { username, password });
             onUserAdded(); // Inform parent component to refresh the list
             onClose(); // Close the modal
         } catch (error) {

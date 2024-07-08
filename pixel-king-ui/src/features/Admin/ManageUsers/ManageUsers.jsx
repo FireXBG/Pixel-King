@@ -16,7 +16,7 @@ function ManageUsers() {
     const fetchUsers = async () => {
         try {
             setLoading(true);
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/admin/users`);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/users`);
             setUsers(response.data.users);
             setLoading(false);
         } catch (error) {
@@ -40,7 +40,7 @@ function ManageUsers() {
 
     const handleDeleteUser = async (username) => {
         try {
-            await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/admin/users/${username}`);
+            await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/users/${username}`);
             fetchUsers(); // Refresh the list of users
         } catch (error) {
             console.error('Error deleting user:', error);

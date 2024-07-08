@@ -12,7 +12,7 @@ export default function Desktop({ wallpapers }) {
                     <img
                         className={styles.image}
                         key={wallpaper._id}
-                        src={`data:${wallpaper.thumbnailContentType};base64,${wallpaper.thumbnailData}`}
+                        src={`${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaper.thumbnailID}`}
                         alt={wallpaper.tags.join(', ')}
                         onClick={() => setSelectedWallpaper(wallpaper)}
                     />

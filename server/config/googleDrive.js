@@ -159,8 +159,17 @@ async function getFile(fileId) {
 
 async function deleteFile(fileId) {
     const drive = google.drive({ version: 'v3', auth: oAuth2Client });
-    await drive.files.delete({ fileId });
-    console.log(`Deleted file ID: ${fileId}`);
+    try {
+        await drive.files.delete({ fileId });
+        console.log(`Deleted file ID: ${fileId}`);
+    } catch (error) {
+        if (error.code === 404) {
+            console.warn(`File not found: ${fileId}`);
+        } else {
+            console.error(`Error deleting file ID: ${fileId}`, error);
+            throw new Error(`Error deleting file ID: ${fileId}`);
+        }
+    }
 }
 
 async function resizeImage(imageBuffer, width, height) {
