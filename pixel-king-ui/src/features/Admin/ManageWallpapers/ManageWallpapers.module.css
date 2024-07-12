@@ -110,6 +110,7 @@
     color: #a4a4a4;
     font-size: 1vw;
     transition: 0.3s;
+    height: 3vw;
 }
 
 .filterContainer select:hover {
@@ -152,6 +153,7 @@
     color: #a4a4a4;
     font-size: 0.8vw;
     transition: 0.3s;
+    height: 3vw;
 }
 
 .submit__button:hover {

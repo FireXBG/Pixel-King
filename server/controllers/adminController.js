@@ -8,6 +8,8 @@ const fs = require('fs');
 const Jimp = require('jimp');
 const rateLimit = require('express-rate-limit');
 const { getIO } = require('../config/socket');
+const { v4: uuidv4 } = require('uuid');
+const unzipper = require('unzipper');
 
 const tempDir = path.join(__dirname, 'temp');
 if (!fs.existsSync(tempDir)) {
@@ -93,36 +95,51 @@ router.get('/wallpapers/:driveId', async (req, res) => {
     }
 });
 
-router.post('/upload', isAuthorized, upload.array('wallpapers'), async (req, res) => {
-    const files = req.files;
+router.post('/upload', upload.single('compressedFiles'), async (req, res) => {
+    const file = req.file;
     const data = req.body;
     const uploadResults = [];
-    const totalFiles = files.length;
     const io = getIO();
 
+    if (!file) {
+        return res.status(400).send('No file uploaded.');
+    }
+
+    const tempDirForExtraction = path.join(tempDir, uuidv4());
+    fs.mkdirSync(tempDirForExtraction, { recursive: true });
+
     try {
-        await Promise.all(files.map(async (file, index) => {
+        await fs.createReadStream(file.path)
+            .pipe(unzipper.Extract({ path: tempDirForExtraction }))
+            .promise();
+
+        const extractedFiles = fs.readdirSync(tempDirForExtraction);
+
+        await Promise.all(extractedFiles.map(async (extractedFile, index) => {
+            const filePath = path.join(tempDirForExtraction, extractedFile);
             const tags = data[`tags_${index}`] ? data[`tags_${index}`].split(' ').filter(tag => tag.trim() !== '') : [];
             const view = data[`view_${index}`] || 'desktop';
             const isPaid = data[`isPaid_${index}`] === 'true';
-            console.log(`Uploading file with view: ${view}`);
 
             try {
-                const resolutionResults = await adminServices.uploadWallpaper(file, tags, view, isPaid);
+                const resolutionResults = await adminServices.uploadWallpaper({
+                    path: filePath,
+                    mimetype: 'image/jpeg', // or the appropriate mime type
+                }, tags, view, isPaid);
                 uploadResults.push(resolutionResults);
             } catch (uploadError) {
-                console.error(`Error uploading file ${file.path}:`, uploadError);
+                console.error(`Error uploading file ${filePath}:`, uploadError);
             } finally {
                 try {
-                    fs.unlinkSync(file.path);
-                    console.log(`Deleted temp file: ${file.path}`);
+                    fs.unlinkSync(filePath);
+                    console.log(`Deleted temp file: ${filePath}`);
                 } catch (unlinkError) {
-                    console.error(`Error deleting temp file: ${file.path}`, unlinkError);
+                    console.error(`Error deleting temp file: ${filePath}`, unlinkError);
                 }
             }
 
             io.emit('uploadProgress', {
-                progress: ((uploadResults.length) / totalFiles) * 100
+                progress: ((uploadResults.length) / extractedFiles.length) * 100
             });
         }));
 
@@ -130,18 +147,26 @@ router.post('/upload', isAuthorized, upload.array('wallpapers'), async (req, res
 
         res.status(200).json({ message: 'Files uploaded successfully', uploadResults });
     } catch (error) {
-        console.error('Error uploading files:', error);
+        console.error('Error extracting files:', error);
 
-        files.forEach(file => {
+        extractedFiles.forEach(file => {
+            const filePath = path.join(tempDirForExtraction, file);
             try {
-                fs.unlinkSync(file.path);
-                console.log(`Deleted temp file: ${file.path}`);
+                fs.unlinkSync(filePath);
+                console.log(`Deleted temp file: ${filePath}`);
             } catch (err) {
-                console.error(`Error deleting temp file: ${file.path}`, err);
+                console.error(`Error deleting temp file: ${filePath}`, err);
             }
         });
 
         res.status(500).json({ error: 'An error occurred while uploading files. Please try again later.' });
+    } finally {
+        try {
+            fs.unlinkSync(file.path); // Delete the uploaded zip file
+            fs.rmdirSync(tempDirForExtraction, { recursive: true }); // Clean up the extraction directory
+        } catch (error) {
+            console.error('Error cleaning up:', error);
+        }
     }
 });
 

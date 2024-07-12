@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { io } from 'socket.io-client';
+import JSZip from 'jszip';
 import styles from './UploadWallpaper.module.css';
+import { io } from 'socket.io-client';
 
-const socket = io(`${process.env.REACT_APP_BACKEND_URL}`); // Adjust this URL to match your server
+const socket = io(`${process.env.REACT_APP_BACKEND_URL}`);
 
 function UploadWallpaperComponent({ onSuccess }) {
     const [originalFiles, setOriginalFiles] = useState([]);
@@ -145,6 +146,20 @@ function UploadWallpaperComponent({ onSuccess }) {
         e.preventDefault();
     };
 
+    const compressFiles = async (files) => {
+        const zip = new JSZip();
+        files.forEach((file, index) => {
+            zip.file(file.name, file);
+        });
+
+        const compressedContent = await zip.generateAsync({ type: 'blob' });
+
+        // Optional: Save the zip file locally for testing
+        // saveAs(compressedContent, 'compressed_files.zip');
+
+        return compressedContent;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (originalFiles.length === 0) {
@@ -157,12 +172,14 @@ function UploadWallpaperComponent({ onSuccess }) {
         setCompleted(false);
         setShowCompletedText(false);
 
+        const compressedFiles = await compressFiles(originalFiles);
+
         const formData = new FormData();
-        originalFiles.forEach((file, index) => {
-            formData.append('wallpapers', file);
-            formData.append(`tags_${index}`, tags[index] || '');
-            formData.append(`view_${index}`, view[index] || 'desktop');
-            formData.append(`isPaid_${index}`, isPaid[index] || false);
+        formData.append('compressedFiles', compressedFiles, 'compressed_files.zip');
+        Object.keys(tags).forEach((key) => {
+            formData.append(`tags_${key}`, tags[key]);
+            formData.append(`view_${key}`, view[key] || 'desktop');
+            formData.append(`isPaid_${key}`, isPaid[key] || false);
         });
 
         try {
