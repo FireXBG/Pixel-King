@@ -125,7 +125,6 @@ exports.uploadWallpaper = async (file, tags, view, isPaid) => {
     }
 };
 
-
 exports.getWallpapersByViewAndTags = async (view, tags, page, limit) => {
     try {
         const query = { view };

@@ -37,7 +37,10 @@ function ManageWallpapers() {
                 return new Promise((resolve, reject) => {
                     const img = new Image();
                     img.src = `${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaper.driveID_HD}`;
-                    img.onload = resolve;
+                    img.onload = () => {
+                        setImagesLoaded(prev => prev + 1);
+                        resolve();
+                    };
                     img.onerror = reject;
                 });
             });
@@ -116,7 +119,10 @@ function ManageWallpapers() {
                 return new Promise((resolve, reject) => {
                     const img = new Image();
                     img.src = `${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaper.driveID_HD}`;
-                    img.onload = resolve;
+                    img.onload = () => {
+                        setImagesLoaded(prev => prev + 1);
+                        resolve();
+                    };
                     img.onerror = reject;
                 });
             });
