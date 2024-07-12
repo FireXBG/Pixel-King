@@ -25,7 +25,7 @@
     transform: translateX(-50%);
     justify-content: center;
     align-items: center;
-    height: 100vh; /* Ensure loader container has full height to make loader visible */
+    height: 100vh;
 }
 
 /* Fade-in and Fade-out Animations for Wallpapers */
@@ -84,6 +84,7 @@
     gap: 2vw;
     margin-top: 2vw;
     place-items: center;
+    min-height: 80vh;
 }
 
 .wallpaperItem {
