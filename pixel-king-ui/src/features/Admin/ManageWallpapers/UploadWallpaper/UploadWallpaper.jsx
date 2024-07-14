@@ -38,20 +38,21 @@ function UploadWallpaperComponent({ onSuccess }) {
                 newProgress[data.fileIndex] = 100;
                 const totalProgress = newProgress.reduce((a, b) => a + b, 0) / newProgress.length;
                 setOverallProgress(totalProgress);
+
+                if (newProgress.every(progress => progress === 100)) {
+                    setCompleted(true);
+                    setShowCompletedText(true);
+
+                    const delayForCompletedText = setTimeout(() => {
+                        setShowContainer(false);
+                        onSuccess();
+                    }, 1000); // Delay to ensure "Completed" text is shown for 1000ms
+
+                    return () => clearTimeout(delayForCompletedText);
+                }
+
                 return newProgress;
             });
-
-            if (data.fileIndex === originalFiles.length - 1) {
-                setCompleted(true);
-                setShowCompletedText(true);
-
-                const delayForCompletedText = setTimeout(() => {
-                    setShowContainer(false);
-                    onSuccess();
-                }, 1000); // Delay to ensure "Completed" text is shown for 1000ms
-
-                return () => clearTimeout(delayForCompletedText);
-            }
         });
 
         return () => {
@@ -136,9 +137,7 @@ function UploadWallpaperComponent({ onSuccess }) {
     const uploadFileInChunks = async (file, metadata, fileIndex) => {
         const fileId = uuidv4(); // Unique identifier for the file
         const chunks = createFileChunks(file);
-        for (let i = 0; i < chunks.length; i++) {
-            await uploadChunk(chunks[i], fileId, i, chunks.length, metadata, fileIndex);
-        }
+        await Promise.all(chunks.map((chunk, i) => uploadChunk(chunk, fileId, i, chunks.length, metadata, fileIndex)));
     };
 
     const handleFileChange = async (e) => {
@@ -204,9 +203,7 @@ function UploadWallpaperComponent({ onSuccess }) {
             isPaid: isPaid[index] || false,
         }));
 
-        for (let i = 0; i < originalFiles.length; i++) {
-            await uploadFileInChunks(originalFiles[i], metadata[i], i);
-        }
+        await Promise.all(originalFiles.map((file, index) => uploadFileInChunks(file, metadata[index], index)));
 
         setLoading(false);
         setCompleted(true);

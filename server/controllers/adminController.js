@@ -140,7 +140,13 @@ router.post('/upload', upload.single('chunk'), async (req, res) => {
     try {
         console.log(`Received chunk ${chunkIndex} of ${totalChunks} for file: ${fileId}`);
 
-        if (parseInt(chunkIndex) + 1 === parseInt(totalChunks)) {
+        const currentChunkPath = path.join(tempDir, `${fileId}-chunk-${chunkIndex}`);
+        if (!fs.existsSync(currentChunkPath)) {
+            throw new Error(`Chunk not found: ${currentChunkPath}`);
+        }
+
+        const chunkFiles = fs.readdirSync(tempDir).filter(file => file.startsWith(fileId));
+        if (chunkFiles.length === parseInt(totalChunks)) {
             const assembledFilePath = await assembleFile(fileId, parseInt(totalChunks));
 
             const fileMetadata = JSON.parse(metadata);
