@@ -80,6 +80,10 @@
     align-items: center;
 }
 
+.wallpaperActions button {
+    width: 6vw;
+}
+
 .actionButtonContainer {
     display: flex;
     align-items: center;
