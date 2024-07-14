@@ -13,55 +13,52 @@ function UploadWallpaperComponent({ onSuccess }) {
     const [view, setView] = useState({});
     const [isPaid, setIsPaid] = useState({});
     const [loading, setLoading] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState(0);
-    const [targetProgress, setTargetProgress] = useState(0);
+    const [overallProgress, setOverallProgress] = useState(0);
+    const [individualProgress, setIndividualProgress] = useState([]);
     const [showContainer, setShowContainer] = useState(true);
     const [completed, setCompleted] = useState(false);
     const [showCompletedText, setShowCompletedText] = useState(false);
 
     const CHUNK_SIZE = 2 * 1024 * 1024; // 2MB chunks
 
-    const easeInOut = (current, target, factor = 0.1) => {
-        if (current < target) {
-            return Math.min(current + factor * (target - current), target);
-        } else {
-            return Math.max(current - factor * (current - target), target);
-        }
-    };
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setUploadProgress((prevProgress) => {
-                return easeInOut(prevProgress, targetProgress);
-            });
-        }, 50);
-
-        return () => clearInterval(interval);
-    }, [targetProgress]);
-
     useEffect(() => {
         socket.on('uploadProgress', (data) => {
-            setTargetProgress(data.progress);
+            setIndividualProgress((prevProgress) => {
+                const newProgress = [...prevProgress];
+                newProgress[data.fileIndex] = data.progress;
+                const totalProgress = newProgress.reduce((a, b) => a + b, 0) / newProgress.length;
+                setOverallProgress(totalProgress);
+                return newProgress;
+            });
         });
 
-        socket.on('uploadComplete', () => {
-            setCompleted(true);
-            setTargetProgress(100);
-            setShowCompletedText(true);
+        socket.on('uploadComplete', (data) => {
+            setIndividualProgress((prevProgress) => {
+                const newProgress = [...prevProgress];
+                newProgress[data.fileIndex] = 100;
+                const totalProgress = newProgress.reduce((a, b) => a + b, 0) / newProgress.length;
+                setOverallProgress(totalProgress);
+                return newProgress;
+            });
 
-            const delayForCompletedText = setTimeout(() => {
-                setShowContainer(false);
-                onSuccess();
-            }, 1000); // Delay to ensure "Completed" text is shown for 1000ms
+            if (data.fileIndex === originalFiles.length - 1) {
+                setCompleted(true);
+                setShowCompletedText(true);
 
-            return () => clearTimeout(delayForCompletedText);
+                const delayForCompletedText = setTimeout(() => {
+                    setShowContainer(false);
+                    onSuccess();
+                }, 1000); // Delay to ensure "Completed" text is shown for 1000ms
+
+                return () => clearTimeout(delayForCompletedText);
+            }
         });
 
         return () => {
             socket.off('uploadProgress');
             socket.off('uploadComplete');
         };
-    }, [onSuccess]);
+    }, [originalFiles, onSuccess]);
 
     const resizeImage = (file, maxWidth, maxHeight, quality) => {
         return new Promise((resolve) => {
@@ -115,13 +112,14 @@ function UploadWallpaperComponent({ onSuccess }) {
         return chunks;
     };
 
-    const uploadChunk = async (chunk, fileId, chunkIndex, totalChunks, metadata) => {
+    const uploadChunk = async (chunk, fileId, chunkIndex, totalChunks, metadata, fileIndex) => {
         const formData = new FormData();
         formData.append('fileId', fileId);
         formData.append('chunkIndex', chunkIndex);
         formData.append('chunk', chunk);
         formData.append('totalChunks', totalChunks);
         formData.append('metadata', JSON.stringify(metadata));
+        formData.append('fileIndex', fileIndex);
 
         try {
             await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/upload`, formData, {
@@ -135,11 +133,11 @@ function UploadWallpaperComponent({ onSuccess }) {
         }
     };
 
-    const uploadFileInChunks = async (file, metadata) => {
+    const uploadFileInChunks = async (file, metadata, fileIndex) => {
         const fileId = uuidv4(); // Unique identifier for the file
         const chunks = createFileChunks(file);
         for (let i = 0; i < chunks.length; i++) {
-            await uploadChunk(chunks[i], fileId, i, chunks.length, metadata);
+            await uploadChunk(chunks[i], fileId, i, chunks.length, metadata, fileIndex);
         }
     };
 
@@ -195,21 +193,32 @@ function UploadWallpaperComponent({ onSuccess }) {
         }
 
         setLoading(true);
-        setUploadProgress(0);
+        setOverallProgress(0);
+        setIndividualProgress(new Array(originalFiles.length).fill(0));
         setCompleted(false);
         setShowCompletedText(false);
 
-        for (let index = 0; index < originalFiles.length; index++) {
-            const file = originalFiles[index];
-            const metadata = {
-                tags: tags[index] || '',
-                view: view[index] || 'desktop',
-                isPaid: isPaid[index] || false
-            };
-            await uploadFileInChunks(file, metadata);
+        const metadata = originalFiles.map((_, index) => ({
+            tags: tags[index] ? tags[index].split(' ') : [],
+            view: view[index],
+            isPaid: isPaid[index] || false,
+        }));
+
+        for (let i = 0; i < originalFiles.length; i++) {
+            await uploadFileInChunks(originalFiles[i], metadata[i], i);
         }
 
         setLoading(false);
+        setCompleted(true);
+        setOverallProgress(100);
+        setShowCompletedText(true);
+
+        const delayForCompletedText = setTimeout(() => {
+            setShowContainer(false);
+            onSuccess();
+        }, 1000); // Delay to ensure "Completed" text is shown for 1000ms
+
+        return () => clearTimeout(delayForCompletedText);
     };
 
     return (
@@ -272,13 +281,13 @@ function UploadWallpaperComponent({ onSuccess }) {
                             ))}
                         </div>
                         <button className="admin__button" type="submit" disabled={loading}>
-                            {loading ? `Uploading... ${Math.round(uploadProgress)}%` : 'Upload'}
+                            {loading ? `Uploading... ${Math.round(overallProgress)}%` : 'Upload'}
                         </button>
                     </form>
                     {loading && (
                         <div className={styles.loading}>
                             <div className={styles.loadingText}>
-                                Uploading... {Math.round(uploadProgress)}%
+                                Uploading... {Math.round(overallProgress)}%
                             </div>
                         </div>
                     )}

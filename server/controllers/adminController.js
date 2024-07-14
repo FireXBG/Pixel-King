@@ -135,7 +135,7 @@ router.get('/wallpapers/:driveId', async (req, res) => {
 });
 
 router.post('/upload', upload.single('chunk'), async (req, res) => {
-    const { fileId, chunkIndex, totalChunks, metadata } = req.body;
+    const { fileId, chunkIndex, totalChunks, metadata, fileIndex } = req.body;
 
     try {
         console.log(`Received chunk ${chunkIndex} of ${totalChunks} for file: ${fileId}`);
@@ -150,9 +150,9 @@ router.post('/upload', upload.single('chunk'), async (req, res) => {
             const io = getIO();
 
             try {
-                const tags = fileMetadata.tags ? fileMetadata.tags.split(' ').filter(tag => tag.trim() !== '') : [];
+                const tags = fileMetadata.tags ? fileMetadata.tags : [];
                 const view = fileMetadata.view || 'desktop';
-                const isPaid = fileMetadata.isPaid === 'true';
+                const isPaid = fileMetadata.isPaid;
 
                 const resolutionResults = await adminServices.uploadWallpaper({
                     path: assembledFilePath,
@@ -160,7 +160,7 @@ router.post('/upload', upload.single('chunk'), async (req, res) => {
                 }, tags, view, isPaid);
                 uploadResults.push(resolutionResults);
 
-                io.emit('uploadComplete');
+                io.emit('uploadComplete', { fileIndex });
                 res.status(200).json({ message: 'Files uploaded successfully', uploadResults });
 
                 // Clean up temporary files
@@ -173,6 +173,7 @@ router.post('/upload', upload.single('chunk'), async (req, res) => {
         } else {
             const io = getIO();
             io.emit('uploadProgress', {
+                fileIndex,
                 progress: ((parseInt(chunkIndex) + 1) / parseInt(totalChunks)) * 100
             });
 
