@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import JSZip from 'jszip';
 import styles from './UploadWallpaper.module.css';
 import { io } from 'socket.io-client';
+import { v4 as uuidv4 } from 'uuid';
 
 const socket = io(`${process.env.REACT_APP_BACKEND_URL}`);
 
@@ -18,6 +18,8 @@ function UploadWallpaperComponent({ onSuccess }) {
     const [showContainer, setShowContainer] = useState(true);
     const [completed, setCompleted] = useState(false);
     const [showCompletedText, setShowCompletedText] = useState(false);
+
+    const CHUNK_SIZE = 2 * 1024 * 1024; // 2MB chunks
 
     const easeInOut = (current, target, factor = 0.1) => {
         if (current < target) {
@@ -102,6 +104,45 @@ function UploadWallpaperComponent({ onSuccess }) {
         });
     };
 
+    const createFileChunks = (file) => {
+        const chunks = [];
+        let start = 0;
+        while (start < file.size) {
+            const chunk = file.slice(start, start + CHUNK_SIZE);
+            chunks.push(chunk);
+            start += CHUNK_SIZE;
+        }
+        return chunks;
+    };
+
+    const uploadChunk = async (chunk, fileId, chunkIndex, totalChunks, metadata) => {
+        const formData = new FormData();
+        formData.append('fileId', fileId);
+        formData.append('chunkIndex', chunkIndex);
+        formData.append('chunk', chunk);
+        formData.append('totalChunks', totalChunks);
+        formData.append('metadata', JSON.stringify(metadata));
+
+        try {
+            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/upload`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+        } catch (error) {
+            console.error('Error uploading chunk:', error);
+            throw error;
+        }
+    };
+
+    const uploadFileInChunks = async (file, metadata) => {
+        const fileId = uuidv4(); // Unique identifier for the file
+        const chunks = createFileChunks(file);
+        for (let i = 0; i < chunks.length; i++) {
+            await uploadChunk(chunks[i], fileId, i, chunks.length, metadata);
+        }
+    };
+
     const handleFileChange = async (e) => {
         const newFiles = Array.from(e.target.files);
         const resizedFiles = await Promise.all(
@@ -146,20 +187,6 @@ function UploadWallpaperComponent({ onSuccess }) {
         e.preventDefault();
     };
 
-    const compressFiles = async (files) => {
-        const zip = new JSZip();
-        files.forEach((file, index) => {
-            zip.file(file.name, file);
-        });
-
-        const compressedContent = await zip.generateAsync({ type: 'blob' });
-
-        // Optional: Save the zip file locally for testing
-        // saveAs(compressedContent, 'compressed_files.zip');
-
-        return compressedContent;
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (originalFiles.length === 0) {
@@ -172,28 +199,17 @@ function UploadWallpaperComponent({ onSuccess }) {
         setCompleted(false);
         setShowCompletedText(false);
 
-        const compressedFiles = await compressFiles(originalFiles);
-
-        const formData = new FormData();
-        formData.append('compressedFiles', compressedFiles, 'compressed_files.zip');
-        Object.keys(tags).forEach((key) => {
-            formData.append(`tags_${key}`, tags[key]);
-            formData.append(`view_${key}`, view[key] || 'desktop');
-            formData.append(`isPaid_${key}`, isPaid[key] || false);
-        });
-
-        try {
-            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/upload`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-        } catch (error) {
-            console.error('Error uploading files:', error);
-            alert('Error uploading files');
-        } finally {
-            setLoading(false);
+        for (let index = 0; index < originalFiles.length; index++) {
+            const file = originalFiles[index];
+            const metadata = {
+                tags: tags[index] || '',
+                view: view[index] || 'desktop',
+                isPaid: isPaid[index] || false
+            };
+            await uploadFileInChunks(file, metadata);
         }
+
+        setLoading(false);
     };
 
     return (

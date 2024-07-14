@@ -9,7 +9,6 @@ const Jimp = require('jimp');
 const rateLimit = require('express-rate-limit');
 const { getIO } = require('../config/socket');
 const { v4: uuidv4 } = require('uuid');
-const unzipper = require('unzipper');
 
 const tempDir = path.join(__dirname, 'temp');
 if (!fs.existsSync(tempDir)) {
@@ -21,7 +20,7 @@ const storage = multer.diskStorage({
         cb(null, tempDir);
     },
     filename: function (req, file, cb) {
-        cb(null, Date.now() + path.extname(file.originalname));
+        cb(null, `${req.body.fileId}-chunk-${req.body.chunkIndex}`);
     }
 });
 const upload = multer({ storage: storage });
@@ -36,6 +35,46 @@ const limiter = rateLimit({
         });
     },
 });
+
+const assembleFile = async (fileId, totalChunks) => {
+    console.log(`Assembling file: ${fileId} from ${totalChunks} chunks`);
+    const chunkFiles = fs.readdirSync(tempDir).filter(file => file.startsWith(fileId)).sort((a, b) => {
+        const aIndex = parseInt(a.split('-').pop(), 10);
+        const bIndex = parseInt(b.split('-').pop(), 10);
+        return aIndex - bIndex;
+    });
+
+    console.log(`Found ${chunkFiles.length} chunks for file: ${fileId}`);
+
+    if (chunkFiles.length !== totalChunks) {
+        throw new Error(`Expected ${totalChunks} chunks, but found ${chunkFiles.length}`);
+    }
+
+    const assembledFilePath = path.join(tempDir, fileId);
+    const writeStream = fs.createWriteStream(assembledFilePath);
+
+    for (let i = 0; i < totalChunks; i++) {
+        const chunkPath = path.join(tempDir, `${fileId}-chunk-${i}`);
+        if (!fs.existsSync(chunkPath)) {
+            throw new Error(`Chunk not found: ${chunkPath}`);
+        }
+        const readStream = fs.createReadStream(chunkPath);
+
+        await new Promise((resolve, reject) => {
+            readStream.pipe(writeStream, { end: false });
+            readStream.on('end', resolve);
+            readStream.on('error', reject);
+        });
+
+        fs.unlinkSync(chunkPath);
+    }
+
+    writeStream.end();
+    return new Promise((resolve, reject) => {
+        writeStream.on('finish', () => resolve(assembledFilePath));
+        writeStream.on('error', reject);
+    });
+};
 
 router.post('/login', limiter, async (req, res) => {
     const data = req.body;
@@ -95,78 +134,54 @@ router.get('/wallpapers/:driveId', async (req, res) => {
     }
 });
 
-router.post('/upload', upload.single('compressedFiles'), async (req, res) => {
-    const file = req.file;
-    const data = req.body;
-    const uploadResults = [];
-    const io = getIO();
-
-    if (!file) {
-        return res.status(400).send('No file uploaded.');
-    }
-
-    const tempDirForExtraction = path.join(tempDir, uuidv4());
-    fs.mkdirSync(tempDirForExtraction, { recursive: true });
+router.post('/upload', upload.single('chunk'), async (req, res) => {
+    const { fileId, chunkIndex, totalChunks, metadata } = req.body;
 
     try {
-        await fs.createReadStream(file.path)
-            .pipe(unzipper.Extract({ path: tempDirForExtraction }))
-            .promise();
+        console.log(`Received chunk ${chunkIndex} of ${totalChunks} for file: ${fileId}`);
 
-        const extractedFiles = fs.readdirSync(tempDirForExtraction);
+        if (parseInt(chunkIndex) + 1 === parseInt(totalChunks)) {
+            const assembledFilePath = await assembleFile(fileId, parseInt(totalChunks));
 
-        await Promise.all(extractedFiles.map(async (extractedFile, index) => {
-            const filePath = path.join(tempDirForExtraction, extractedFile);
-            const tags = data[`tags_${index}`] ? data[`tags_${index}`].split(' ').filter(tag => tag.trim() !== '') : [];
-            const view = data[`view_${index}`] || 'desktop';
-            const isPaid = data[`isPaid_${index}`] === 'true';
+            const fileMetadata = JSON.parse(metadata);
+
+            // Upload the assembled file
+            const uploadResults = [];
+            const io = getIO();
 
             try {
+                const tags = fileMetadata.tags ? fileMetadata.tags.split(' ').filter(tag => tag.trim() !== '') : [];
+                const view = fileMetadata.view || 'desktop';
+                const isPaid = fileMetadata.isPaid === 'true';
+
                 const resolutionResults = await adminServices.uploadWallpaper({
-                    path: filePath,
+                    path: assembledFilePath,
                     mimetype: 'image/jpeg', // or the appropriate mime type
                 }, tags, view, isPaid);
                 uploadResults.push(resolutionResults);
+
+                io.emit('uploadComplete');
+                res.status(200).json({ message: 'Files uploaded successfully', uploadResults });
+
+                // Clean up temporary files
+                fs.unlinkSync(assembledFilePath);
             } catch (uploadError) {
-                console.error(`Error uploading file ${filePath}:`, uploadError);
-            } finally {
-                try {
-                    fs.unlinkSync(filePath);
-                    console.log(`Deleted temp file: ${filePath}`);
-                } catch (unlinkError) {
-                    console.error(`Error deleting temp file: ${filePath}`, unlinkError);
-                }
+                console.error('Error uploading file:', uploadError);
+                res.status(500).json({ error: 'An error occurred while uploading the file' });
             }
 
+        } else {
+            const io = getIO();
             io.emit('uploadProgress', {
-                progress: ((uploadResults.length) / extractedFiles.length) * 100
+                progress: ((parseInt(chunkIndex) + 1) / parseInt(totalChunks)) * 100
             });
-        }));
 
-        io.emit('uploadComplete');
-
-        res.status(200).json({ message: 'Files uploaded successfully', uploadResults });
-    } catch (error) {
-        console.error('Error extracting files:', error);
-
-        extractedFiles.forEach(file => {
-            const filePath = path.join(tempDirForExtraction, file);
-            try {
-                fs.unlinkSync(filePath);
-                console.log(`Deleted temp file: ${filePath}`);
-            } catch (err) {
-                console.error(`Error deleting temp file: ${filePath}`, err);
-            }
-        });
-
-        res.status(500).json({ error: 'An error occurred while uploading files. Please try again later.' });
-    } finally {
-        try {
-            fs.unlinkSync(file.path); // Delete the uploaded zip file
-            fs.rmdirSync(tempDirForExtraction, { recursive: true }); // Clean up the extraction directory
-        } catch (error) {
-            console.error('Error cleaning up:', error);
+            res.status(200).json({ message: 'Chunk uploaded successfully' });
         }
+
+    } catch (error) {
+        console.error('Error handling file upload:', error);
+        res.status(500).json({ error: 'An error occurred while uploading the file' });
     }
 });
 
