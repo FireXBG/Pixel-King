@@ -66,7 +66,7 @@ const assembleFile = async (fileId, totalChunks) => {
             readStream.on('error', reject);
         });
 
-        fs.unlinkSync(chunkPath);
+        fs.unlinkSync(chunkPath); // Remove chunk file after it's been read
     }
 
     writeStream.end();
