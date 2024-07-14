@@ -18,6 +18,7 @@ function UploadWallpaperComponent({ onSuccess }) {
     const [showContainer, setShowContainer] = useState(true);
     const [completed, setCompleted] = useState(false);
     const [showCompletedText, setShowCompletedText] = useState(false);
+    const [processingFiles, setProcessingFiles] = useState(false);
 
     const CHUNK_SIZE = 2 * 1024 * 1024; // 2MB chunks
 
@@ -141,22 +142,26 @@ function UploadWallpaperComponent({ onSuccess }) {
     };
 
     const handleFileChange = async (e) => {
+        setProcessingFiles(true);
         const newFiles = Array.from(e.target.files);
         const resizedFiles = await Promise.all(
             newFiles.map((file) => resizeImage(file, 800, 600, 0.7))
         );
         setOriginalFiles(newFiles);
         setPreviewFiles(resizedFiles);
+        setProcessingFiles(false);
     };
 
     const handleDrop = async (e) => {
         e.preventDefault();
+        setProcessingFiles(true);
         const newFiles = Array.from(e.dataTransfer.files);
         const resizedFiles = await Promise.all(
             newFiles.map((file) => resizeImage(file, 800, 600, 0.7))
         );
         setOriginalFiles(newFiles);
         setPreviewFiles(resizedFiles);
+        setProcessingFiles(false);
     };
 
     const handleTagsChange = (e, index) => {
@@ -230,54 +235,61 @@ function UploadWallpaperComponent({ onSuccess }) {
                     <form onSubmit={handleSubmit}>
                         <label htmlFor="wallpaper">Click me or drag files to upload</label>
                         <input type="file" id="wallpaper" name="wallpaper" multiple onChange={handleFileChange} />
-                        <div className={styles.previews}>
-                            {previewFiles.map((file, index) => (
-                                <div key={index} className={styles.preview}>
-                                    <div className={styles.previewImageContainer}>
-                                        <img src={URL.createObjectURL(file)} alt={`preview ${index}`} className={styles.previewImage} />
+                        {processingFiles && (
+                            <div className={styles.processingText}>
+                                Processing...
+                            </div>
+                        )}
+                        {!processingFiles && (
+                            <div className={styles.previews}>
+                                {previewFiles.map((file, index) => (
+                                    <div key={index} className={styles.preview}>
+                                        <div className={styles.previewImageContainer}>
+                                            <img src={URL.createObjectURL(file)} alt={`preview ${index}`} className={styles.previewImage} />
+                                        </div>
+                                        <textarea
+                                            placeholder="Tags (separated by spaces)"
+                                            value={tags[index] || ''}
+                                            onChange={(e) => handleTagsChange(e, index)}
+                                        />
+                                        <div className={styles.viewSelector}>
+                                            <label>
+                                                <input
+                                                    type="radio"
+                                                    name={`view_${index}`}
+                                                    value="desktop"
+                                                    checked={view[index] === 'desktop'}
+                                                    onChange={(e) => handleViewChange(e, index, 'desktop')}
+                                                />
+                                                Desktop (16:9)
+                                            </label>
+                                            <label>
+                                                <input
+                                                    type="radio"
+                                                    name={`view_${index}`}
+                                                    value="mobile"
+                                                    checked={view[index] === 'mobile'}
+                                                    onChange={(e) => handleViewChange(e, index, 'mobile')}
+                                                />
+                                                Mobile (9:16)
+                                            </label>
+                                        </div>
+                                        <div className={styles.viewSelector}>
+                                            <label>
+                                                <input
+                                                    type="checkbox"
+                                                    name={`isPaid_${index}`}
+                                                    value="isPaid"
+                                                    onChange={(e) => handleIsPaidChange(e, index)}
+                                                />
+                                                Paid
+                                            </label>
+                                        </div>
                                     </div>
-                                    <textarea
-                                        placeholder="Tags (separated by spaces)"
-                                        value={tags[index] || ''}
-                                        onChange={(e) => handleTagsChange(e, index)}
-                                    />
-                                    <div className={styles.viewSelector}>
-                                        <label>
-                                            <input
-                                                type="radio"
-                                                name={`view_${index}`}
-                                                value="desktop"
-                                                checked={view[index] === 'desktop'}
-                                                onChange={(e) => handleViewChange(e, index, 'desktop')}
-                                            />
-                                            Desktop (16:9)
-                                        </label>
-                                        <label>
-                                            <input
-                                                type="radio"
-                                                name={`view_${index}`}
-                                                value="mobile"
-                                                checked={view[index] === 'mobile'}
-                                                onChange={(e) => handleViewChange(e, index, 'mobile')}
-                                            />
-                                            Mobile (9:16)
-                                        </label>
-                                    </div>
-                                    <div className={styles.viewSelector}>
-                                        <label>
-                                            <input
-                                                type="checkbox"
-                                                name={`isPaid_${index}`}
-                                                value="isPaid"
-                                                onChange={(e) => handleIsPaidChange(e, index)}
-                                            />
-                                            Paid
-                                        </label>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                        <button className="admin__button" type="submit" disabled={loading}>
+                                ))}
+                            </div>
+                        )}
+                        <button className="admin__button" type="submit" disabled={loading || processingFiles}>
                             {loading ? `Uploading... ${Math.round(overallProgress)}%` : 'Upload'}
                         </button>
                     </form>
