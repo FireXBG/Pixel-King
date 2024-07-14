@@ -25,6 +25,8 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
+const receivedChunks = {}; // Dictionary to keep track of chunks
+
 const limiter = rateLimit({
     windowMs: 1 * 60 * 1000, // 1 minute
     max: 5, // limit each IP to 5 requests per windowMs
@@ -140,47 +142,38 @@ router.post('/upload', upload.single('chunk'), async (req, res) => {
     try {
         console.log(`Received chunk ${chunkIndex} of ${totalChunks} for file: ${fileId}`);
 
-        const currentChunkPath = path.join(tempDir, `${fileId}-chunk-${chunkIndex}`);
-        if (!fs.existsSync(currentChunkPath)) {
-            throw new Error(`Chunk not found: ${currentChunkPath}`);
+        if (!receivedChunks[fileId]) {
+            receivedChunks[fileId] = new Array(parseInt(totalChunks)).fill(false);
         }
 
-        const chunkFiles = fs.readdirSync(tempDir).filter(file => file.startsWith(fileId));
-        if (chunkFiles.length === parseInt(totalChunks)) {
+        receivedChunks[fileId][chunkIndex] = true;
+
+        const allChunksReceived = receivedChunks[fileId].every(chunk => chunk);
+
+        if (allChunksReceived) {
             const assembledFilePath = await assembleFile(fileId, parseInt(totalChunks));
 
             const fileMetadata = JSON.parse(metadata);
+            fileMetadata.filePath = assembledFilePath;
+            fileMetadata.fileId = fileId;
 
-            // Upload the assembled file
-            const uploadResults = [];
             const io = getIO();
+            io.emit('uploadComplete', { fileId, fileIndex });
 
-            try {
-                const tags = fileMetadata.tags ? fileMetadata.tags : [];
-                const view = fileMetadata.view || 'desktop';
-                const isPaid = fileMetadata.isPaid;
+            // Start the upload process once all chunks are received
+            await adminServices.uploadWallpaper({ path: assembledFilePath, mimetype: 'image/jpeg' }, fileMetadata.tags, fileMetadata.view, fileMetadata.isPaid);
+            fs.unlinkSync(assembledFilePath); // Remove assembled file after successful upload
 
-                const resolutionResults = await adminServices.uploadWallpaper({
-                    path: assembledFilePath,
-                    mimetype: 'image/jpeg', // or the appropriate mime type
-                }, tags, view, isPaid);
-                uploadResults.push(resolutionResults);
+            delete receivedChunks[fileId];
 
-                io.emit('uploadComplete', { fileIndex });
-                res.status(200).json({ message: 'Files uploaded successfully', uploadResults });
-
-                // Clean up temporary files
-                fs.unlinkSync(assembledFilePath);
-            } catch (uploadError) {
-                console.error('Error uploading file:', uploadError);
-                res.status(500).json({ error: 'An error occurred while uploading the file' });
-            }
-
+            res.status(200).json({ message: 'File chunk uploaded successfully' });
         } else {
             const io = getIO();
+            const progress = ((parseInt(chunkIndex) + 1) / parseInt(totalChunks)) * 100;
             io.emit('uploadProgress', {
-                fileIndex,
-                progress: ((parseInt(chunkIndex) + 1) / parseInt(totalChunks)) * 100
+                fileId,
+                progress,
+                fileIndex
             });
 
             res.status(200).json({ message: 'Chunk uploaded successfully' });
@@ -191,6 +184,7 @@ router.post('/upload', upload.single('chunk'), async (req, res) => {
         res.status(500).json({ error: 'An error occurred while uploading the file' });
     }
 });
+
 
 router.put('/wallpapers/:id', isAuthorized, async (req, res) => {
     const wallpaperId = req.params.id;

@@ -70,7 +70,6 @@ async function uploadFile(filePath, mimeType, parentFolderId) {
             media: media,
             fields: 'id',
         });
-        console.log(`Uploaded file ID: ${response.data.id}`);
         return response.data;
     } catch (error) {
         console.error('Error uploading file to Google Drive:', error.message);

@@ -13,9 +13,24 @@ if (!fs.existsSync(tempDir)) {
     fs.mkdirSync(tempDir);
 }
 
-const DESKTOP_FOLDER_ID = '1mQ0ZRO1pHOV0KoeifLHlzYJcWMXWw-SM';
-const MOBILE_FOLDER_ID = '1lgxNXp83lPkk_z0pIxxsSkwDfqXCkKVT';
-const THUMBNAIL_FOLDER_ID = '1azk9JqO-pF5O3jAvzlYIlA8dZsRnNyma';
+async function uploadFileWithRetry(filePath, mimeType, parentFolderId, retryCount = 3) {
+    for (let attempt = 1; attempt <= retryCount; attempt++) {
+        try {
+            const response = await uploadFile(filePath, mimeType, parentFolderId);
+            console.log(`Uploaded file ID: ${response.id}`);
+            return response;
+        } catch (error) {
+            console.error(`Attempt ${attempt} failed:`, error.message);
+            if (attempt < retryCount) {
+                console.log(`Retrying upload (attempt ${attempt + 1} of ${retryCount})...`);
+                await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds before retrying
+            } else {
+                console.error('Error uploading file to Google Drive after multiple attempts:', error.message);
+                throw new Error('Error uploading file to Google Drive');
+            }
+        }
+    }
+}
 
 exports.login = async (username, password) => {
     const user = await AdminUser.findOne({ username });
@@ -57,64 +72,62 @@ exports.uploadWallpaper = async (file, tags, view, isPaid) => {
         let uploadResults = [];
 
         // Upload logic based on the view
-        if (view === 'desktop') {
-            // First, upload the original 8K image without resizing
-            const originalUploadResult = await uploadFile(filePath, mimetype, await exports.getFolderId(view, '8K'));
+        if (view === 'desktop' || view === 'mobile') {
+            const originalUploadResult = await uploadFileWithRetry(filePath, mimetype, await exports.getFolderId(view, '8K'));
+            if (!originalUploadResult.id) {
+                throw new Error('Failed to upload original image');
+            }
 
-            const resolutions = [
-                { width: 1920, height: 1080, folder: 'HD' },
-                { width: 3840, height: 2160, folder: '4K' }
-            ];
+            const resolutions = view === 'desktop'
+                ? [
+                    { width: 1920, height: 1080, folder: 'HD' },
+                    { width: 3840, height: 2160, folder: '4K' }
+                ]
+                : [
+                    { width: 1080, height: 1920, folder: 'HD' },
+                    { width: 2160, height: 3840, folder: '4K' }
+                ];
 
-            uploadResults = await Promise.all(resolutions.map(async (resolution) => {
-                const resizedBuffer = await resizeImage(fs.readFileSync(filePath), resolution.width, resolution.height);
-                const tempPath = path.join(tempDir, `temp-${uuidv4()}.png`);
-                fs.writeFileSync(tempPath, resizedBuffer);
+            for (let resolution of resolutions) {
+                try {
+                    const resizedBuffer = await resizeImage(fs.readFileSync(filePath), resolution.width, resolution.height);
+                    const tempPath = path.join(tempDir, `temp-${uuidv4()}.png`);
+                    fs.writeFileSync(tempPath, resizedBuffer);
 
-                const folderId = await exports.getFolderId(view, resolution.folder);
-                const uploadResult = await uploadFile(tempPath, mimetype, folderId);
+                    const folderId = await exports.getFolderId(view, resolution.folder);
+                    const uploadResult = await uploadFileWithRetry(tempPath, mimetype, folderId);
 
-                fs.unlinkSync(tempPath);
-                return { resolution: resolution.folder, driveID: uploadResult.id };
-            }));
+                    fs.unlinkSync(tempPath);
+                    uploadResults.push({ resolution: resolution.folder, driveID: uploadResult.id });
+                } catch (resizeError) {
+                    console.error(`Error uploading resized image for ${resolution.folder}:`, resizeError.message);
+                }
+            }
 
-            // Add the original 8K image to the results
-            uploadResults.push({ resolution: '8K', driveID: originalUploadResult.id });
-
-        } else if (view === 'mobile') {
-            // First, upload the original 8K image without resizing (aspect ratio 9:16)
-            const originalUploadResult = await uploadFile(filePath, mimetype, await exports.getFolderId(view, '8K'));
-
-            const resolutions = [
-                { width: 1080, height: 1920, folder: 'HD' },
-                { width: 2160, height: 3840, folder: '4K' }
-            ];
-
-            uploadResults = await Promise.all(resolutions.map(async (resolution) => {
-                const resizedBuffer = await resizeImage(fs.readFileSync(filePath), resolution.width, resolution.height);
-                const tempPath = path.join(tempDir, `temp-${uuidv4()}.png`);
-                fs.writeFileSync(tempPath, resizedBuffer);
-
-                const folderId = await exports.getFolderId(view, resolution.folder);
-                const uploadResult = await uploadFile(tempPath, mimetype, folderId);
-
-                fs.unlinkSync(tempPath);
-                return { resolution: resolution.folder, driveID: uploadResult.id };
-            }));
-
-            // Add the original 8K image to the results
             uploadResults.push({ resolution: '8K', driveID: originalUploadResult.id });
         }
 
+        console.log('Upload Results:', uploadResults);
+
+        const driveID_HD = uploadResults.find(res => res.resolution === 'HD')?.driveID;
+        const driveID_4K = uploadResults.find(res => res.resolution === '4K')?.driveID;
+        const driveID_8K = uploadResults.find(res => res.resolution === '8K')?.driveID;
+
+        if (!driveID_HD || !driveID_4K || !driveID_8K) {
+            console.error('Missing drive IDs:', { driveID_HD, driveID_4K, driveID_8K });
+            throw new Error('Missing one or more drive IDs');
+        }
+
         const newWallpaper = {
-            driveID_HD: uploadResults.find(res => res.resolution === 'HD').driveID,
-            driveID_4K: uploadResults.find(res => res.resolution === '4K').driveID,
-            driveID_8K: uploadResults.find(res => res.resolution === '8K').driveID,
-            thumbnailID: uploadResults.find(res => res.resolution === 'HD').driveID, // Use the HD version for thumbnail
+            driveID_HD,
+            driveID_4K,
+            driveID_8K,
+            thumbnailID: driveID_HD,
             tags,
             view,
             isPaid
         };
+
         await AdminWallpapers.create(newWallpaper);
 
         console.log('Wallpaper uploaded successfully:', newWallpaper);
