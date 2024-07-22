@@ -237,3 +237,9 @@
 .page__btn:focus {
     outline: none;
 }
+
+.tagsPreview {
+    margin-top: 1vw;
+    color: rgba(251, 174, 253, 0.33);
+    font-size: 0.6vw;
+}

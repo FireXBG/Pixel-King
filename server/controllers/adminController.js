@@ -185,7 +185,6 @@ router.post('/upload', upload.single('chunk'), async (req, res) => {
     }
 });
 
-
 router.put('/wallpapers/:id', isAuthorized, async (req, res) => {
     const wallpaperId = req.params.id;
     const newTags = req.body.tags;

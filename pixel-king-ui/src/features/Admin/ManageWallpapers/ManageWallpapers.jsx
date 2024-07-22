@@ -188,6 +188,9 @@ function ManageWallpapers() {
                             <div>
                                 {wallpaper.isPaid ? 'Paid' : 'Free'}
                             </div>
+                            <div className={styles.tagsPreview}>
+                                {wallpaper.tags.join(', ')}
+                            </div>
                         </div>
                     ))}
                 </div>

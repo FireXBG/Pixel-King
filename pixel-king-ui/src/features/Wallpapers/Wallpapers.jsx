@@ -57,7 +57,7 @@ export default function Wallpapers() {
         try {
             let url = `${process.env.REACT_APP_BACKEND_URL}/api/wallpapers?view=${type}&page=${page}&limit=${imagesPerPage}`;
             if (tags) {
-                url += `&tags=${tags}`;
+                url += `&tags=${encodeURIComponent(tags.toLowerCase())}`; // Convert tags to lowercase
             }
             const response = await axios.get(url, {
                 cancelToken: cancelTokenSource.current.token,
@@ -137,7 +137,9 @@ export default function Wallpapers() {
                             if (e.key === 'Enter') handleSearch();
                         }}
                     />
-                    <button className={styles.search__button}><img className={styles.search__icon} src={searchIcon} alt='search button' /></button>
+                    <button className={styles.search__button} onClick={handleSearch}>
+                        <img className={styles.search__icon} src={searchIcon} alt='search button' />
+                    </button>
                 </div>
                 <div className={styles.device__type__container}>
                     <button
@@ -192,6 +194,12 @@ export default function Wallpapers() {
                     </div>
                     <AdComponent /> {/* Add the AdComponent here */}
                 </>
+            )}
+
+            {!loading && wallpapers.length === 0 && (
+                <div className={styles.noResults}>
+                    No wallpapers found.
+                </div>
             )}
 
             {selectedWallpaper && <WallpaperDetails wallpaper={selectedWallpaper} onClose={closeWallpaperDetails}/>}
