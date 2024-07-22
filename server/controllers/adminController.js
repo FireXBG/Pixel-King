@@ -98,7 +98,7 @@ router.get('/wallpapers', async (req, res) => {
     const view = req.query.view || 'desktop'; // Default to 'desktop' if not specified
     const tags = req.query.tags ? req.query.tags.split(' ') : []; // Get tags from query, split by space
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
+    const limit = parseInt(req.query.limit) || 8; // Set to 8 per page
     const id = req.query.id;
 
     console.log(`Fetching wallpapers for view: ${view}, page: ${page}, limit: ${limit}, tags: ${tags}`);
@@ -128,8 +128,8 @@ router.get('/wallpapers/:driveId', async (req, res) => {
         if (!fileContent) {
             return res.status(404).json({ error: 'File not found' });
         }
-        res.set('Content-Type', fileContent.mimeType);
-        res.send(fileContent.data);
+        res.set('Content-Type', 'image/jpeg');
+        res.send(fileContent);
     } catch (error) {
         console.error('Error fetching file:', error);
         res.status(500).json({ error: 'Failed to fetch file' });
@@ -230,14 +230,14 @@ router.post('/download', async (req, res) => {
         const [width, height] = resolution.split('x').map(Number);
 
         // Resize the image to the specified resolution
-        const image = await Jimp.read(fileContent.data);
+        const image = await Jimp.read(fileContent);
         image.resize(width, height);
 
         const resizedImageBuffer = await image.getBufferAsync(Jimp.MIME_PNG);
 
         res.status(200).json({
             base64Image: resizedImageBuffer.toString('base64'),
-            mimeType: fileContent.mimeType,
+            mimeType: 'image/png',
         });
     } catch (error) {
         console.error('Error downloading wallpaper:', error);

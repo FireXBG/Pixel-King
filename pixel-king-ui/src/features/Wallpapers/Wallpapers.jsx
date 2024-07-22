@@ -18,7 +18,7 @@ export default function Wallpapers() {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedWallpaper, setSelectedWallpaper] = useState(null);
     const [fadeClass, setFadeClass] = useState('');
-    const imagesPerPage = 20;
+    const imagesPerPage = 9; // Set to 9 per page
     const cancelTokenSource = useRef(null);
 
     useEffect(() => {
@@ -76,22 +76,9 @@ export default function Wallpapers() {
 
             await Promise.all(imagePromises);
 
-            if (reset) {
-                setWallpapers([]);
-            }
-
-            if (initialFetch) {
-                setWallpapers(fetchedWallpapers);
-                setFadeClass('fade-in');
-                setLoading(false);
-            } else {
-                setFadeClass('fade-out');
-                setTimeout(() => {
-                    setWallpapers(fetchedWallpapers);
-                    setFadeClass('fade-in');
-                    setLoading(false);
-                }, 500);
-            }
+            setWallpapers(fetchedWallpapers);
+            setFadeClass('fade-in');
+            setLoading(false);
         } catch (error) {
             if (axios.isCancel(error)) {
                 console.log('Request canceled', error.message);
@@ -115,6 +102,7 @@ export default function Wallpapers() {
 
     const handlePageChange = (page) => {
         setFadeClass('fade-out');
+        setLoading(true); // Set loading to true immediately when changing pages
         setTimeout(() => {
             setCurrentPage(page);
             fetchWallpapers(deviceType, page, searchQuery, true);
@@ -177,11 +165,9 @@ export default function Wallpapers() {
                 )}
                 <div className={`${styles.wallpapersGrid} ${styles[fadeClass]}`}>
                     {deviceType === 'desktop' ? (
-                        <Desktop currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers}
-                                 onWallpaperClick={openWallpaperDetails} />
+                        <Desktop wallpapers={wallpapers} onWallpaperClick={openWallpaperDetails} />
                     ) : (
-                        <Mobile currentPage={currentPage} imagesPerPage={imagesPerPage} wallpapers={wallpapers}
-                                onWallpaperClick={openWallpaperDetails} />
+                        <Mobile wallpapers={wallpapers} onWallpaperClick={openWallpaperDetails} />
                     )}
                 </div>
             </section>

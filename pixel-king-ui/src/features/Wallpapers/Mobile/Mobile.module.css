@@ -1,13 +1,14 @@
 .images__container {
     margin: 3vw;
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 3.5vw;
+    column-gap: 10vw;
     place-items: center;
 }
 
 .image {
-    width: 15vw;
+    width: 20vw;
     border-radius: 0.5vw;
     transition: 0.3s ease-in-out;
 }
@@ -20,11 +21,12 @@
 
 @media screen and (max-width: 768px) {
     .images__container {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr;
+        margin-top: 10vw;
     }
 
     .image {
-        width: 40vw;
+        width: 70vw;
         border-radius: 3vw;
     }
 }

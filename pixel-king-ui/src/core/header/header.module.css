@@ -1,11 +1,10 @@
-/* General header styles */
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 2vw 4vw;
     z-index: 100;
-    background-color: #090A1F; /* Added background color */
+    background-color: #090A1F;
 }
 
 .header__logo_container {
@@ -166,6 +165,7 @@
         padding-left: 1.5vw;
         padding-top: 1.3vw;
         padding-bottom: 1vw;
+        border-left: 0.5vw solid #F72585;
     }
 
     .header__logo {

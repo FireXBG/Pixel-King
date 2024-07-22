@@ -345,7 +345,8 @@
     }
 
     .pagination {
-        margin-top: 5vw;
+        margin-top: 10vw;
+        margin-bottom: 10vw;
         gap: 7vw;
     }
 

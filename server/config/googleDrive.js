@@ -78,56 +78,22 @@ async function uploadFile(filePath, mimeType, parentFolderId) {
     }
 }
 
-async function createAndUploadThumbnail(filePath, parentFolderId) {
-    const drive = google.drive({ version: 'v3', auth: oAuth2Client });
-    const thumbnailPath = path.join(__dirname, `thumbnail-${uuidv4()}.jpg`);
-
-    const image = await Jimp.read(filePath);
-    await image.resize(1000, Jimp.AUTO).writeAsync(thumbnailPath);
-
-    const fileMetadata = {
-        name: 'thumbnail_' + path.basename(filePath),
-        parents: [parentFolderId],
-    };
-    const media = {
-        mimeType: 'image/jpeg',
-        body: fs.createReadStream(thumbnailPath),
-    };
-
-    try {
-        const response = await drive.files.create({
-            resource: fileMetadata,
-            media: media,
-            fields: 'id, webContentLink',
-        });
-
-        // Make the thumbnail publicly accessible
-        await drive.permissions.create({
-            fileId: response.data.id,
-            requestBody: {
-                role: 'reader',
-                type: 'anyone',
-            },
-        });
-
-        console.log(`Uploaded thumbnail ID: ${response.data.id}`);
-        fs.unlinkSync(thumbnailPath); // Delete the local thumbnail file
-        return response.data; // Ensure it returns { id, webContentLink }
-    } catch (error) {
-        console.error('Error uploading thumbnail to Google Drive:', error.message);
-        console.error('Error details:', error.response ? error.response.data : 'No response data');
-        throw new Error('Error uploading thumbnail to Google Drive');
-    }
-}
-
 async function getFile(fileId) {
     const drive = google.drive({ version: 'v3', auth: oAuth2Client });
-    const response = await drive.files.get({
-        fileId,
-        fields: 'id, name, mimeType, thumbnailLink',
-    });
 
-    const contentResponse = await drive.files.get({
+    // Ensure cache directory exists
+    const cacheDir = path.join(__dirname, 'cache');
+    if (!fs.existsSync(cacheDir)) {
+        fs.mkdirSync(cacheDir, { recursive: true });
+    }
+
+    // Use caching here if possible
+    const cachePath = path.join(cacheDir, fileId);
+    if (fs.existsSync(cachePath)) {
+        return fs.readFileSync(cachePath);
+    }
+
+    const response = await drive.files.get({
         fileId,
         alt: 'media',
     }, {
@@ -136,19 +102,14 @@ async function getFile(fileId) {
 
     return new Promise((resolve, reject) => {
         const chunks = [];
-        contentResponse.data
+        response.data
             .on('data', (chunk) => {
                 chunks.push(chunk);
             })
             .on('end', () => {
                 const buffer = Buffer.concat(chunks);
-                resolve({
-                    id: response.data.id,
-                    name: response.data.name,
-                    mimeType: response.data.mimeType,
-                    thumbnailLink: response.data.thumbnailLink,
-                    data: buffer,
-                });
+                fs.writeFileSync(cachePath, buffer);
+                resolve(buffer);
             })
             .on('error', (error) => {
                 reject(error);
@@ -175,9 +136,7 @@ async function resizeImage(imageBuffer, width, height) {
     try {
         const image = await Jimp.read(imageBuffer);
         image.resize(width, height);
-
-        const resizedImageBuffer = await image.getBufferAsync(Jimp.MIME_PNG);
-        return resizedImageBuffer;
+        return await image.getBufferAsync(Jimp.MIME_PNG);
     } catch (error) {
         console.error('Error resizing image using Jimp:', error);
         throw new Error('Error resizing image using Jimp');
@@ -187,7 +146,6 @@ async function resizeImage(imageBuffer, width, height) {
 module.exports = {
     initializeDrive,
     uploadFile,
-    createAndUploadThumbnail,
     getFile,
     deleteFile,
     resizeImage
