@@ -15,7 +15,7 @@ function EditTagsModal({ wallpaper, onClose, onSave }) {
             <div className={styles.modalContent}>
                 <h2>Edit Tags</h2>
                 <img
-                    src={`${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaper.driveID_HD}`}
+                    src={`data:image/jpeg;base64,${wallpaper.previewBase64}`}
                     alt={wallpaper.name}
                     className={styles.image}
                 />

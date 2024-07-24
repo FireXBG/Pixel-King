@@ -8,6 +8,7 @@ const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const path = require('path');
 const tempDir = path.join(__dirname, '..', 'temp');
+const Jimp = require('jimp');
 
 if (!fs.existsSync(tempDir)) {
     fs.mkdirSync(tempDir);
@@ -146,20 +147,26 @@ exports.getWallpapersByViewAndTags = async (view, tags, page, limit) => {
         }
 
         const totalCount = await AdminWallpapers.countDocuments(query);
-
         const skip = (page - 1) * limit;
-
         const wallpapers = await AdminWallpapers.find(query)
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit);
 
         const wallpapersWithThumbnails = await Promise.all(wallpapers.map(async (wallpaper) => {
-            // Construct the HD link
-            const hdLink = `https://drive.google.com/uc?export=view&id=${wallpaper.driveID_HD}`;
+            // Fetch the file content from Google Drive
+            const thumbnailData = await getFile(wallpaper.thumbnailID);
+            const image = await Jimp.read(thumbnailData);
+
+            // Resize the image
+            image.resize(800, Jimp.AUTO); // Example size, adjust as needed
+
+            // Get the base64 string
+            const base64Image = await image.getBase64Async(Jimp.MIME_JPEG);
+
             return {
                 ...wallpaper.toObject(),
-                hdLink,
+                previewBase64: base64Image.replace(/^data:image\/jpeg;base64,/, ''), // Remove the base64 header
             };
         }));
 
@@ -213,11 +220,27 @@ exports.getWallpaperById = async (id) => {
         if (!wallpaper) {
             throw new Error('Wallpaper not found');
         }
+
+        console.log('Wallpaper found:', wallpaper);
+
+        if (!wallpaper.thumbnailID) {
+            throw new Error('Thumbnail ID not found on wallpaper');
+        }
+
+        console.log('Thumbnail ID:', wallpaper.thumbnailID);
+
         const thumbnailData = await getFile(wallpaper.thumbnailID);
+
+        if (!thumbnailData) {
+            throw new Error('Thumbnail data not found');
+        }
+
+        const base64Image = thumbnailData.toString('base64');
+
         return {
             ...wallpaper.toObject(),
-            thumbnailData: thumbnailData.data.toString('base64'), // Base64 encoded thumbnail data
-            thumbnailContentType: thumbnailData.mimeType,
+            previewBase64: base64Image, // Base64 encoded thumbnail data
+            thumbnailContentType: 'image/jpeg',
         };
     } catch (error) {
         console.error('Error fetching wallpaper by ID:', error);

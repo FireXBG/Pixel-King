@@ -15,7 +15,6 @@ function ManageWallpapers() {
     const [totalPages, setTotalPages] = useState(1);
     const [editingWallpaper, setEditingWallpaper] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
-    const [imagesLoaded, setImagesLoaded] = useState(0);
     const imagesPerPage = 20;
     const cancelTokenSource = useRef(null);
 
@@ -25,27 +24,12 @@ function ManageWallpapers() {
 
     const fetchWallpapers = async () => {
         setLoading(true);
-        setImagesLoaded(0); // Reset image loading count
         try {
             const url = `${process.env.REACT_APP_BACKEND_URL}/api/wallpapers?view=${filter}&page=${currentPage}&limit=${imagesPerPage}`;
             const response = await axios.get(url);
             const wallpapers = response.data.wallpapers || [];
             setWallpapers(wallpapers);
             setTotalPages(Math.ceil(response.data.totalCount / imagesPerPage));
-
-            const imagePromises = wallpapers.map(wallpaper => {
-                return new Promise((resolve, reject) => {
-                    const img = new Image();
-                    img.src = `${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaper.driveID_HD}`;
-                    img.onload = () => {
-                        setImagesLoaded(prev => prev + 1);
-                        resolve();
-                    };
-                    img.onerror = reject;
-                });
-            });
-
-            await Promise.all(imagePromises);
             setLoading(false); // Stop loading when all images are loaded
         } catch (error) {
             console.error('Error fetching wallpapers:', error);
@@ -114,20 +98,6 @@ function ManageWallpapers() {
             const wallpapers = response.data.wallpapers || [];
             setWallpapers(wallpapers);
             setTotalPages(1);
-
-            const imagePromises = wallpapers.map(wallpaper => {
-                return new Promise((resolve, reject) => {
-                    const img = new Image();
-                    img.src = `${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaper.driveID_HD}`;
-                    img.onload = () => {
-                        setImagesLoaded(prev => prev + 1);
-                        resolve();
-                    };
-                    img.onerror = reject;
-                });
-            });
-
-            await Promise.all(imagePromises);
             setLoading(false); // Stop loading when all images are loaded
         } catch (error) {
             console.error('Error searching wallpaper by ID:', error);
@@ -167,9 +137,9 @@ function ManageWallpapers() {
                 <div className={`${styles.wallpapersGrid} ${styles.fadeIn}`}>
                     {wallpapers.map((wallpaper) => (
                         <div key={wallpaper._id} className={styles.wallpaperItem}>
-                            {wallpaper.driveID_HD && (
+                            {wallpaper.previewBase64 && (
                                 <img
-                                    src={`${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaper.driveID_HD}`}
+                                    src={`data:image/jpeg;base64,${wallpaper.previewBase64}`}
                                     alt={wallpaper.name}
                                     className={styles.wallpaperImage}
                                 />

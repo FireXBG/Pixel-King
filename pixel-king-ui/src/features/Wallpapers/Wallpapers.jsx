@@ -13,11 +13,9 @@ export default function Wallpapers() {
     const [deviceType, setDeviceType] = useState(window.innerWidth < 768 ? 'mobile' : 'desktop');
     const [currentPage, setCurrentPage] = useState(1);
     const [wallpapers, setWallpapers] = useState([]);
-    const [loading, setLoading] = useState(false);
     const [totalPages, setTotalPages] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedWallpaper, setSelectedWallpaper] = useState(null);
-    const [fadeClass, setFadeClass] = useState('');
     const imagesPerPage = 9; // Set to 9 per page
     const cancelTokenSource = useRef(null);
 
@@ -40,14 +38,7 @@ export default function Wallpapers() {
         };
     }, [deviceType]);
 
-    const fetchWallpapers = async (type, page, tags, reset = false, initialFetch = false) => {
-        if (loading) return;
-
-        setLoading(true);
-        if (reset) {
-            setWallpapers([]);
-        }
-
+    const fetchWallpapers = async (type, page, tags, reset = false) => {
         if (cancelTokenSource.current) {
             cancelTokenSource.current.cancel('Operation canceled due to new request.');
         }
@@ -65,49 +56,31 @@ export default function Wallpapers() {
             const fetchedWallpapers = response.data.wallpapers;
             setTotalPages(Math.ceil(response.data.totalCount / imagesPerPage));
 
-            const imagePromises = fetchedWallpapers.map(wallpaper => {
-                return new Promise((resolve, reject) => {
-                    const img = new Image();
-                    img.src = `${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaper.driveID_HD}`;
-                    img.onload = resolve;
-                    img.onerror = reject;
-                });
-            });
-
-            await Promise.all(imagePromises);
+            if (reset) {
+                setWallpapers([]);
+            }
 
             setWallpapers(fetchedWallpapers);
-            setFadeClass('fade-in');
-            setLoading(false);
         } catch (error) {
             if (axios.isCancel(error)) {
                 console.log('Request canceled', error.message);
             } else {
                 console.error('Error fetching wallpapers:', error);
-                setLoading(false);
             }
         }
     };
 
     const setDeviceTypeHandler = (type) => {
-        if (loading) return;
-        setFadeClass('fade-out');
-        setTimeout(() => {
-            setDeviceType(type);
-            setCurrentPage(1);
-            fetchWallpapers(type, 1, searchQuery, true, true);
-            window.scrollTo(0, 0);
-        }, 500);
+        setDeviceType(type);
+        setCurrentPage(1);
+        fetchWallpapers(type, 1, searchQuery, true, true);
+        window.scrollTo(0, 0);
     };
 
     const handlePageChange = (page) => {
-        setFadeClass('fade-out');
-        setLoading(true); // Set loading to true immediately when changing pages
-        setTimeout(() => {
-            setCurrentPage(page);
-            fetchWallpapers(deviceType, page, searchQuery, true);
-            window.scrollTo(0, 0);
-        }, 500);
+        setCurrentPage(page);
+        fetchWallpapers(deviceType, page, searchQuery, true);
+        window.scrollTo(0, 0);
     };
 
     const handleSearch = () => {
@@ -145,14 +118,12 @@ export default function Wallpapers() {
                     <button
                         onClick={() => setDeviceTypeHandler('mobile')}
                         className={`${styles.device__type__btn} ${styles.mobile__btn}`}
-                        disabled={loading}
                     >
                         <img className={styles.mobile__btn__img} src={phoneIcon} alt="mobile button"/>
                     </button>
                     <button
                         onClick={() => setDeviceTypeHandler('desktop')}
                         className={`${styles.device__type__btn} ${styles.desktop__btn}`}
-                        disabled={loading}
                     >
                         <img className={styles.desktop__btn__img} src={desktopIcon} alt="desktop button"/>
                     </button>
@@ -160,12 +131,13 @@ export default function Wallpapers() {
             </div>
 
             <section className={styles.wallpapersSection}>
-                {loading && (
+                {/* Loader and animation commented out */}
+                {/* {loading && (
                     <div className={styles.loaderContainer}>
                         <div className={styles.loader}></div>
                     </div>
-                )}
-                <div className={`${styles.wallpapersGrid} ${styles[fadeClass]}`}>
+                )} */}
+                <div className={styles.wallpapersGrid}>
                     {deviceType === 'desktop' ? (
                         <Desktop wallpapers={wallpapers} onWallpaperClick={openWallpaperDetails} />
                     ) : (
@@ -173,7 +145,7 @@ export default function Wallpapers() {
                     )}
                 </div>
             </section>
-            {!loading && wallpapers.length > 0 && (
+            {wallpapers.length > 0 && (
                 <>
                     <div className={styles.pagination}>
                         <button
@@ -196,7 +168,7 @@ export default function Wallpapers() {
                 </>
             )}
 
-            {!loading && wallpapers.length === 0 && (
+            {wallpapers.length === 0 && (
                 <div className={styles.noResults}>
                     No wallpapers found.
                 </div>

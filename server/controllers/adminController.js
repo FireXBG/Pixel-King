@@ -123,7 +123,11 @@ router.get('/wallpapers', async (req, res) => {
 
 router.get('/wallpapers/:driveId', async (req, res) => {
     const { driveId } = req.params;
+    if (!driveId) {
+        return res.status(400).json({ error: 'Drive ID is required' });
+    }
     try {
+        console.log('Fetching file with Drive ID:', driveId);
         const fileContent = await getFile(driveId);
         if (!fileContent) {
             return res.status(404).json({ error: 'File not found' });
@@ -211,7 +215,11 @@ router.delete('/wallpapers/:id', isAuthorized, async (req, res) => {
 });
 
 router.post('/download', async (req, res) => {
-    const { wallpaperId, resolution, aspectRatio } = req.body;
+    const { wallpaperId, resolution } = req.body;
+    if (!wallpaperId || !resolution) {
+        return res.status(400).json({ error: 'Wallpaper ID and resolution are required' });
+    }
+
     try {
         const wallpaper = await adminServices.getWallpaperById(wallpaperId);
         if (!wallpaper) {
@@ -219,25 +227,35 @@ router.post('/download', async (req, res) => {
             return res.status(404).json({ error: 'Wallpaper not found' });
         }
 
-        const fileContent = await getFile(wallpaper.driveID);
+        let driveId;
+        switch (resolution) {
+            case 'HD':
+                driveId = wallpaper.driveID_HD;
+                break;
+            case '4K':
+                driveId = wallpaper.driveID_4K;
+                break;
+            case '8K':
+                driveId = wallpaper.driveID_8K;
+                break;
+            default:
+                return res.status(400).json({ error: 'Invalid resolution' });
+        }
+
+        if (!driveId) {
+            console.log('Drive ID not found for the requested resolution');
+            return res.status(404).json({ error: 'Drive ID not found for the requested resolution' });
+        }
+
+        console.log('Fetching file with ID:', driveId); // Add this log to ensure correct driveId is being passed
+        const fileContent = await getFile(driveId);
         if (!fileContent) {
             console.log('File content not found');
             return res.status(404).json({ error: 'File content not found' });
         }
 
-        // Parse the resolution
-        const [width, height] = resolution.split('x').map(Number);
-
-        // Resize the image to the specified resolution
-        const image = await Jimp.read(fileContent);
-        image.resize(width, height);
-
-        const resizedImageBuffer = await image.getBufferAsync(Jimp.MIME_PNG);
-
-        res.status(200).json({
-            base64Image: resizedImageBuffer.toString('base64'),
-            mimeType: 'image/png',
-        });
+        res.set('Content-Type', 'image/jpeg');
+        res.send(fileContent);
     } catch (error) {
         console.error('Error downloading wallpaper:', error);
         res.status(500).json({ error: 'Failed to download wallpaper' });

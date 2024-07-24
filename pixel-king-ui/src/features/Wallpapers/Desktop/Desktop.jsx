@@ -20,7 +20,7 @@ export default function Desktop({ wallpapers, onWallpaperClick }) {
                 <div key={wallpaper._id} className={`${styles.imageWrapper} ${loadedImages[index] ? styles.fadeInPopUp : ''}`}>
                     <img
                         className={styles.image}
-                        src={`${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaper.driveID_HD}`}
+                        src={`data:image/jpeg;base64,${wallpaper.previewBase64}`}
                         alt={wallpaper.tags.join(', ')}
                         onClick={() => onWallpaperClick(wallpaper)}
                         onLoad={() => handleImageLoad(index)}

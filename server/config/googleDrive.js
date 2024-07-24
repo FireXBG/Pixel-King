@@ -79,6 +79,13 @@ async function uploadFile(filePath, mimeType, parentFolderId) {
 }
 
 async function getFile(fileId) {
+    if (!fileId) {
+        console.error('Error: fileId is undefined or null');
+        throw new Error('fileId is undefined or null');
+    }
+
+    console.log('Fetching file with ID:', fileId);
+
     const drive = google.drive({ version: 'v3', auth: oAuth2Client });
 
     // Ensure cache directory exists
@@ -112,6 +119,7 @@ async function getFile(fileId) {
                 resolve(buffer);
             })
             .on('error', (error) => {
+                console.error('Error fetching file stream:', error);
                 reject(error);
             });
     });

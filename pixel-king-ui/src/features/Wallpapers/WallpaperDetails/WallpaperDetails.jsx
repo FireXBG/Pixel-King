@@ -23,7 +23,10 @@ function WallpaperDetails({ wallpaper, onClose }) {
     const handleDownload = async (resolution) => {
         setDownloading(resolution.label);
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaper[`driveID_${resolution.key}`]}`, {
+            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/download`, {
+                wallpaperId: wallpaper._id,
+                resolution: resolution.key
+            }, {
                 responseType: 'blob'
             });
 
@@ -40,7 +43,7 @@ function WallpaperDetails({ wallpaper, onClose }) {
         setDownloading(null);
     };
 
-    const { _id, tags, driveID_HD } = wallpaper;
+    const { _id, tags, previewBase64 } = wallpaper;
 
     return (
         <>
@@ -48,7 +51,7 @@ function WallpaperDetails({ wallpaper, onClose }) {
             <div className={`${styles.wallpaperDetails} ${isClosing ? styles.wallpaperDetailsClosing : ''}`}>
                 <button className={styles.closeButton} onClick={handleClose}>×</button>
                 <div className={styles.wallpaperPreview}>
-                    <img src={`${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${driveID_HD}`} alt="Wallpaper Preview" />
+                    <img src={`data:image/jpeg;base64,${previewBase64}`} alt="Wallpaper Preview" />
                 </div>
                 <div className={styles.wallpaperInfo}>
                     <div className={styles.tags}>
