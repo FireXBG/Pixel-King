@@ -16,11 +16,12 @@ export default function Wallpapers() {
     const [totalPages, setTotalPages] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedWallpaper, setSelectedWallpaper] = useState(null);
-    const imagesPerPage = 9; // Set to 9 per page
+    const [imagesLoaded, setImagesLoaded] = useState([]);
+    const imagesPerPage = 9;
     const cancelTokenSource = useRef(null);
 
     useEffect(() => {
-        fetchWallpapers(deviceType, currentPage, searchQuery, true, true);
+        fetchWallpapers(deviceType, currentPage, searchQuery, true);
     }, [deviceType, currentPage, searchQuery]);
 
     useEffect(() => {
@@ -44,11 +45,12 @@ export default function Wallpapers() {
         }
 
         cancelTokenSource.current = axios.CancelToken.source();
+        setImagesLoaded(new Array(imagesPerPage).fill(false));
 
         try {
             let url = `${process.env.REACT_APP_BACKEND_URL}/api/wallpapers?view=${type}&page=${page}&limit=${imagesPerPage}`;
             if (tags) {
-                url += `&tags=${encodeURIComponent(tags.toLowerCase())}`; // Convert tags to lowercase
+                url += `&tags=${encodeURIComponent(tags.toLowerCase())}`;
             }
             const response = await axios.get(url, {
                 cancelToken: cancelTokenSource.current.token,
@@ -73,12 +75,14 @@ export default function Wallpapers() {
     const setDeviceTypeHandler = (type) => {
         setDeviceType(type);
         setCurrentPage(1);
-        fetchWallpapers(type, 1, searchQuery, true, true);
+        setWallpapers([]);
+        fetchWallpapers(type, 1, searchQuery, true);
         window.scrollTo(0, 0);
     };
 
     const handlePageChange = (page) => {
         setCurrentPage(page);
+        setWallpapers([]);
         fetchWallpapers(deviceType, page, searchQuery, true);
         window.scrollTo(0, 0);
     };
@@ -96,6 +100,16 @@ export default function Wallpapers() {
     const closeWallpaperDetails = () => {
         setSelectedWallpaper(null);
     };
+
+    const handleImageLoad = (index) => {
+        setImagesLoaded((prev) => {
+            const newImagesLoaded = [...prev];
+            newImagesLoaded[index] = true;
+            return newImagesLoaded;
+        });
+    };
+
+    const allImagesLoaded = wallpapers.length === 0 || imagesLoaded.slice(0, wallpapers.length).every(Boolean);
 
     return (
         <>
@@ -131,17 +145,11 @@ export default function Wallpapers() {
             </div>
 
             <section className={styles.wallpapersSection}>
-                {/* Loader and animation commented out */}
-                {/* {loading && (
-                    <div className={styles.loaderContainer}>
-                        <div className={styles.loader}></div>
-                    </div>
-                )} */}
                 <div className={styles.wallpapersGrid}>
                     {deviceType === 'desktop' ? (
-                        <Desktop wallpapers={wallpapers} onWallpaperClick={openWallpaperDetails} />
+                        <Desktop wallpapers={wallpapers} onWallpaperClick={openWallpaperDetails} onImageLoad={handleImageLoad} imagesLoaded={imagesLoaded} />
                     ) : (
-                        <Mobile wallpapers={wallpapers} onWallpaperClick={openWallpaperDetails} />
+                        <Mobile wallpapers={wallpapers} onWallpaperClick={openWallpaperDetails} onImageLoad={handleImageLoad} imagesLoaded={imagesLoaded} />
                     )}
                 </div>
             </section>
@@ -164,11 +172,11 @@ export default function Wallpapers() {
                             Next
                         </button>
                     </div>
-                    <AdComponent /> {/* Add the AdComponent here */}
+                    <AdComponent />
                 </>
             )}
 
-            {wallpapers.length === 0 && (
+            {wallpapers.length === 0 && allImagesLoaded && (
                 <div className={styles.noResults}>
                     No wallpapers found.
                 </div>

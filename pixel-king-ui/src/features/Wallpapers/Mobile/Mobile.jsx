@@ -1,30 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import styles from './Mobile.module.css';
 
-export default function Mobile({ wallpapers, onWallpaperClick }) {
-    const [loadedImages, setLoadedImages] = useState([]);
-
-    useEffect(() => {
-        setLoadedImages(new Array(wallpapers.length).fill(false));
-    }, [wallpapers]);
-
-    const handleImageLoad = (index) => {
-        const newLoadedImages = [...loadedImages];
-        newLoadedImages[index] = true;
-        setLoadedImages(newLoadedImages);
-    };
-
+export default function Mobile({ wallpapers, onWallpaperClick, onImageLoad, imagesLoaded }) {
     return (
         <div className={styles.images__container}>
-            {wallpapers.map((wallpaper, index) => (
-                <div key={wallpaper._id} className={`${styles.imageWrapper} ${loadedImages[index] ? styles.fadeInPopUp : ''}`}>
-                    <img
-                        className={styles.image}
-                        src={`data:image/jpeg;base64,${wallpaper.previewBase64}`}
-                        alt={wallpaper.tags.join(', ')}
-                        onClick={() => onWallpaperClick(wallpaper)}
-                        onLoad={() => handleImageLoad(index)}
-                    />
+            {new Array(9).fill(null).map((_, index) => (
+                <div key={index} className={styles.imageWrapper}>
+                    {!imagesLoaded[index] && (
+                        <div className={styles.placeholder}></div>
+                    )}
+                    {wallpapers[index] && (
+                        <img
+                            className={`${styles.image} ${imagesLoaded[index] ? styles.loaded : ''}`}
+                            src={`data:image/jpeg;base64,${wallpapers[index]?.previewBase64}`}
+                            alt={wallpapers[index]?.tags.join(', ')}
+                            onClick={() => onWallpaperClick(wallpapers[index])}
+                            onLoad={() => onImageLoad(index)}
+                            style={{ display: imagesLoaded[index] ? 'block' : 'none' }}
+                        />
+                    )}
                 </div>
             ))}
         </div>
