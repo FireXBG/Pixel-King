@@ -39,14 +39,11 @@ const limiter = rateLimit({
 });
 
 const assembleFile = async (fileId, totalChunks) => {
-    console.log(`Assembling file: ${fileId} from ${totalChunks} chunks`);
     const chunkFiles = fs.readdirSync(tempDir).filter(file => file.startsWith(fileId)).sort((a, b) => {
         const aIndex = parseInt(a.split('-').pop(), 10);
         const bIndex = parseInt(b.split('-').pop(), 10);
         return aIndex - bIndex;
     });
-
-    console.log(`Found ${chunkFiles.length} chunks for file: ${fileId}`);
 
     if (chunkFiles.length !== totalChunks) {
         throw new Error(`Expected ${totalChunks} chunks, but found ${chunkFiles.length}`);
@@ -144,8 +141,6 @@ router.post('/upload', upload.single('chunk'), async (req, res) => {
     const { fileId, chunkIndex, totalChunks, metadata, fileIndex } = req.body;
 
     try {
-        console.log(`Received chunk ${chunkIndex} of ${totalChunks} for file: ${fileId}`);
-
         if (!receivedChunks[fileId]) {
             receivedChunks[fileId] = new Array(parseInt(totalChunks)).fill(false);
         }
@@ -164,9 +159,8 @@ router.post('/upload', upload.single('chunk'), async (req, res) => {
             const io = getIO();
             io.emit('uploadComplete', { fileId, fileIndex });
 
-            // Start the upload process once all chunks are received
             await adminServices.uploadWallpaper({ path: assembledFilePath, mimetype: 'image/jpeg' }, fileMetadata.tags, fileMetadata.view, fileMetadata.isPaid);
-            fs.unlinkSync(assembledFilePath); // Remove assembled file after successful upload
+            fs.unlinkSync(assembledFilePath);
 
             delete receivedChunks[fileId];
 
@@ -188,6 +182,7 @@ router.post('/upload', upload.single('chunk'), async (req, res) => {
         res.status(500).json({ error: 'An error occurred while uploading the file' });
     }
 });
+
 
 router.put('/wallpapers/:id', isAuthorized, async (req, res) => {
     const wallpaperId = req.params.id;
@@ -247,7 +242,7 @@ router.post('/download', async (req, res) => {
             return res.status(404).json({ error: 'Drive ID not found for the requested resolution' });
         }
 
-        console.log('Fetching file with ID:', driveId); // Add this log to ensure correct driveId is being passed
+        console.log('Fetching file with ID:', driveId);
         const fileContent = await getFile(driveId);
         if (!fileContent) {
             console.log('File content not found');
