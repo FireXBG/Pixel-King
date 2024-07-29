@@ -190,7 +190,7 @@ router.put('/wallpapers/:id', isAuthorized, async (req, res) => {
     const isPaid = req.body.isPaid;
 
     try {
-        await adminServices.updateWallpaperTagsAndIsPaid(wallpaperId, newTags, isPaid); // Update service function to handle isPaid
+        await adminServices.updateWallpaperTagsAndIsPaid(wallpaperId, newTags, isPaid);
         res.status(200).json({ message: 'Tags and isPaid status updated successfully' });
     } catch (error) {
         console.error('Error updating tags and isPaid status:', error);
