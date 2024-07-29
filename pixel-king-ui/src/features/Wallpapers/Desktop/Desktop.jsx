@@ -7,7 +7,7 @@ export default function Desktop({ wallpapers, onWallpaperClick, onImageLoad, ima
             {new Array(9).fill(null).map((_, index) => (
                 <div key={index} className={styles.imageWrapper}>
                     {!imagesLoaded[index] && (
-                        <div className={styles.placeholder}></div>
+                        <div className={`${styles.placeholder} ${imagesLoaded[index] ? styles.fadeOut : ''}`}></div>
                     )}
                     {wallpapers[index] && (
                         <img
@@ -15,7 +15,10 @@ export default function Desktop({ wallpapers, onWallpaperClick, onImageLoad, ima
                             src={`data:image/jpeg;base64,${wallpapers[index].previewBase64}`}
                             alt={wallpapers[index].tags.join(', ')}
                             onClick={() => onWallpaperClick(wallpapers[index])}
-                            onLoad={() => onImageLoad(index)}
+                            onLoad={() => {
+                                onImageLoad(index);
+                                document.querySelectorAll(`.${styles.placeholder}`)[index].classList.add(styles.fadeOut);
+                            }}
                         />
                     )}
                 </div>
