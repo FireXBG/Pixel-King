@@ -23,7 +23,7 @@
 
 .placeholder {
     width: 20vw;
-    height: 15vw;
+    height: 30vw;
     background-color: rgba(247, 37, 133, 0.06);
     border-radius: 0.5vw;
     position: relative;
@@ -72,6 +72,6 @@
 
     .placeholder {
         width: 70vw;
-        height: 45vw;
+        height: 125vw;
     }
 }
