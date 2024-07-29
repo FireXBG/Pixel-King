@@ -16,7 +16,7 @@ export default function Wallpapers() {
     const [totalPages, setTotalPages] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedWallpaper, setSelectedWallpaper] = useState(null);
-    const [imagesLoaded, setImagesLoaded] = useState([]);
+    const [imagesLoaded, setImagesLoaded] = useState(new Array(9).fill(false));
     const imagesPerPage = 9;
     const cancelTokenSource = useRef(null);
 
@@ -63,6 +63,13 @@ export default function Wallpapers() {
             }
 
             setWallpapers(fetchedWallpapers);
+
+            // Update imagesLoaded array to only have placeholders for fetched wallpapers
+            const updatedImagesLoaded = new Array(imagesPerPage).fill(false);
+            fetchedWallpapers.forEach((_, index) => {
+                updatedImagesLoaded[index] = false;
+            });
+            setImagesLoaded(updatedImagesLoaded);
         } catch (error) {
             if (axios.isCancel(error)) {
                 console.log('Request canceled', error.message);
@@ -105,6 +112,12 @@ export default function Wallpapers() {
         setImagesLoaded((prev) => {
             const newImagesLoaded = [...prev];
             newImagesLoaded[index] = true;
+
+            // Check if all images are loaded, if so remove all placeholders
+            if (newImagesLoaded.slice(0, wallpapers.length).every(Boolean)) {
+                setImagesLoaded(new Array(9).fill(true));
+            }
+
             return newImagesLoaded;
         });
     };

@@ -12,11 +12,10 @@ export default function Desktop({ wallpapers, onWallpaperClick, onImageLoad, ima
                     {wallpapers[index] && (
                         <img
                             className={`${styles.image} ${imagesLoaded[index] ? styles.loaded : ''}`}
-                            src={`data:image/jpeg;base64,${wallpapers[index]?.previewBase64}`}
-                            alt={wallpapers[index]?.tags.join(', ')}
+                            src={`data:image/jpeg;base64,${wallpapers[index].previewBase64}`}
+                            alt={wallpapers[index].tags.join(', ')}
                             onClick={() => onWallpaperClick(wallpapers[index])}
                             onLoad={() => onImageLoad(index)}
-                            style={{ display: imagesLoaded[index] ? 'block' : 'none' }}
                         />
                     )}
                 </div>
