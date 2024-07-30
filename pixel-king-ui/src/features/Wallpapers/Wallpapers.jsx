@@ -10,13 +10,15 @@ import WallpaperDetails from './WallpaperDetails/WallpaperDetails';
 import AdComponent from '../../core/adComponent/adComponent';
 
 export default function Wallpapers() {
-    const [deviceType, setDeviceType] = useState(window.innerWidth < 768 ? 'mobile' : 'desktop');
+    const [initialDeviceType] = useState(window.innerWidth < 768 ? 'mobile' : 'desktop');
+    const [deviceType, setDeviceType] = useState(initialDeviceType);
     const [currentPage, setCurrentPage] = useState(1);
     const [wallpapers, setWallpapers] = useState([]);
     const [totalPages, setTotalPages] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedWallpaper, setSelectedWallpaper] = useState(null);
     const [imagesLoaded, setImagesLoaded] = useState(new Array(9).fill(false));
+    const [userChangedDeviceType, setUserChangedDeviceType] = useState(false);
     const imagesPerPage = 9;
     const cancelTokenSource = useRef(null);
 
@@ -26,10 +28,11 @@ export default function Wallpapers() {
 
     useEffect(() => {
         const handleResize = () => {
-            if (window.innerWidth < 768 && deviceType !== 'mobile') {
-                setDeviceType('mobile');
-            } else if (window.innerWidth >= 768 && deviceType !== 'desktop') {
-                setDeviceType('desktop');
+            if (!userChangedDeviceType) {
+                const newDeviceType = window.innerWidth < 768 ? 'mobile' : 'desktop';
+                if (newDeviceType !== deviceType) {
+                    setDeviceType(newDeviceType);
+                }
             }
         };
 
@@ -37,7 +40,7 @@ export default function Wallpapers() {
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-    }, [deviceType]);
+    }, [deviceType, userChangedDeviceType]);
 
     const fetchWallpapers = async (type, page, tags, reset = false) => {
         if (cancelTokenSource.current) {
@@ -81,6 +84,7 @@ export default function Wallpapers() {
 
     const setDeviceTypeHandler = (type) => {
         setDeviceType(type);
+        setUserChangedDeviceType(true);
         setCurrentPage(1);
         setWallpapers([]);
         fetchWallpapers(type, 1, searchQuery, true);
