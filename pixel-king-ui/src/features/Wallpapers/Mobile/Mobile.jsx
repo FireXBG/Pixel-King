@@ -15,10 +15,7 @@ export default function Mobile({ wallpapers, onWallpaperClick, onImageLoad, imag
                             src={`data:image/jpeg;base64,${wallpapers[index].previewBase64}`}
                             alt={wallpapers[index].tags.join(', ')}
                             onClick={() => onWallpaperClick(wallpapers[index])}
-                            onLoad={() => {
-                                onImageLoad(index);
-                                document.querySelectorAll(`.${styles.placeholder}`)[index].classList.add(styles.fadeOut);
-                            }}
+                            onLoad={() => onImageLoad(index)}
                         />
                     )}
                 </div>

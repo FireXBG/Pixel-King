@@ -15,10 +15,7 @@ export default function Desktop({ wallpapers, onWallpaperClick, onImageLoad, ima
                             src={`data:image/jpeg;base64,${wallpapers[index].previewBase64}`}
                             alt={wallpapers[index].tags.join(', ')}
                             onClick={() => onWallpaperClick(wallpapers[index])}
-                            onLoad={() => {
-                                onImageLoad(index);
-                                document.querySelectorAll(`.${styles.placeholder}`)[index].classList.add(styles.fadeOut);
-                            }}
+                            onLoad={() => onImageLoad(index)}
                         />
                     )}
                 </div>
