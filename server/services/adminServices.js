@@ -52,14 +52,14 @@ exports.login = async (username, password) => {
 exports.getFolderId = async (view, resolutionFolder) => {
     const folderIds = {
         desktop: {
-            HD: '11Etva74Wrfef_W1YC-HUNQXXY43-Q_WH',
-            '4K': '1JINLh8j5qSocALSeu8M6iUN7HmgIyeQR',
-            '8K': '1qF5--v2yPKR_lmylFVwUes_MEYLKCygP',
+            HD: '1apf0ZWV-rDMTr_AZdznvC0M2XbLsKQ6W',
+            '4K': '1ijWXnxka5qvF-1n3fhWTMC7kSvbsnYfY',
+            '8K': '1zuVk0NVtokjZ10cS9idEUprjVUBF-X0w',
         },
         mobile: {
-            HD: '1Gwbvbve3GUevuy0SCrUNsh89DUas5X0_',
-            '4K': '1Amm33GF3k5aNmAk-D5FFTtDPHoqz89gO',
-            '8K': '1QMHIhTej1TBiUJXj-kGBsoQgmDTI7wt1',
+            HD: '1_XDBU8b0RiH6BUApKCLwlww7_5HlFLwH',
+            '4K': '1lPlLDn29fWr6s6O5ezjycdDoXW11M_pE',
+            '8K': '17HMHVoR2NUBji0IkDjv7cj_HuBATnNJZ',
         },
     };
 
