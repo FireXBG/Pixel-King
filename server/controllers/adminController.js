@@ -110,14 +110,18 @@ router.get('/wallpapers', async (req, res) => {
             return res.status(200).json({ wallpapers: [wallpaper], totalCount: 1 });
         }
 
-        const { wallpapers, totalCount } = await adminServices.getWallpapersByViewAndTags(view, tags, page, limit);
-        console.log(`Fetched ${view} wallpapers:`, wallpapers.length);
-        res.status(200).json({ wallpapers, totalCount });
+        const { compressedBuffer, contentType, encoding } = await adminServices.getWallpapersByViewAndTags(view, tags, page, limit);
+        console.log(`Fetched ${view} wallpapers:`, compressedBuffer.length);
+
+        res.set('Content-Encoding', encoding);
+        res.set('Content-Type', contentType);
+        res.send(compressedBuffer);
     } catch (error) {
         console.error('Error fetching wallpapers:', error);
         res.status(500).json({ error: 'An error occurred while fetching wallpapers.' });
     }
 });
+
 
 router.get('/wallpapers/:driveId', async (req, res) => {
     const { driveId } = req.params;
@@ -138,6 +142,7 @@ router.get('/wallpapers/:driveId', async (req, res) => {
                 return res.status(500).json({ error: 'Failed to compress file' });
             }
             const compressedBase64 = compressedBuffer.toString('base64');
+            res.set('Content-Encoding', 'gzip');
             res.set('Content-Type', 'application/octet-stream');
             res.send(compressedBase64);
         });
@@ -146,6 +151,7 @@ router.get('/wallpapers/:driveId', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch file' });
     }
 });
+
 
 router.post('/upload', upload.single('chunk'), async (req, res) => {
     const { fileId, chunkIndex, totalChunks, metadata, fileIndex } = req.body;
