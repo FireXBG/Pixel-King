@@ -9,6 +9,7 @@ const Jimp = require('jimp');
 const rateLimit = require('express-rate-limit');
 const { getIO } = require('../config/socket');
 const { v4: uuidv4 } = require('uuid');
+const zlib = require('zlib');
 
 const tempDir = path.join(__dirname, 'temp');
 if (!fs.existsSync(tempDir)) {
@@ -129,8 +130,17 @@ router.get('/wallpapers/:driveId', async (req, res) => {
         if (!fileContent) {
             return res.status(404).json({ error: 'File not found' });
         }
-        res.set('Content-Type', 'image/jpeg');
-        res.send(fileContent);
+
+        const base64Image = fileContent.toString('base64');
+        zlib.gzip(Buffer.from(base64Image, 'utf-8'), (err, compressedBuffer) => {
+            if (err) {
+                console.error('Error compressing file:', err);
+                return res.status(500).json({ error: 'Failed to compress file' });
+            }
+            const compressedBase64 = compressedBuffer.toString('base64');
+            res.set('Content-Type', 'application/octet-stream');
+            res.send(compressedBase64);
+        });
     } catch (error) {
         console.error('Error fetching file:', error);
         res.status(500).json({ error: 'Failed to fetch file' });
@@ -182,7 +192,6 @@ router.post('/upload', upload.single('chunk'), async (req, res) => {
         res.status(500).json({ error: 'An error occurred while uploading the file' });
     }
 });
-
 
 router.put('/wallpapers/:id', isAuthorized, async (req, res) => {
     const wallpaperId = req.params.id;

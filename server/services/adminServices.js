@@ -159,7 +159,7 @@ exports.getWallpapersByViewAndTags = async (view, tags, page, limit) => {
             const image = await Jimp.read(thumbnailData);
 
             // Resize the image
-            image.resize(800, Jimp.AUTO); // Example size, adjust as needed
+            image.resize(600, Jimp.AUTO); // Example size, adjust as needed
 
             // Get the base64 string
             const base64Image = await image.getBase64Async(Jimp.MIME_JPEG);
