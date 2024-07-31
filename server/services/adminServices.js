@@ -9,6 +9,7 @@ const fs = require('fs');
 const path = require('path');
 const tempDir = path.join(__dirname, '..', 'temp');
 const Jimp = require('jimp');
+const zlib = require('zlib');
 
 if (!fs.existsSync(tempDir)) {
     fs.mkdirSync(tempDir);
@@ -154,14 +155,16 @@ exports.getWallpapersByViewAndTags = async (view, tags, page, limit) => {
             .limit(limit);
 
         const wallpapersWithThumbnails = await Promise.all(wallpapers.map(async (wallpaper) => {
-            // Fetch the file content from Google Drive
             const thumbnailData = await getFile(wallpaper.thumbnailID);
             const image = await Jimp.read(thumbnailData);
 
-            // Resize the image
-            image.resize(600, Jimp.AUTO); // Example size, adjust as needed
+            // Reduce the size more if the view is 'mobile'
+            if (wallpaper.view === 'mobile') {
+                image.resize(520, Jimp.AUTO); // Smaller size for mobile
+            } else {
+                image.resize(600, Jimp.AUTO); // Example size for desktop
+            }
 
-            // Get the base64 string
             const base64Image = await image.getBase64Async(Jimp.MIME_JPEG);
 
             return {
@@ -170,7 +173,10 @@ exports.getWallpapersByViewAndTags = async (view, tags, page, limit) => {
             };
         }));
 
-        return { wallpapers: wallpapersWithThumbnails, totalCount };
+        // Compress the wallpapers with gzip
+        const compressedBuffer = zlib.gzipSync(Buffer.from(JSON.stringify({ wallpapers: wallpapersWithThumbnails, totalCount })));
+        return { compressedBuffer, contentType: 'application/json', encoding: 'gzip' };
+
     } catch (error) {
         console.error('Error fetching wallpapers:', error);
         throw new Error('An error occurred while fetching wallpapers');
