@@ -26,7 +26,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-const receivedChunks = {}; // Dictionary to keep track of chunks
+const receivedChunks = {};
 
 const limiter = rateLimit({
     windowMs: 1 * 60 * 1000, // 1 minute
@@ -122,7 +122,6 @@ router.get('/wallpapers', async (req, res) => {
     }
 });
 
-
 router.get('/wallpapers/:driveId', async (req, res) => {
     const { driveId } = req.params;
     if (!driveId) {
@@ -152,7 +151,6 @@ router.get('/wallpapers/:driveId', async (req, res) => {
     }
 });
 
-
 router.post('/upload', upload.single('chunk'), async (req, res) => {
     const { fileId, chunkIndex, totalChunks, metadata, fileIndex } = req.body;
 
@@ -172,32 +170,49 @@ router.post('/upload', upload.single('chunk'), async (req, res) => {
             fileMetadata.filePath = assembledFilePath;
             fileMetadata.fileId = fileId;
 
-            const io = getIO();
-            io.emit('uploadComplete', { fileId, fileIndex });
-
             await adminServices.uploadWallpaper({ path: assembledFilePath, mimetype: 'image/jpeg' }, fileMetadata.tags, fileMetadata.view, fileMetadata.isPaid);
             fs.unlinkSync(assembledFilePath);
 
             delete receivedChunks[fileId];
 
-            res.status(200).json({ message: 'File chunk uploaded successfully' });
-        } else {
-            const io = getIO();
-            const progress = ((parseInt(chunkIndex) + 1) / parseInt(totalChunks)) * 100;
-            io.emit('uploadProgress', {
-                fileId,
-                progress,
-                fileIndex
-            });
+            // Send upload completion email
+            await adminServices.sendUploadEmail(fileMetadata);
 
+            res.status(200).json({ message: 'File chunk uploaded successfully and email sent.' });
+        } else {
             res.status(200).json({ message: 'Chunk uploaded successfully' });
         }
-
     } catch (error) {
         console.error('Error handling file upload:', error);
         res.status(500).json({ error: 'An error occurred while uploading the file' });
     }
 });
+
+router.post('/uploadComplete', async (req, res) => {
+    const { files } = req.body;
+
+    try {
+        for (const file of files) {
+            const { fileId, totalChunks, metadata } = file;
+            const assembledFilePath = await assembleFile(fileId, parseInt(totalChunks));
+
+            const fileMetadata = JSON.parse(metadata);
+            fileMetadata.filePath = assembledFilePath;
+            fileMetadata.fileId = fileId;
+
+            await adminServices.uploadWallpaper({ path: assembledFilePath, mimetype: 'image/jpeg' }, fileMetadata.tags, fileMetadata.view, fileMetadata.isPaid);
+            fs.unlinkSync(assembledFilePath);
+
+            // Send upload completion email
+            await adminServices.sendUploadEmail();
+        }
+
+        res.status(200).json({ message: 'All files uploaded successfully and emails sent.' });
+    } catch (error) {
+        console.error('Error handling upload completion:', error);
+        res.status(500).json({ error: 'An error occurred while completing the upload' });
+    }
+});;
 
 router.put('/wallpapers/:id', isAuthorized, async (req, res) => {
     const wallpaperId = req.params.id;

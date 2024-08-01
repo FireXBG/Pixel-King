@@ -39,6 +39,8 @@ function ManageWallpapers() {
     };
 
     const handleUploadSuccess = () => {
+        console.log("Upload success handler called");
+        setUploadWallpapersMenu(false);
         fetchWallpapers();
     };
 

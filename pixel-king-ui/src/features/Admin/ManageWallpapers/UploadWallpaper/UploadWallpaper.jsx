@@ -1,10 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import styles from './UploadWallpaper.module.css';
-import { io } from 'socket.io-client';
 import { v4 as uuidv4 } from 'uuid';
-
-const socket = io(`${process.env.REACT_APP_BACKEND_URL}`);
 
 function UploadWallpaperComponent({ onSuccess }) {
     const [originalFiles, setOriginalFiles] = useState([]);
@@ -16,51 +13,60 @@ function UploadWallpaperComponent({ onSuccess }) {
     const [overallProgress, setOverallProgress] = useState(0);
     const [individualProgress, setIndividualProgress] = useState([]);
     const [showContainer, setShowContainer] = useState(true);
-    const [completed, setCompleted] = useState(false);
-    const [showCompletedText, setShowCompletedText] = useState(false);
     const [processing, setProcessing] = useState(false);
 
     const CHUNK_SIZE = 2 * 1024 * 1024; // 2MB chunks
 
-    useEffect(() => {
-        socket.on('uploadProgress', (data) => {
+    const createFileChunks = (file) => {
+        const chunks = [];
+        let start = 0;
+        while (start < file.size) {
+            const chunk = file.slice(start, start + CHUNK_SIZE);
+            chunks.push(chunk);
+            start += CHUNK_SIZE;
+        }
+        return chunks;
+    };
+
+    const uploadChunk = async (chunk, fileId, chunkIndex, totalChunks, metadata, fileIndex) => {
+        const formData = new FormData();
+        formData.append('fileId', fileId);
+        formData.append('chunkIndex', chunkIndex);
+        formData.append('chunk', chunk);
+        formData.append('totalChunks', totalChunks);
+        formData.append('metadata', JSON.stringify(metadata));
+        formData.append('fileIndex', fileIndex);
+
+        try {
+            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/upload`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            return response.data.allChunksReceived;
+        } catch (error) {
+            console.error('Error uploading chunk:', error);
+            throw error;
+        }
+    };
+
+    const uploadFileInChunks = async (file, metadata, fileIndex) => {
+        const fileId = uuidv4(); // Unique identifier for the file
+        const chunks = createFileChunks(file);
+        let allChunksReceived = false;
+        for (let i = 0; i < chunks.length; i++) {
+            allChunksReceived = await uploadChunk(chunks[i], fileId, i, chunks.length, metadata, fileIndex);
+            const progress = ((i + 1) / chunks.length) * 100;
             setIndividualProgress((prevProgress) => {
                 const newProgress = [...prevProgress];
-                newProgress[data.fileIndex] = data.progress;
+                newProgress[fileIndex] = progress;
                 const totalProgress = newProgress.reduce((a, b) => a + b, 0) / newProgress.length;
                 setOverallProgress(totalProgress);
                 return newProgress;
             });
-        });
-
-        socket.on('uploadComplete', (data) => {
-            setIndividualProgress((prevProgress) => {
-                const newProgress = [...prevProgress];
-                newProgress[data.fileIndex] = 100;
-                const totalProgress = newProgress.reduce((a, b) => a + b, 0) / newProgress.length;
-                setOverallProgress(totalProgress);
-
-                if (newProgress.every(progress => progress === 100)) {
-                    setCompleted(true);
-                    setShowCompletedText(true);
-
-                    const delayForCompletedText = setTimeout(() => {
-                        setShowContainer(false);
-                        onSuccess();
-                    }, 1000); // Delay to ensure "Completed" text is shown for 1000ms
-
-                    return () => clearTimeout(delayForCompletedText);
-                }
-
-                return newProgress;
-            });
-        });
-
-        return () => {
-            socket.off('uploadProgress');
-            socket.off('uploadComplete');
-        };
-    }, [originalFiles, onSuccess]);
+        }
+        return { fileId, totalChunks: chunks.length, metadata: JSON.stringify(metadata), allChunksReceived };
+    };
 
     const resizeImage = (file, maxWidth, maxHeight, quality) => {
         return new Promise((resolve) => {
@@ -101,44 +107,6 @@ function UploadWallpaperComponent({ onSuccess }) {
             };
             reader.readAsDataURL(file);
         });
-    };
-
-    const createFileChunks = (file) => {
-        const chunks = [];
-        let start = 0;
-        while (start < file.size) {
-            const chunk = file.slice(start, start + CHUNK_SIZE);
-            chunks.push(chunk);
-            start += CHUNK_SIZE;
-        }
-        return chunks;
-    };
-
-    const uploadChunk = async (chunk, fileId, chunkIndex, totalChunks, metadata, fileIndex) => {
-        const formData = new FormData();
-        formData.append('fileId', fileId);
-        formData.append('chunkIndex', chunkIndex);
-        formData.append('chunk', chunk);
-        formData.append('totalChunks', totalChunks);
-        formData.append('metadata', JSON.stringify(metadata));
-        formData.append('fileIndex', fileIndex);
-
-        try {
-            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/upload`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-        } catch (error) {
-            console.error('Error uploading chunk:', error);
-            throw error;
-        }
-    };
-
-    const uploadFileInChunks = async (file, metadata, fileIndex) => {
-        const fileId = uuidv4(); // Unique identifier for the file
-        const chunks = createFileChunks(file);
-        await Promise.all(chunks.map((chunk, i) => uploadChunk(chunk, fileId, i, chunks.length, metadata, fileIndex)));
     };
 
     const handleFileChange = async (e) => {
@@ -199,8 +167,6 @@ function UploadWallpaperComponent({ onSuccess }) {
         setLoading(true);
         setOverallProgress(0);
         setIndividualProgress(new Array(originalFiles.length).fill(0));
-        setCompleted(false);
-        setShowCompletedText(false);
 
         const metadata = originalFiles.map((_, index) => ({
             tags: tags[index] ? tags[index].split(' ') : [],
@@ -208,19 +174,22 @@ function UploadWallpaperComponent({ onSuccess }) {
             isPaid: isPaid[index] || false,
         }));
 
-        await Promise.all(originalFiles.map((file, index) => uploadFileInChunks(file, metadata[index], index)));
+        const uploadPromises = originalFiles.map((file, index) => uploadFileInChunks(file, metadata[index], index));
+        const filesData = await Promise.all(uploadPromises);
+
+        console.log("All files uploaded, sending complete request...");
+
+        await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/uploadComplete`, { files: filesData });
+
+        console.log("Upload complete request sent.");
 
         setLoading(false);
-        setCompleted(true);
         setOverallProgress(100);
-        setShowCompletedText(true);
 
-        const delayForCompletedText = setTimeout(() => {
-            setShowContainer(false);
-            onSuccess();
-        }, 1000); // Delay to ensure "Completed" text is shown for 1000ms
-
-        return () => clearTimeout(delayForCompletedText);
+        // Close the upload component and trigger the parent's fetch wallpapers method
+        setShowContainer(false);
+        console.log("Calling onSuccess...");
+        onSuccess();
     };
 
     return (
@@ -235,8 +204,8 @@ function UploadWallpaperComponent({ onSuccess }) {
                     <form onSubmit={handleSubmit}>
                         <label htmlFor="wallpaper">Click me or drag files to upload</label>
                         <input type="file" id="wallpaper" name="wallpaper" multiple onChange={handleFileChange} />
+                        {processing && <div>Processing files...</div>}
                         <div className={styles.previews}>
-                            {processing && <div>Processing files...</div>}
                             {previewFiles.map((file, index) => (
                                 <div key={index} className={styles.preview}>
                                     <div className={styles.previewImageContainer}>
@@ -295,11 +264,6 @@ function UploadWallpaperComponent({ onSuccess }) {
                             <div className={styles.loadingText}>
                                 Uploading... {Math.round(overallProgress)}%
                             </div>
-                        </div>
-                    )}
-                    {showCompletedText && (
-                        <div className={styles.completedText}>
-                            Completed
                         </div>
                     )}
                 </div>

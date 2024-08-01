@@ -349,3 +349,7 @@ exports.verifyToken = (token) => {
         throw new Error('Invalid token');
     }
 }
+
+exports.sendUploadEmail = async () => {
+
+};
