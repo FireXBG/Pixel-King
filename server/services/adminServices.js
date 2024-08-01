@@ -25,7 +25,7 @@ async function uploadFileWithRetry(filePath, mimeType, parentFolderId, retryCoun
             console.error(`Attempt ${attempt} failed:`, error.message);
             if (attempt < retryCount) {
                 console.log(`Retrying upload (attempt ${attempt + 1} of ${retryCount})...`);
-                await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds before retrying
+                await new Promise(resolve => setTimeout(resolve, 5000));
             } else {
                 console.error('Error uploading file to Google Drive after multiple attempts:', error.message);
                 throw new Error('Error uploading file to Google Drive');
