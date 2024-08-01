@@ -164,23 +164,9 @@ router.post('/upload', upload.single('chunk'), async (req, res) => {
         const allChunksReceived = receivedChunks[fileId].every(chunk => chunk);
 
         if (allChunksReceived) {
-            const assembledFilePath = await assembleFile(fileId, parseInt(totalChunks));
-
-            const fileMetadata = JSON.parse(metadata);
-            fileMetadata.filePath = assembledFilePath;
-            fileMetadata.fileId = fileId;
-
-            await adminServices.uploadWallpaper({ path: assembledFilePath, mimetype: 'image/jpeg' }, fileMetadata.tags, fileMetadata.view, fileMetadata.isPaid);
-            fs.unlinkSync(assembledFilePath);
-
-            delete receivedChunks[fileId];
-
-            // Send upload completion email
-            await adminServices.sendUploadEmail(fileMetadata);
-
-            res.status(200).json({ message: 'File chunk uploaded successfully and email sent.' });
+            res.status(200).json({ message: 'Chunk uploaded successfully', allChunksReceived: true });
         } else {
-            res.status(200).json({ message: 'Chunk uploaded successfully' });
+            res.status(200).json({ message: 'Chunk uploaded successfully', allChunksReceived: false });
         }
     } catch (error) {
         console.error('Error handling file upload:', error);
@@ -192,7 +178,7 @@ router.post('/uploadComplete', async (req, res) => {
     const { files } = req.body;
 
     try {
-        for (const file of files) {
+        const fileUploadPromises = files.map(async file => {
             const { fileId, totalChunks, metadata } = file;
             const assembledFilePath = await assembleFile(fileId, parseInt(totalChunks));
 
@@ -202,17 +188,19 @@ router.post('/uploadComplete', async (req, res) => {
 
             await adminServices.uploadWallpaper({ path: assembledFilePath, mimetype: 'image/jpeg' }, fileMetadata.tags, fileMetadata.view, fileMetadata.isPaid);
             fs.unlinkSync(assembledFilePath);
+        });
 
-            // Send upload completion email
-            await adminServices.sendUploadEmail();
-        }
+        await Promise.all(fileUploadPromises);
 
-        res.status(200).json({ message: 'All files uploaded successfully and emails sent.' });
+        // Send upload completion email
+        await adminServices.sendUploadEmail();
+
+        res.status(200).json({ message: 'All files uploaded successfully and email sent.' });
     } catch (error) {
         console.error('Error handling upload completion:', error);
         res.status(500).json({ error: 'An error occurred while completing the upload' });
     }
-});;
+});
 
 router.put('/wallpapers/:id', isAuthorized, async (req, res) => {
     const wallpaperId = req.params.id;
@@ -333,6 +321,28 @@ router.delete('/users/:username', async (req, res) => {
         res.status(500).json({ error: 'An error occurred while deleting the user.' });
     }
 });
+
+router.post('/emails', isAuthorized, async (req, res) => {
+    const email = req.body.email;
+    try {
+        await adminServices.addEmail(email);
+        res.status(200).json({ message: 'Email added successfully' });
+    } catch (error) {
+        console.error('Error adding email:', error);
+        res.status(500).json({ error: 'An error occurred while adding the email.' });
+    }
+});
+
+router.get('/emails', isAuthorized, async (req, res) => {
+    try {
+        const emails = await adminServices.getEmails();
+        console.log('Fetched emails:', emails.length);
+        res.status(200).json({ emails });
+    } catch (error) {
+        console.error('Error fetching emails:', error);
+        res.status(500).json({ error: 'An error occurred while fetching emails.' });
+    }
+})
 
 function isAuthorized(req, res, next) {
     const authHeader = req.headers.authorization;

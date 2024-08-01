@@ -179,7 +179,7 @@ function UploadWallpaperComponent({ onSuccess }) {
 
         console.log("All files uploaded, sending complete request...");
 
-        await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/uploadComplete`, { files: filesData });
+        const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/uploadComplete`, { files: filesData });
 
         console.log("Upload complete request sent.");
 

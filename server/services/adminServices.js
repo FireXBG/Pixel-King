@@ -1,5 +1,6 @@
 const AdminUser = require('../models/adminUserSchema.js');
 const AdminWallpapers = require('../models/adminWallpapersSchema.js');
+const AdminEmails = require('../models/adminEmailsSchema.js');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
@@ -350,6 +351,75 @@ exports.verifyToken = (token) => {
     }
 }
 
-exports.sendUploadEmail = async () => {
+exports.addEmail = async (email) => {
+    try {
+        const emailExists = await AdminEmails.findOne({ email });
 
+        if(emailExists) {
+            throw new Error('Email already exists');
+        }
+
+        const newEmail = new AdminEmails({ email });
+        await newEmail.save();
+    } catch (error) {
+        console.error('Error adding email:', error);
+        throw new Error('An error occurred while adding the email');
+    }
+};
+
+exports.getEmails = async () => {
+    try {
+        const emails = await AdminEmails.find();
+        return emails.map(email => ({ email: email.email }));
+    } catch (error) {
+        console.error('Error fetching emails:', error);
+        throw new Error('An error occurred while fetching emails');
+    }
+};
+
+exports.sendUploadEmail = async () => {
+    const allEmails = await AdminEmails.find();
+
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.MAILING_SMTP_ADDRESS,
+            pass: process.env.MAILING_SMTP_APP_PASS
+        }
+    });
+
+    try {
+        const mailOptions = {
+            from: process.env.MAILING_ADDRESS,
+            to: allEmails.map(email => email.email).join(', '),
+            subject: 'New wallpapers uploaded to Pixel-King',
+            html: `
+                <meta name="color-scheme" content="only">
+                <div style="font-family: Arial, sans-serif; background-color: rgb(24, 26, 27); padding: 20px;">
+                    <div style="max-width: 600px; margin: auto; background-color: #252c33; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+                        <div style="background-color: rgb(13, 17, 23); color: rgb(255, 255, 255); padding: 20px; text-align: center;">
+                            <img src="https://i.imgur.com/QWZHeSJ.png" alt="Logo Carica Web" style="max-width: 150px; margin-bottom: 10px;">
+                            <h1 style="margin: 0; font-size: 24px;"><span style="color: #009fc2">Carica Web</span><br>Mailing Service - Pixel King</h1>
+                        </div>
+                        <div style="padding: 20px;">
+                            <h2 style="color: rgb(255,255,255);">New wallpapers have been uploaded to Pixel-King</h2>
+                            <p style="color: #d0d0d0;">Check out the latest wallpapers that have been uploaded to Pixel-King</p>
+                            <hr style="border: 0; border-top: 1px solid rgb(36, 36, 36);">
+                            <p style="color: #d0d0d0; font-size: 12px; text-align: center;">
+                                This is an automated message, please DO NOT reply..<br>
+                                For more information or support go to: <a href="http://www.carica.website" style="color: rgb(255,255,255);">www.carica.website</a><br>
+                                Best regards,<br>Carica Web
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `
+        };
+
+        let info = await transporter.sendMail(mailOptions);
+        console.log('Email sent: ' + info.response);
+    } catch (error) {
+        console.error('Error sending upload email:', error);
+        throw new Error('An error occurred while sending the upload email');
+    }
 };
