@@ -7,6 +7,7 @@ function AdminLayout() {
             <header className={styles.header}>
                 <nav>
                     <Link to='/admin/wallpapers'>Manage Wallpapers</Link>
+                    <Link to='/admin/emails'>Manage Emails</Link>
                     <Link to='/admin/users'>Manage Users</Link>
                 </nav>
             </header>

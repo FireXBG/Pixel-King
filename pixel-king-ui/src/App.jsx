@@ -13,6 +13,7 @@ import ProtectedRoute from './auth/ProtectedRoute';
 import Contact from "./features/Contact/Contact";
 import Footer from "./core/footer/footer";
 import Privacy from "./features/Privacy/Privacy";
+import ManageEmails from "./features/Admin/ManageEmails/ManageEmails";
 
 function App() {
     return (
@@ -33,6 +34,7 @@ function App() {
                             </ProtectedRoute>
                         }>
                             <Route path="wallpapers" element={<ManageWallpapers />} />
+                            <Route path="emails" element={<ManageEmails />}/>
                             <Route path="users" element={<ManageUsers />} />
                         </Route>
                     </Routes>
