@@ -323,6 +323,18 @@ router.get('/emails', isAuthorized, async (req, res) => {
     }
 })
 
+router.delete('/emails/:email', isAuthorized, async (req, res) => {
+    try {
+        const { email } = req.params;
+        console.log(`Deleting email: ${email}`); // Debugging log
+        await adminServices.deleteEmail(email);
+        res.status(200).json({ message: 'Email deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting email:', error);
+        res.status(500).json({ error: 'An error occurred while deleting the email.' });
+    }
+});
+
 function isAuthorized(req, res, next) {
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1];

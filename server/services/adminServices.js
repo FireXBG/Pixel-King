@@ -401,3 +401,14 @@ exports.sendUploadEmail = async () => {
         throw new Error('An error occurred while sending the upload email');
     }
 };
+
+exports.deleteEmail = async (email) => {
+    try {
+        console.log(`Deleting email: ${email}`); // Debugging log
+        await AdminEmails.findOneAndDelete({ email });
+        console.log(`Deleted email: ${email}`); // Debugging log
+    } catch (error) {
+        console.error('Error deleting email:', error);
+        throw new Error('An error occurred while deleting the email');
+    }
+};

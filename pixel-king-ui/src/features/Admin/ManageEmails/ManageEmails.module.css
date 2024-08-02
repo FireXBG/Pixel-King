@@ -1,0 +1,17 @@
+.ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 1vw 0 0;
+}
+
+.li {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    padding: 1vw;
+    margin-bottom: 1vw;
+    border: 0.1vw solid #b04da0;
+    border-radius: 0.6vw;
+}
