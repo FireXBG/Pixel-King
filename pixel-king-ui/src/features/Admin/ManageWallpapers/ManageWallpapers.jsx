@@ -139,13 +139,11 @@ function ManageWallpapers() {
                 <div className={`${styles.wallpapersGrid} ${styles.fadeIn}`}>
                     {wallpapers.map((wallpaper) => (
                         <div key={wallpaper._id} className={styles.wallpaperItem}>
-                            {wallpaper.previewBase64 && (
-                                <img
-                                    src={`data:image/jpeg;base64,${wallpaper.previewBase64}`}
-                                    alt={wallpaper.name}
-                                    className={styles.wallpaperImage}
-                                />
-                            )}
+                            <img
+                                src={`${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaper.thumbnailID}`}
+                                alt={wallpaper.name}
+                                className={styles.wallpaperImage}
+                            />
                             <div className={styles.wallpaperActions}>
                                 <button className='admin__button' onClick={() => handleEdit(wallpaper)}>Edit</button>
                                 <div className={styles.actionButtonContainer}>

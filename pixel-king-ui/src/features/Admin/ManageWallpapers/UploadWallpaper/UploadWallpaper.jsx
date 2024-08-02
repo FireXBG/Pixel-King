@@ -179,14 +179,12 @@ function UploadWallpaperComponent({ onSuccess }) {
 
         console.log("All files uploaded, sending complete request...");
 
-        const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/uploadComplete`, { files: filesData });
+        await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/uploadComplete`, { files: filesData });
 
         console.log("Upload complete request sent.");
 
-        setLoading(false);
-        setOverallProgress(100);
-
         // Close the upload component and trigger the parent's fetch wallpapers method
+        setLoading(false);
         setShowContainer(false);
         console.log("Calling onSuccess...");
         onSuccess();

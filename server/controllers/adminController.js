@@ -96,26 +96,15 @@ router.get('/wallpapers', async (req, res) => {
     const view = req.query.view || 'desktop'; // Default to 'desktop' if not specified
     const tags = req.query.tags ? req.query.tags.split(' ') : []; // Get tags from query, split by space
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 8; // Set to 8 per page
-    const id = req.query.id;
+    const limit = parseInt(req.query.limit) || 9; // Set to 9 per page
 
     console.log(`Fetching wallpapers for view: ${view}, page: ${page}, limit: ${limit}, tags: ${tags}`);
 
     try {
-        if (id) {
-            const wallpaper = await adminServices.getWallpaperById(id);
-            if (!wallpaper) {
-                return res.status(404).json({ error: 'Wallpaper not found' });
-            }
-            return res.status(200).json({ wallpapers: [wallpaper], totalCount: 1 });
-        }
+        const { wallpapers, totalCount } = await adminServices.getWallpapersByViewAndTags(view, tags, page, limit);
+        console.log(`Fetched ${view} wallpapers:`, wallpapers.length);
 
-        const { compressedBuffer, contentType, encoding } = await adminServices.getWallpapersByViewAndTags(view, tags, page, limit);
-        console.log(`Fetched ${view} wallpapers:`, compressedBuffer.length);
-
-        res.set('Content-Encoding', encoding);
-        res.set('Content-Type', contentType);
-        res.send(compressedBuffer);
+        res.status(200).json({ wallpapers, totalCount });
     } catch (error) {
         console.error('Error fetching wallpapers:', error);
         res.status(500).json({ error: 'An error occurred while fetching wallpapers.' });
@@ -134,17 +123,8 @@ router.get('/wallpapers/:driveId', async (req, res) => {
             return res.status(404).json({ error: 'File not found' });
         }
 
-        const base64Image = fileContent.toString('base64');
-        zlib.gzip(Buffer.from(base64Image, 'utf-8'), (err, compressedBuffer) => {
-            if (err) {
-                console.error('Error compressing file:', err);
-                return res.status(500).json({ error: 'Failed to compress file' });
-            }
-            const compressedBase64 = compressedBuffer.toString('base64');
-            res.set('Content-Encoding', 'gzip');
-            res.set('Content-Type', 'application/octet-stream');
-            res.send(compressedBase64);
-        });
+        res.set('Content-Type', 'image/jpeg');
+        res.send(fileContent);
     } catch (error) {
         console.error('Error fetching file:', error);
         res.status(500).json({ error: 'Failed to fetch file' });
@@ -163,43 +143,42 @@ router.post('/upload', upload.single('chunk'), async (req, res) => {
 
         const allChunksReceived = receivedChunks[fileId].every(chunk => chunk);
 
-        if (allChunksReceived) {
-            res.status(200).json({ message: 'Chunk uploaded successfully', allChunksReceived: true });
-        } else {
-            res.status(200).json({ message: 'Chunk uploaded successfully', allChunksReceived: false });
-        }
+        res.status(200).json({ message: 'Chunk uploaded successfully', allChunksReceived });
     } catch (error) {
         console.error('Error handling file upload:', error);
         res.status(500).json({ error: 'An error occurred while uploading the file' });
     }
 });
 
+
 router.post('/uploadComplete', async (req, res) => {
     const { files } = req.body;
 
-    try {
-        const fileUploadPromises = files.map(async file => {
-            const { fileId, totalChunks, metadata } = file;
-            const assembledFilePath = await assembleFile(fileId, parseInt(totalChunks));
+    res.status(200).json({ message: 'Files uploaded successfully. Processing in progress.' });
 
-            const fileMetadata = JSON.parse(metadata);
-            fileMetadata.filePath = assembledFilePath;
-            fileMetadata.fileId = fileId;
+    (async () => {
+        try {
+            const fileUploadPromises = files.map(async file => {
+                const { fileId, totalChunks, metadata } = file;
+                const assembledFilePath = await assembleFile(fileId, parseInt(totalChunks));
 
-            await adminServices.uploadWallpaper({ path: assembledFilePath, mimetype: 'image/jpeg' }, fileMetadata.tags, fileMetadata.view, fileMetadata.isPaid);
-            fs.unlinkSync(assembledFilePath);
-        });
+                const fileMetadata = JSON.parse(metadata);
+                fileMetadata.filePath = assembledFilePath;
+                fileMetadata.fileId = fileId;
 
-        await Promise.all(fileUploadPromises);
+                await adminServices.uploadWallpaper({ path: assembledFilePath, mimetype: 'image/jpeg' }, fileMetadata.tags, fileMetadata.view, fileMetadata.isPaid);
+                fs.unlinkSync(assembledFilePath);
+            });
 
-        // Send upload completion email
-        await adminServices.sendUploadEmail();
+            await Promise.all(fileUploadPromises);
 
-        res.status(200).json({ message: 'All files uploaded successfully and email sent.' });
-    } catch (error) {
-        console.error('Error handling upload completion:', error);
-        res.status(500).json({ error: 'An error occurred while completing the upload' });
-    }
+            // Send upload completion email
+            await adminServices.sendUploadEmail();
+
+        } catch (error) {
+            console.error('Error handling upload completion:', error);
+        }
+    })();
 });
 
 router.put('/wallpapers/:id', isAuthorized, async (req, res) => {

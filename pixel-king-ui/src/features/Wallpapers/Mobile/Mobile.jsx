@@ -12,7 +12,7 @@ export default function Mobile({ wallpapers, onWallpaperClick, onImageLoad, imag
                     {wallpapers[index] && (
                         <img
                             className={`${styles.image} ${imagesLoaded[index] ? styles.loaded : ''}`}
-                            src={`data:image/jpeg;base64,${wallpapers[index].previewBase64}`}
+                            src={`${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpapers[index].thumbnailID}`}
                             alt={wallpapers[index].tags.join(', ')}
                             onClick={() => onWallpaperClick(wallpapers[index])}
                             onLoad={() => onImageLoad(index)}
