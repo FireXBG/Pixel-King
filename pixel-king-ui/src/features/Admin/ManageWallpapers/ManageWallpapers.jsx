@@ -29,7 +29,10 @@ function ManageWallpapers() {
     const fetchWallpapers = async () => {
         setLoading(true);
         try {
-            const url = `${process.env.REACT_APP_BACKEND_URL}/api/wallpapers?view=${filter}&page=${currentPage}&limit=${imagesPerPage}`;
+            let url = `${process.env.REACT_APP_BACKEND_URL}/api/wallpapers?view=${filter}&page=${currentPage}&limit=${imagesPerPage}`;
+            if (filter === 'desktop' || filter === 'mobile') {
+                url += `&preview=true`; // Add preview parameter conditionally
+            }
             const response = await axios.get(url);
             const wallpapers = response.data.wallpapers || [];
             setWallpapers(wallpapers);
@@ -197,7 +200,7 @@ function ManageWallpapers() {
                     {wallpapers.map((wallpaper) => (
                         <div key={wallpaper._id} className={styles.wallpaperItem}>
                             <img
-                                src={`${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaper.thumbnailID}`}
+                                src={`${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaper.thumbnailID}?preview=true`}
                                 alt={wallpaper.name}
                                 className={styles.wallpaperImage}
                             />

@@ -10,7 +10,6 @@ const fs = require('fs');
 const path = require('path');
 const tempDir = path.join(__dirname, '..', 'temp');
 const Jimp = require('jimp');
-const zlib = require('zlib');
 
 if (!fs.existsSync(tempDir)) {
     fs.mkdirSync(tempDir);
@@ -221,6 +220,19 @@ exports.getWallpaperById = async (id, isPreview = false) => {
     } catch (error) {
         console.error('Error fetching wallpaper by ID:', error);
         throw new Error('An error occurred while fetching the wallpaper');
+    }
+};
+
+exports.getWallpaperDataById = async (id) => {
+    try {
+        const wallpaper = await AdminWallpapers.findById(id);
+        if (!wallpaper) {
+            throw new Error('Wallpaper not found');
+        }
+        return wallpaper;
+    } catch (error) {
+        console.error('Error fetching wallpaper data by ID:', error);
+        throw new Error('An error occurred while fetching wallpaper data');
     }
 };
 

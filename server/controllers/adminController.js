@@ -5,12 +5,9 @@ const { getFile } = require('../config/googleDrive');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const Jimp = require('jimp');
 const rateLimit = require('express-rate-limit');
 const { getIO } = require('../config/socket');
 const { v4: uuidv4 } = require('uuid');
-const zlib = require('zlib');
-
 const tempDir = path.join(__dirname, 'temp');
 if (!fs.existsSync(tempDir)) {
     fs.mkdirSync(tempDir);
@@ -220,7 +217,7 @@ router.delete('/wallpapers/:id', isAuthorized, async (req, res) => {
         res.status(200).json({ message: 'Wallpaper deleted successfully' });
     } catch (error) {
         console.error('Error deleting wallpaper:', error);
-        res.status(500).json({ error: 'An error occurred while deleting the wallpaper.' });
+        res.status(500).json({ error: 'An error occurred while deleting the wallpaper' });
     }
 });
 
@@ -231,7 +228,7 @@ router.post('/download', async (req, res) => {
     }
 
     try {
-        const wallpaper = await adminServices.getWallpaperById(wallpaperId);
+        const wallpaper = await adminServices.getWallpaperDataById(wallpaperId);
         if (!wallpaper) {
             console.log('Wallpaper not found');
             return res.status(404).json({ error: 'Wallpaper not found' });
@@ -326,7 +323,7 @@ router.post('/emails', isAuthorized, async (req, res) => {
         res.status(200).json({ message: 'Email added successfully' });
     } catch (error) {
         console.error('Error adding email:', error);
-        res.status(500).json({ error: 'An error occurred while adding the email.' });
+        res.status(500).json({ error: 'An error occurred while adding the email' });
     }
 });
 
@@ -337,7 +334,7 @@ router.get('/emails', isAuthorized, async (req, res) => {
         res.status(200).json({ emails });
     } catch (error) {
         console.error('Error fetching emails:', error);
-        res.status(500).json({ error: 'An error occurred while fetching emails.' });
+        res.status(500).json({ error: 'An error occurred while fetching emails' });
     }
 });
 
@@ -349,7 +346,7 @@ router.delete('/emails/:email', isAuthorized, async (req, res) => {
         res.status(200).json({ message: 'Email deleted successfully' });
     } catch (error) {
         console.error('Error deleting email:', error);
-        res.status(500).json({ error: 'An error occurred while deleting the email.' });
+        res.status(500).json({ error: 'An error occurred while deleting the email' });
     }
 });
 
