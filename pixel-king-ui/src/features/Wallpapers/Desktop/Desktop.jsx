@@ -6,7 +6,7 @@ export default function Desktop({ wallpapers, onWallpaperClick, onImageLoad, ima
         <div className={styles.images__container}>
             {new Array(9).fill(null).map((_, index) => (
                 <div key={index} className={styles.imageWrapper}>
-                    {!imagesLoaded[index] && (
+                    {wallpapers[index] && !imagesLoaded[index] && (
                         <div className={`${styles.placeholder} ${imagesLoaded[index] ? styles.fadeOut : ''}`}></div>
                     )}
                     {wallpapers[index] && (
