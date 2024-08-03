@@ -151,10 +151,24 @@ async function resizeImage(imageBuffer, width, height) {
     }
 }
 
+async function getDriveStorageQuota() {
+    const drive = google.drive({ version: 'v3', auth: oAuth2Client });
+    try {
+        const response = await drive.about.get({
+            fields: 'storageQuota',
+        });
+        return response.data.storageQuota;
+    } catch (error) {
+        console.error('Error getting Google Drive storage quota:', error);
+        throw new Error('Error getting Google Drive storage quota');
+    }
+}
+
 module.exports = {
     initializeDrive,
     uploadFile,
     getFile,
     deleteFile,
-    resizeImage
+    resizeImage,
+    getDriveStorageQuota,
 };

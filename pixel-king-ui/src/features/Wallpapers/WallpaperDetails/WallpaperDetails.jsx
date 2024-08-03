@@ -43,7 +43,7 @@ function WallpaperDetails({ wallpaper, onClose }) {
         setDownloading(null);
     };
 
-    const { _id, tags, previewBase64 } = wallpaper;
+    const { _id, tags, thumbnailID } = wallpaper;
 
     return (
         <>
@@ -51,7 +51,7 @@ function WallpaperDetails({ wallpaper, onClose }) {
             <div className={`${styles.wallpaperDetails} ${isClosing ? styles.wallpaperDetailsClosing : ''}`}>
                 <button className={styles.closeButton} onClick={handleClose}>×</button>
                 <div className={styles.wallpaperPreview}>
-                    <img src={`data:image/jpeg;base64,${previewBase64}`} alt="Wallpaper Preview" />
+                    <img src={`${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${thumbnailID}`} alt="Wallpaper Preview" />
                 </div>
                 <div className={styles.wallpaperInfo}>
                     <div className={styles.tags}>

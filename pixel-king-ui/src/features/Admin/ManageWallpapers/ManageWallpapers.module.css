@@ -52,7 +52,7 @@
 .wallpapersGrid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 2vw;
+    gap: 10vw;
     margin-top: 2vw;
 }
 

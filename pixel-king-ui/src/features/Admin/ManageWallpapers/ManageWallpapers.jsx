@@ -3,6 +3,7 @@ import axios from 'axios';
 import styles from './ManageWallpapers.module.css';
 import UploadWallpaper from './UploadWallpaper/UploadWallpaper';
 import EditTagsModal from './EditTagsModal/EditTagsModal';
+import AdminMessage from "../../../core/adminMessage/adminMessage";
 
 function ManageWallpapers() {
     const [uploadWallpapersMenu, setUploadWallpapersMenu] = useState(false);
@@ -15,11 +16,14 @@ function ManageWallpapers() {
     const [totalPages, setTotalPages] = useState(1);
     const [editingWallpaper, setEditingWallpaper] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [adminMessage, setAdminMessage] = useState(null); // Admin message state
+    const [storageQuota, setStorageQuota] = useState(null); // Storage quota state
     const imagesPerPage = 20;
     const cancelTokenSource = useRef(null);
 
     useEffect(() => {
         fetchWallpapers();
+        fetchStorageQuota(); // Fetch storage quota on component mount
     }, [filter, currentPage]);
 
     const fetchWallpapers = async () => {
@@ -38,10 +42,30 @@ function ManageWallpapers() {
         }
     };
 
+    const fetchStorageQuota = async () => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/getStorageQuota`);
+            const storageQuota = response.data.storageQuota;
+
+            const formatToGB = (bytes) => (bytes / (1024 ** 3)).toFixed(2);
+
+            setStorageQuota({
+                limit: formatToGB(Number(storageQuota.limit)), // Convert bytes to GB
+                usage: formatToGB(Number(storageQuota.usage)), // Convert bytes to GB
+                usageInDrive: formatToGB(Number(storageQuota.usageInDrive)), // Convert bytes to GB
+                usageInDriveTrash: formatToGB(Number(storageQuota.usageInDriveTrash)) // Convert bytes to GB
+            });
+        } catch (error) {
+            console.error('Error fetching storage quota:', error);
+            setError('Failed to fetch storage quota. Please try again later.');
+        }
+    };
+
     const handleUploadSuccess = () => {
         console.log("Upload success handler called");
         setUploadWallpapersMenu(false);
         fetchWallpapers();
+        fetchStorageQuota(); // Fetch updated storage quota after upload
     };
 
     const handleDelete = async (wallpaperId) => {
@@ -49,6 +73,7 @@ function ManageWallpapers() {
         try {
             await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaperId}`);
             fetchWallpapers();
+            fetchStorageQuota(); // Fetch updated storage quota after deletion
         } catch (error) {
             console.error('Error deleting wallpaper:', error);
             alert('Failed to delete wallpaper');
@@ -57,8 +82,21 @@ function ManageWallpapers() {
         }
     };
 
-    const toggleUploadMenu = () => {
-        setUploadWallpapersMenu(!uploadWallpapersMenu);
+    const toggleUploadMenu = async () => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/checkUploadStatus`);
+            if (response.data.isUploadInProgress) {
+                setAdminMessage({
+                    title: 'Upload in Progress',
+                    message: 'Another upload is already in progress. Please wait until it completes.',
+                });
+                return;
+            }
+            setUploadWallpapersMenu(!uploadWallpapersMenu);
+        } catch (error) {
+            console.error('Error checking upload status:', error);
+            alert('Failed to check upload status');
+        }
     };
 
     const handleFilterChange = (e) => {
@@ -108,8 +146,19 @@ function ManageWallpapers() {
         }
     };
 
+    const handleMessageClose = () => {
+        setAdminMessage(null);
+    };
+
     return (
         <div className={styles.manageWallpapersContainer}>
+            {adminMessage && (
+                <AdminMessage
+                    title={adminMessage.title}
+                    message={adminMessage.message}
+                    onClose={handleMessageClose}
+                />
+            )}
             <button className='admin__button' onClick={toggleUploadMenu}>Upload Wallpapers</button>
             {uploadWallpapersMenu && <UploadWallpaper onSuccess={handleUploadSuccess} />}
 
@@ -128,6 +177,14 @@ function ManageWallpapers() {
                 />
                 <button className={styles.submit__button} onClick={handleSearch}>Search</button>
             </div>
+
+            {storageQuota && (
+                <div className={styles.storageQuota}>
+                    <p>Storage Used: {storageQuota.usage} GB / {storageQuota.limit} GB</p>
+                    <p>Usage in Drive: {storageQuota.usageInDrive} GB</p>
+                    <p>Usage in Drive Trash: {storageQuota.usageInDriveTrash} GB</p>
+                </div>
+            )}
 
             {error && <div className={styles.errorMessage}>{error}</div>}
 

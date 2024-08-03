@@ -1,0 +1,71 @@
+.adminMessage {
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 5vw;
+    right: -30vw; /* Start from off-screen */
+    width: 30vw;
+    animation: bounceInRight 0.5s forwards; /* Animation for bouncing in from the right */
+}
+
+.adminMessage.exiting {
+    animation: bounceOutRight 0.5s forwards; /* Animation for bouncing out to the right */
+}
+
+.adminMessageContent {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1vw;
+    padding: 1vw;
+    background-color: rgba(138, 76, 240, 0.11);
+    border: 0.2vw solid #8A4CF0;
+    border-radius: 0.5vw;
+    box-shadow: 0.2vw 0.2vw 0.5vw rgba(0, 0, 0, 0.2);
+}
+
+.adminMessageContentBody {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+@keyframes bounceInRight {
+    0% {
+        right: -30vw; /* Start off-screen */
+        transform: translateX(0);
+    }
+    60% {
+        right: 5vw; /* Overshoot to create bounce effect */
+        transform: translateX(-10%);
+    }
+    80% {
+        right: 4vw; /* Bounce back slightly */
+        transform: translateX(5%);
+    }
+    100% {
+        right: 5vw; /* Settle at final position */
+        transform: translateX(0);
+    }
+}
+
+@keyframes bounceOutRight {
+    0% {
+        right: 5vw; /* Start at the current position */
+        transform: translateX(0);
+    }
+    20% {
+        right: 4vw; /* Slight backward movement */
+        transform: translateX(5%);
+    }
+    40% {
+        right: 5vw; /* Move back to original position */
+        transform: translateX(-10%);
+    }
+    100% {
+        right: -30vw; /* End off-screen */
+        transform: translateX(0);
+    }
+}

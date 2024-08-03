@@ -27,6 +27,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 const receivedChunks = {};
+let isUploadInProgress = false;
 
 const limiter = rateLimit({
     windowMs: 1 * 60 * 1000, // 1 minute
@@ -113,12 +114,16 @@ router.get('/wallpapers', async (req, res) => {
 
 router.get('/wallpapers/:driveId', async (req, res) => {
     const { driveId } = req.params;
+    const { preview } = req.query; // Expecting a query parameter to indicate if it's a preview
+
     if (!driveId) {
         return res.status(400).json({ error: 'Drive ID is required' });
     }
+
     try {
         console.log('Fetching file with Drive ID:', driveId);
-        const fileContent = await getFile(driveId);
+        const fileContent = await adminServices.getWallpaperById(driveId, preview === 'true');
+
         if (!fileContent) {
             return res.status(404).json({ error: 'File not found' });
         }
@@ -132,7 +137,7 @@ router.get('/wallpapers/:driveId', async (req, res) => {
 });
 
 router.post('/upload', upload.single('chunk'), async (req, res) => {
-    const { fileId, chunkIndex, totalChunks, metadata, fileIndex } = req.body;
+    const { fileId, chunkIndex, totalChunks } = req.body;
 
     try {
         if (!receivedChunks[fileId]) {
@@ -150,16 +155,26 @@ router.post('/upload', upload.single('chunk'), async (req, res) => {
     }
 });
 
-
 router.post('/uploadComplete', async (req, res) => {
+    if (isUploadInProgress) {
+        return res.status(400).json({ error: 'Another upload is already in progress. Please wait.' });
+    }
+
     const { files } = req.body;
+    isUploadInProgress = true;
 
     res.status(200).json({ message: 'Files uploaded successfully. Processing in progress.' });
 
     (async () => {
         try {
-            const fileUploadPromises = files.map(async file => {
+            for (const file of files) {
                 const { fileId, totalChunks, metadata } = file;
+
+                // Wait until all chunks are received before calling assembleFile
+                while (!receivedChunks[fileId].every(chunk => chunk)) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+
                 const assembledFilePath = await assembleFile(fileId, parseInt(totalChunks));
 
                 const fileMetadata = JSON.parse(metadata);
@@ -168,17 +183,20 @@ router.post('/uploadComplete', async (req, res) => {
 
                 await adminServices.uploadWallpaper({ path: assembledFilePath, mimetype: 'image/jpeg' }, fileMetadata.tags, fileMetadata.view, fileMetadata.isPaid);
                 fs.unlinkSync(assembledFilePath);
-            });
+            }
 
-            await Promise.all(fileUploadPromises);
-
-            // Send upload completion email
+            // Send upload completion email after all files are processed
             await adminServices.sendUploadEmail();
-
         } catch (error) {
             console.error('Error handling upload completion:', error);
+        } finally {
+            isUploadInProgress = false; // Release the lock
         }
     })();
+});
+
+router.get('/checkUploadStatus', (req, res) => {
+    res.status(200).json({ isUploadInProgress });
 });
 
 router.put('/wallpapers/:id', isAuthorized, async (req, res) => {
@@ -263,7 +281,7 @@ router.post('/contact', async (req, res) => {
         console.error('Error sending email:', error);
         res.status(500).json({ error: 'An error occurred while sending the email.' });
     }
-})
+});
 
 router.get('/users', isAuthorized , async (req, res) => {
     try {
@@ -274,7 +292,7 @@ router.get('/users', isAuthorized , async (req, res) => {
         console.error('Error fetching users:', error);
         res.status(500).json({ error: 'An error occurred while fetching users.' });
     }
-})
+});
 
 router.post('/authorizeUser', isAuthorized, async (req, res) => {
     const username = req.body.username;
@@ -288,7 +306,7 @@ router.post('/authorizeUser', isAuthorized, async (req, res) => {
         console.error('Error authorizing user:', error);
         res.status(500).json({ error: 'An error occurred while authorizing user.' });
     }
-})
+});
 
 router.delete('/users/:username', async (req, res) => {
     try {
@@ -321,7 +339,7 @@ router.get('/emails', isAuthorized, async (req, res) => {
         console.error('Error fetching emails:', error);
         res.status(500).json({ error: 'An error occurred while fetching emails.' });
     }
-})
+});
 
 router.delete('/emails/:email', isAuthorized, async (req, res) => {
     try {
@@ -334,6 +352,16 @@ router.delete('/emails/:email', isAuthorized, async (req, res) => {
         res.status(500).json({ error: 'An error occurred while deleting the email.' });
     }
 });
+
+router.get('/getStorageQuota', isAuthorized, async (req, res) => {
+    try {
+        const storageQuota = await adminServices.getStorageQuota();
+        res.status(200).json({ storageQuota });
+    } catch (error) {
+        console.error('Error fetching storage quota:', error);
+        res.status(500).json({ error: 'An error occurred while fetching storage quota.' });
+    }
+})
 
 function isAuthorized(req, res, next) {
     const authHeader = req.headers.authorization;

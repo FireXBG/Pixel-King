@@ -4,7 +4,7 @@ const AdminEmails = require('../models/adminEmailsSchema.js');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
-const { uploadFile, getFile, deleteFile, resizeImage } = require('../config/googleDrive.js');
+const { uploadFile, getFile, deleteFile, resizeImage, getDriveStorageQuota } = require('../config/googleDrive.js');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const path = require('path');
@@ -14,6 +14,12 @@ const zlib = require('zlib');
 
 if (!fs.existsSync(tempDir)) {
     fs.mkdirSync(tempDir);
+}
+
+async function reduceImageQuality(fileContent, quality) {
+    const image = await Jimp.read(fileContent);
+    image.quality(quality);
+    return image.getBufferAsync(Jimp.MIME_JPEG);
 }
 
 async function uploadFileWithRetry(filePath, mimeType, parentFolderId, retryCount = 3) {
@@ -199,34 +205,19 @@ exports.updateWallpaperTagsAndIsPaid = async (wallpaperId, newTags, isPaid) => {
     }
 };
 
-exports.getWallpaperById = async (id) => {
+exports.getWallpaperById = async (id, isPreview = false) => {
     try {
-        const wallpaper = await AdminWallpapers.findById(id);
-        if (!wallpaper) {
-            throw new Error('Wallpaper not found');
+        const fileContent = await getFile(id);
+        if (!fileContent) {
+            throw new Error('File not found');
         }
 
-        console.log('Wallpaper found:', wallpaper);
-
-        if (!wallpaper.thumbnailID) {
-            throw new Error('Thumbnail ID not found on wallpaper');
+        if (isPreview) {
+            const reducedQualityBuffer = await reduceImageQuality(fileContent, 60); // Example quality reduction to 60%
+            return reducedQualityBuffer;
         }
 
-        console.log('Thumbnail ID:', wallpaper.thumbnailID);
-
-        const thumbnailData = await getFile(wallpaper.thumbnailID);
-
-        if (!thumbnailData) {
-            throw new Error('Thumbnail data not found');
-        }
-
-        const base64Image = thumbnailData.toString('base64');
-
-        return {
-            ...wallpaper.toObject(),
-            previewBase64: base64Image, // Base64 encoded thumbnail data
-            thumbnailContentType: 'image/jpeg',
-        };
+        return fileContent;
     } catch (error) {
         console.error('Error fetching wallpaper by ID:', error);
         throw new Error('An error occurred while fetching the wallpaper');
@@ -412,3 +403,13 @@ exports.deleteEmail = async (email) => {
         throw new Error('An error occurred while deleting the email');
     }
 };
+
+exports.getStorageQuota = async () => {
+    try {
+        const quota = await getDriveStorageQuota();
+        return quota;
+    } catch (error) {
+        console.error('Error fetching storage quota:', error);
+        throw new Error('An error occurred while fetching the storage quota');
+    }
+}

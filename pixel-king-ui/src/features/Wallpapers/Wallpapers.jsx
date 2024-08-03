@@ -21,6 +21,7 @@ export default function Wallpapers() {
     const [userChangedDeviceType, setUserChangedDeviceType] = useState(false);
     const imagesPerPage = 9;
     const cancelTokenSource = useRef(null);
+    const debounceTimeout = useRef(null);
 
     useEffect(() => {
         fetchWallpapers(deviceType, currentPage, searchQuery, true);
@@ -39,6 +40,12 @@ export default function Wallpapers() {
         window.addEventListener('resize', handleResize);
         return () => {
             window.removeEventListener('resize', handleResize);
+            if (cancelTokenSource.current) {
+                cancelTokenSource.current.cancel('Component unmounted');
+            }
+            if (debounceTimeout.current) {
+                clearTimeout(debounceTimeout.current);
+            }
         };
     }, [deviceType, userChangedDeviceType]);
 
@@ -62,12 +69,11 @@ export default function Wallpapers() {
             setTotalPages(Math.ceil(response.data.totalCount / imagesPerPage));
 
             if (reset) {
-                setWallpapers([]);
+                setWallpapers(fetchedWallpapers);
+            } else {
+                setWallpapers((prevWallpapers) => [...prevWallpapers, ...fetchedWallpapers]);
             }
 
-            setWallpapers(fetchedWallpapers);
-
-            // Update imagesLoaded array to only have placeholders for fetched wallpapers
             const updatedImagesLoaded = new Array(imagesPerPage).fill(false);
             fetchedWallpapers.forEach((_, index) => {
                 updatedImagesLoaded[index] = false;
@@ -99,9 +105,14 @@ export default function Wallpapers() {
     };
 
     const handleSearch = () => {
-        setCurrentPage(1);
-        setWallpapers([]);
-        fetchWallpapers(deviceType, 1, searchQuery, true);
+        if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current);
+        }
+        debounceTimeout.current = setTimeout(() => {
+            setCurrentPage(1);
+            setWallpapers([]);
+            fetchWallpapers(deviceType, 1, searchQuery, true);
+        }, 300); // Debounce search by 300ms
     };
 
     const openWallpaperDetails = (wallpaper) => {
@@ -116,11 +127,6 @@ export default function Wallpapers() {
         setImagesLoaded((prev) => {
             const newImagesLoaded = [...prev];
             newImagesLoaded[index] = true;
-
-            // Check if all images are loaded, if so remove all placeholders
-            if (newImagesLoaded.slice(0, wallpapers.length).every(Boolean)) {
-                setImagesLoaded(new Array(9).fill(true));
-            }
 
             return newImagesLoaded;
         });
