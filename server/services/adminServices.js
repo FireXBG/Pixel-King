@@ -52,8 +52,10 @@ exports.login = async (username, password) => {
     if (!isPasswordCorrect) {
         throw new Error('Invalid credentials');
     }
+    const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const role = user.role;
 
-    return jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    return { token, role };
 };
 
 exports.getFolderId = async (view, resolutionFolder) => {
@@ -283,21 +285,30 @@ exports.sendContactEmail = async (data) => {
     }
 }
 
-exports.authorizeUser = async (username, password) => {
+exports.authorizeUser = async (username, password, role) => {
     try {
         const userExists = await AdminUser.findOne({ username });
-        if(userExists) {
+        if (userExists) {
             throw new Error('User already exists');
         }
 
         const hashedPassword = await bcrypt.hash(password, 12);
-        const newUser = new AdminUser({ username, password: hashedPassword });
+        const newUser = new AdminUser({ username, password: hashedPassword, role });
         await newUser.save();
     } catch (error) {
         console.error('Error authorizing user:', error);
         throw new Error('An error occurred while authorizing user');
     }
-}
+};
+
+exports.updateUserRole = async (username, role) => {
+    try {
+        await AdminUser.findOneAndUpdate({ username }, { role });
+    } catch (error) {
+        console.error('Error updating user role:', error);
+        throw new Error('An error occurred while updating the user role');
+    }
+};
 
 exports.deleteUser = async (username) => {
     try {
@@ -311,7 +322,7 @@ exports.deleteUser = async (username) => {
 exports.getAllUsers = async () => {
     try {
         const users = await AdminUser.find();
-        return users.map(user => ({ username: user.username }));
+        return users.map(user => ({ username: user.username, role: user.role }));
     } catch (error) {
         console.error('Error fetching users:', error);
         throw new Error('An error occurred while fetching users');
@@ -425,3 +436,20 @@ exports.getStorageQuota = async () => {
         throw new Error('An error occurred while fetching the storage quota');
     }
 }
+
+exports.setInitialAdminUser = async () => {
+    try {
+        const adminUser = await AdminUser.findOne({ role: 'admin' });
+        if (!adminUser) {
+            const username = 'admin';
+            const pass = 'admin';
+            const role = 'admin';
+            const hashedPassword = await bcrypt.hash(pass, 12);
+            const newUser = new AdminUser({ username, password: hashedPassword, role });
+            await newUser.save();
+        }
+    } catch (error) {
+        console.error('Error setting initial admin user:', error);
+        throw new Error('An error occurred while setting the initial admin user');
+    }
+};

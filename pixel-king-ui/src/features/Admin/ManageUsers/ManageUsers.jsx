@@ -34,26 +34,35 @@ function ManageUsers() {
     };
 
     const handleUserAdded = () => {
-        fetchUsers(); // Refresh the list of users
-        setShowAddUserModal(false); // Close the modal
+        fetchUsers();
+        setShowAddUserModal(false);
     };
 
     const handleDeleteUser = async (username) => {
         try {
             await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/users/${username}`);
-            fetchUsers(); // Refresh the list of users
+            fetchUsers();
         } catch (error) {
             console.error('Error deleting user:', error);
         }
     };
 
+    const handleRoleChange = async (username, newRole) => {
+        try {
+            await axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/users/${username}/role`, { role: newRole });
+            fetchUsers();
+        } catch (error) {
+            console.error('Error updating user role:', error);
+        }
+    };
+
     return (
         <div className={styles.container}>
-            <button onClick={handleAddUserClick}>Add user</button>
+            <button className='admin__button' onClick={handleAddUserClick}>Add user</button>
             {loading ? (
                 <p>Loading users...</p>
             ) : (
-                <UsersList users={users} onDeleteUser={handleDeleteUser} />
+                <UsersList users={users} onDeleteUser={handleDeleteUser} onRoleChange={handleRoleChange} />
             )}
             {showAddUserModal && (
                 <div className={styles.overlay}>

@@ -6,42 +6,50 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [userRole, setUserRole] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
         const checkAuth = () => {
             const token = localStorage.getItem('token');
-            if (token) {
+            const role = localStorage.getItem('role');
+            if (token && role) {
                 axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
                 setIsAuthenticated(true);
+                setUserRole(role);
             } else {
                 setIsAuthenticated(false);
+                setUserRole(null);
             }
         };
 
         checkAuth();
-        window.addEventListener('storage', checkAuth); // Listen for localStorage changes
+        window.addEventListener('storage', checkAuth);
         return () => {
             window.removeEventListener('storage', checkAuth);
         };
     }, []);
 
-    const login = (token) => {
+    const login = (token, role) => {
         localStorage.setItem('token', token);
+        localStorage.setItem('role', role);
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         setIsAuthenticated(true);
-        navigate('/admin/dashboard');
+        setUserRole(role);
+        navigate('/admin/wallpapers');
     };
 
     const logout = () => {
         localStorage.removeItem('token');
+        localStorage.removeItem('role');
         delete axios.defaults.headers.common['Authorization'];
         setIsAuthenticated(false);
+        setUserRole(null);
         navigate('/admin/login');
     };
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+        <AuthContext.Provider value={{ isAuthenticated, userRole, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

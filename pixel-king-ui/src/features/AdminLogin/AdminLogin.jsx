@@ -14,7 +14,9 @@ export default function AdminLogin() {
         try {
             const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/login`, { username, password });
             if (response.status === 200) {
-                login(response.data.token);
+                console.log(response.data)
+                const { token, role } = response.data;
+                login(token, role);
             } else {
                 console.error('Login failed');
                 setError(true);

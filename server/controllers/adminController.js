@@ -9,6 +9,7 @@ const rateLimit = require('express-rate-limit');
 const { getIO } = require('../config/socket');
 const { v4: uuidv4 } = require('uuid');
 const tempDir = path.join(__dirname, 'temp');
+const jwt = require('jsonwebtoken');
 if (!fs.existsSync(tempDir)) {
     fs.mkdirSync(tempDir);
 }
@@ -77,9 +78,9 @@ const assembleFile = async (fileId, totalChunks) => {
 router.post('/login', limiter, async (req, res) => {
     const data = req.body;
     try {
-        const token = await adminServices.login(data.username, data.password);
+        const {token, role} = await adminServices.login(data.username, data.password);
         console.log('Admin logged in:', data.username);
-        res.status(200).json({ token });
+        res.status(200).json({ token, role });
     } catch (error) {
         console.error('Error logging in:', error);
         if (error.message === 'Invalid credentials') {
@@ -162,10 +163,10 @@ router.post('/uploadComplete', async (req, res) => {
 
     res.status(200).json({ message: 'Files uploaded successfully. Processing in progress.' });
 
-    (async () => {
+    await (async () => {
         try {
             for (const file of files) {
-                const { fileId, totalChunks, metadata } = file;
+                const {fileId, totalChunks, metadata} = file;
 
                 // Wait until all chunks are received before calling assembleFile
                 while (!receivedChunks[fileId].every(chunk => chunk)) {
@@ -178,7 +179,10 @@ router.post('/uploadComplete', async (req, res) => {
                 fileMetadata.filePath = assembledFilePath;
                 fileMetadata.fileId = fileId;
 
-                await adminServices.uploadWallpaper({ path: assembledFilePath, mimetype: 'image/jpeg' }, fileMetadata.tags, fileMetadata.view, fileMetadata.isPaid);
+                await adminServices.uploadWallpaper({
+                    path: assembledFilePath,
+                    mimetype: 'image/jpeg'
+                }, fileMetadata.tags, fileMetadata.view, fileMetadata.isPaid);
                 fs.unlinkSync(assembledFilePath);
             }
 
@@ -283,7 +287,7 @@ router.post('/contact', async (req, res) => {
 router.get('/users', isAuthorized , async (req, res) => {
     try {
         const users = await adminServices.getAllUsers();
-        console.log('Fetched users:', users.length);
+        console.log('Fetched users:', users);
         res.status(200).json({ users });
     } catch (error) {
         console.error('Error fetching users:', error);
@@ -294,14 +298,28 @@ router.get('/users', isAuthorized , async (req, res) => {
 router.post('/authorizeUser', isAuthorized, async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
+    const role = req.body.role;
 
     try {
-        await adminServices.authorizeUser(username, password);
+        await adminServices.authorizeUser(username, password, role);
         console.log('User authorized:', username);
         res.status(200).json({ message: 'User authorized successfully' });
     } catch (error) {
         console.error('Error authorizing user:', error);
         res.status(500).json({ error: 'An error occurred while authorizing user.' });
+    }
+});
+
+router.put('/users/:username/role', isAuthorized, async (req, res) => {
+    const { username } = req.params;
+    const { role } = req.body;
+
+    try {
+        await adminServices.updateUserRole(username, role);
+        res.status(200).json({ message: 'User role updated successfully' });
+    } catch (error) {
+        console.error('Error updating user role:', error);
+        res.status(500).json({ error: 'An error occurred while updating the user role' });
     }
 });
 

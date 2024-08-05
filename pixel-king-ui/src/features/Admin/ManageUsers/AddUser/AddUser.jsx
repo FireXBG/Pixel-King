@@ -5,12 +5,13 @@ import styles from './AddUser.module.css';
 export default function AddUser({ onClose, onUserAdded }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [role, setRole] = useState('editor');
     const [error, setError] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/authorizeUser`, { username, password });
+            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/authorizeUser`, { username, password, role });
             onUserAdded(); // Inform parent component to refresh the list
             onClose(); // Close the modal
         } catch (error) {
@@ -43,6 +44,18 @@ export default function AddUser({ onClose, onUserAdded }) {
                         required
                         className={styles.addUserInput}
                     />
+                </div>
+                <div className={styles.addUserFormGroup}>
+                    <label className={styles.addUserLabel}>Role:</label>
+                    <select
+                        value={role}
+                        onChange={(e) => setRole(e.target.value)}
+                        required
+                        className={styles.addUserInput}
+                    >
+                        <option value="editor">Editor</option>
+                        <option value="admin">Admin</option>
+                    </select>
                 </div>
                 <button type="submit" className={styles.addUserButton}>Add User</button>
             </form>

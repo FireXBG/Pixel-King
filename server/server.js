@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const routes = require('./routes');
+const adminService = require('./services/adminServices');
 const { initializeDrive } = require('./config/googleDrive');
 const { initializeIO } = require('./config/socket');
 
@@ -27,6 +28,13 @@ server.listen(port, () => {
     mongoose.connect(process.env.MONGO_CONNECTION_STRING)
         .then(() => {
             console.log('Connected to MongoDB');
+            adminService.setInitialAdminUser()
+                .then(() => {
+                    console.log('Admin user initialized');
+                })
+                .catch(err => {
+                    console.error('Error initializing admin user:', err);
+                });
         })
         .catch(err => {
             console.error('Error connecting to MongoDB:', err);

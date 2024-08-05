@@ -1,19 +1,19 @@
 import './App.css';
 import Header from './core/header/header';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Home from "./features/Home/Home"
+import Home from "./features/Home/Home";
 import License from "./features/License/License";
 import Wallpapers from "./features/Wallpapers/Wallpapers";
 import AdminLogin from "./features/AdminLogin/AdminLogin";
 import AdminLayout from "./features/Admin/AdminLayout";
 import ManageWallpapers from "./features/Admin/ManageWallpapers/ManageWallpapers";
 import ManageUsers from "./features/Admin/ManageUsers/ManageUsers";
+import ManageEmails from "./features/Admin/ManageEmails/ManageEmails";
 import { AuthProvider } from './auth/AuthContext';
 import ProtectedRoute from './auth/ProtectedRoute';
 import Contact from "./features/Contact/Contact";
 import Footer from "./core/footer/footer";
 import Privacy from "./features/Privacy/Privacy";
-import ManageEmails from "./features/Admin/ManageEmails/ManageEmails";
 
 function App() {
     return (
@@ -34,8 +34,16 @@ function App() {
                             </ProtectedRoute>
                         }>
                             <Route path="wallpapers" element={<ManageWallpapers />} />
-                            <Route path="emails" element={<ManageEmails />}/>
-                            <Route path="users" element={<ManageUsers />} />
+                            <Route path="emails" element={
+                                <ProtectedRoute roles={['admin']}>
+                                    <ManageEmails />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="users" element={
+                                <ProtectedRoute roles={['admin']}>
+                                    <ManageUsers />
+                                </ProtectedRoute>
+                            } />
                         </Route>
                     </Routes>
                     {window.location.pathname.indexOf('/admin') === -1 && <Footer />}
