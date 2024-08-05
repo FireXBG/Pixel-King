@@ -139,7 +139,7 @@ function UploadWallpaperComponent({ onSuccess }) {
         }));
     };
 
-    const handleViewChange = (e, index, value) => {
+    const handleViewChange = (index, value) => {
         setView((prevView) => ({
             ...prevView,
             [index]: value
@@ -151,6 +151,14 @@ function UploadWallpaperComponent({ onSuccess }) {
             ...prevIsPaid,
             [index]: e.target.checked
         }));
+    };
+
+    const handleSelectAllViews = (viewType) => {
+        const updatedView = {};
+        originalFiles.forEach((_, index) => {
+            updatedView[index] = viewType;
+        });
+        setView(updatedView);
     };
 
     const handleDragOver = (e) => {
@@ -183,7 +191,6 @@ function UploadWallpaperComponent({ onSuccess }) {
 
         console.log("Upload complete request sent.");
 
-        // Close the upload component and trigger the parent's fetch wallpapers method
         setLoading(false);
         setShowContainer(false);
         console.log("Calling onSuccess...");
@@ -198,65 +205,77 @@ function UploadWallpaperComponent({ onSuccess }) {
                     onDrop={handleDrop}
                     onDragOver={handleDragOver}
                 >
-                    <h1>Wallpapers upload menu</h1>
-                    <form onSubmit={handleSubmit}>
-                        <label htmlFor="wallpaper">Click me or drag files to upload</label>
-                        <input type="file" id="wallpaper" name="wallpaper" multiple onChange={handleFileChange} />
-                        {processing && <div>Processing files...</div>}
-                        <div className={styles.previews}>
-                            {previewFiles.map((file, index) => (
-                                <div key={index} className={styles.preview}>
-                                    <div className={styles.previewImageContainer}>
-                                        <img src={URL.createObjectURL(file)} alt={`preview ${index}`} className={styles.previewImage} />
-                                    </div>
-                                    <textarea
-                                        placeholder="Tags (separated by spaces)"
-                                        value={tags[index] || ''}
-                                        onChange={(e) => handleTagsChange(e, index)}
-                                    />
-                                    <div className={styles.viewSelector}>
-                                        <label>
-                                            <input
-                                                type="radio"
-                                                name={`view_${index}`}
-                                                value="desktop"
-                                                checked={view[index] === 'desktop'}
-                                                onChange={(e) => handleViewChange(e, index, 'desktop')}
-                                            />
-                                            Desktop (16:9)
-                                        </label>
-                                        <label>
-                                            <input
-                                                type="radio"
-                                                name={`view_${index}`}
-                                                value="mobile"
-                                                checked={view[index] === 'mobile'}
-                                                onChange={(e) => handleViewChange(e, index, 'mobile')}
-                                            />
-                                            Mobile (9:16)
-                                        </label>
-                                    </div>
-                                    <div className={styles.viewSelector}>
-                                        <label>
-                                            <input
-                                                type="checkbox"
-                                                name={`isPaid_${index}`}
-                                                value="isPaid"
-                                                onChange={(e) => handleIsPaidChange(e, index)}
-                                            />
-                                            Paid
-                                        </label>
-                                    </div>
-                                    <div className={styles.progressBar}>
-                                        {individualProgress[index]}%
-                                    </div>
+                    {!loading && <h1>Wallpapers upload menu</h1>}
+                    {!loading && (
+                        <form onSubmit={handleSubmit}>
+                            <label htmlFor="wallpaper">Click me or drag files to upload</label>
+                            <input type="file" id="wallpaper" name="wallpaper" multiple onChange={handleFileChange} />
+                            {processing && <div>Processing files...</div>}
+                            {originalFiles.length > 0 && (
+                                <div className={styles.selectAllContainer}>
+                                    <button type="button" onClick={() => handleSelectAllViews('desktop')}>
+                                        Select all as desktop
+                                    </button>
+                                    <button type="button" onClick={() => handleSelectAllViews('mobile')}>
+                                        Select all as mobile
+                                    </button>
                                 </div>
-                            ))}
-                        </div>
-                        <button className="admin__button" type="submit" disabled={loading}>
-                            {loading ? `Uploading... ${Math.round(overallProgress)}%` : 'Upload'}
-                        </button>
-                    </form>
+                            )}
+                            <div className={styles.previews}>
+                                {previewFiles.map((file, index) => (
+                                    <div key={index} className={styles.preview}>
+                                        <div className={styles.previewImageContainer}>
+                                            <img src={URL.createObjectURL(file)} alt={`preview ${index}`} className={styles.previewImage} />
+                                        </div>
+                                        <textarea
+                                            placeholder="Tags (separated by spaces)"
+                                            value={tags[index] || ''}
+                                            onChange={(e) => handleTagsChange(e, index)}
+                                        />
+                                        <div className={styles.viewSelector}>
+                                            <label>
+                                                <input
+                                                    type="radio"
+                                                    name={`view_${index}`}
+                                                    value="desktop"
+                                                    checked={view[index] === 'desktop'}
+                                                    onChange={(e) => handleViewChange(index, 'desktop')}
+                                                />
+                                                Desktop (16:9)
+                                            </label>
+                                            <label>
+                                                <input
+                                                    type="radio"
+                                                    name={`view_${index}`}
+                                                    value="mobile"
+                                                    checked={view[index] === 'mobile'}
+                                                    onChange={(e) => handleViewChange(index, 'mobile')}
+                                                />
+                                                Mobile (9:16)
+                                            </label>
+                                        </div>
+                                        <div className={styles.viewSelector}>
+                                            <label>
+                                                <input
+                                                    type="checkbox"
+                                                    name={`isPaid_${index}`}
+                                                    value="isPaid"
+                                                    onChange={(e) => handleIsPaidChange(e, index)}
+                                                />
+                                                Paid
+                                            </label>
+                                        </div>
+                                        <div className={styles.progressBar}>
+                                            {individualProgress[index]}%
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <button className="admin__button" type="submit" disabled={loading}>
+                                {loading ? `Uploading... ${Math.round(overallProgress)}%` : 'Upload'}
+                            </button>
+                        </form>
+                    )}
                     {loading && (
                         <div className={styles.loading}>
                             <div className={styles.loadingText}>

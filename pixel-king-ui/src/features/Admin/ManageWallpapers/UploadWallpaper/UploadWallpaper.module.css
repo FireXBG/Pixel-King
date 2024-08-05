@@ -26,6 +26,7 @@
     display: flex;
     flex-direction: column;
     gap: 2vh;
+    position: relative;
 }
 
 .upload__container form input {
@@ -57,10 +58,34 @@
     text-align: center;
 }
 
+.upload__container .selectAllContainer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1vh;
+    margin-top: 5vh;
+    margin-bottom: 1vh;
+}
+
+.upload__container .selectAllContainer button {
+    background-color: #e32078;
+    color: #fff;
+    border: none;
+    padding: 0.5vw 1vw;
+    border-radius: 0.5vw;
+    cursor: pointer;
+    font-size: 1vw;
+    min-width: 7vw;
+}
+
+.upload__container .selectAllContainer button:hover {
+    background-color: #8A4CF0;
+}
+
 .upload__container .previews {
     display: flex;
     flex-direction: column;
     gap: 2vw;
+    margin-top: 3vw;
 }
 
 .upload__container .preview {
@@ -68,6 +93,7 @@
     flex-direction: row;
     align-items: center;
     gap: 1vw;
+    position: relative;
 }
 
 .upload__container .preview img {
@@ -79,7 +105,7 @@
 }
 
 .upload__container .preview textarea {
-    width: 90vw;
+    width: 50vw;
     padding: 1vw;
     border-radius: 0.5vw;
     border: 1px solid #090A1F;
@@ -90,6 +116,14 @@
 
 .upload__container .preview textarea:focus {
     outline: none;
+}
+
+.upload__container .viewSelectorContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1vh;
 }
 
 .upload__container .viewSelector {
@@ -107,6 +141,10 @@
 
 .upload__container .viewSelector input {
     margin-right: 0.5vw;
+}
+
+.hidden {
+    display: none;
 }
 
 .loading {
