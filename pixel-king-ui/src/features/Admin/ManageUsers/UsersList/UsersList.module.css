@@ -29,3 +29,38 @@
 .usersListDeleteButton:hover {
     background-color: darkred;
 }
+
+.usersListEditButton {
+    background-color: #4d75fc;
+    color: white;
+    border: none;
+    padding: 0.6vw 2vw;
+    cursor: pointer;
+    border-radius: 0.5vw;
+}
+
+.usersListEditButton:hover {
+    background-color: #2e4f9b;
+}
+
+.actionButtons {
+    display: flex;
+    flex-direction: row;
+    gap: 2vw;
+}
+
+.roleSelect {
+    padding: 0.5vw;
+    border-radius: 0.5vw;
+    border: none;
+    background-color: #8A4CF0;
+    color: white;
+}
+
+.roleSelect:hover {
+    background-color: #6e3db0;
+}
+
+.roleSelect:focus {
+    outline: none;
+}

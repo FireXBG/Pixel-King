@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import styles from './UsersList.module.css';
 
-export default function UsersList({ users, onDeleteUser, onRoleChange }) {
+export default function UsersList({ users, onDeleteUser, onRoleChange, onEditUserClick }) {
     const handleRoleChange = (username, newRole) => {
         onRoleChange(username, newRole);
     };
@@ -22,12 +22,20 @@ export default function UsersList({ users, onDeleteUser, onRoleChange }) {
                             <option value="editor">Editor</option>
                             <option value="admin">Admin</option>
                         </select>
-                        <button
-                            className={styles.usersListDeleteButton}
-                            onClick={() => onDeleteUser(user.username)}
-                        >
-                            Delete
-                        </button>
+                        <div className={styles.actionButtons}>
+                            <button
+                                className={styles.usersListEditButton}
+                                onClick={() => onEditUserClick(user)}
+                            >
+                                Edit
+                            </button>
+                            <button
+                                className={styles.usersListDeleteButton}
+                                onClick={() => onDeleteUser(user.username)}
+                            >
+                                Delete
+                            </button>
+                        </div>
                     </li>
                 ))}
             </ul>
@@ -44,4 +52,5 @@ UsersList.propTypes = {
     ).isRequired,
     onDeleteUser: PropTypes.func.isRequired,
     onRoleChange: PropTypes.func.isRequired,
+    onEditUserClick: PropTypes.func.isRequired,
 };

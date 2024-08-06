@@ -10,6 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const tempDir = path.join(__dirname, '..', 'temp');
 const Jimp = require('jimp');
+const { getIO } = require('../config/socket');
 
 if (!fs.existsSync(tempDir)) {
     fs.mkdirSync(tempDir);
@@ -298,6 +299,19 @@ exports.authorizeUser = async (username, password, role) => {
     } catch (error) {
         console.error('Error authorizing user:', error);
         throw new Error('An error occurred while authorizing user');
+    }
+};
+
+exports.updateUser = async (username, updateData) => {
+    try {
+        if (updateData.password) {
+            updateData.password = await bcrypt.hash(updateData.password, 10);
+        }
+        const user = await AdminUser.findOneAndUpdate({ username }, updateData, { new: true });
+        return user;
+    } catch (error) {
+        console.error('Error updating user:', error);
+        throw new Error('An error occurred while updating the user');
     }
 };
 

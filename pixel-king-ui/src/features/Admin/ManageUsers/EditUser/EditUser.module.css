@@ -1,0 +1,41 @@
+.editUserContainer {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+}
+
+.editUserError {
+    color: red;
+}
+
+.editUserForm {
+    display: flex;
+    flex-direction: column;
+}
+
+.editUserFormGroup {
+    margin-bottom: 10px;
+}
+
+.editUserLabel {
+    margin-bottom: 5px;
+}
+
+.editUserInput {
+    padding: 8px;
+    border: 1px solid #8A4CF0;
+    border-radius: 4px;
+}
+
+.editUserButton {
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: #8A4CF0;
+    color: white;
+    cursor: pointer;
+}
+
+.editUserButton:hover {
+    background-color: #6118d7;
+}

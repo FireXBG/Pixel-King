@@ -277,7 +277,7 @@ function UploadWallpaperComponent({ onSuccess }) {
                         </form>
                     )}
                     {loading && (
-                        <div className={styles.loading}>
+                        <div className={`${styles.loading} ${loading ? styles.show : ''}`}>
                             <div className={styles.loadingText}>
                                 Uploading... {Math.round(overallProgress)}%
                             </div>
