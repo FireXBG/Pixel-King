@@ -334,6 +334,19 @@ router.put('/users/:username/role', isAuthorized, async (req, res) => {
     }
 });
 
+router.put('/users/:username', async (req, res) => {
+    const { username } = req.params;
+    const { password, role } = req.body;
+
+    try {
+        await adminServices.updateUser(username, password, role);
+        res.status(200).json({ message: 'User updated successfully' });
+    } catch (error) {
+        console.error('Error updating user:', error);
+        res.status(500).json({ error: 'An error occurred while updating the user' });
+    }
+});
+
 router.delete('/users/:username', async (req, res) => {
     try {
         const { username } = req.params;

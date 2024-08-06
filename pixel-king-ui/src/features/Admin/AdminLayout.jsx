@@ -9,6 +9,7 @@ function AdminLayout() {
                     <Link to='/admin/wallpapers'>Manage Wallpapers</Link>
                     <Link to='/admin/emails'>Manage Emails</Link>
                     <Link to='/admin/users'>Manage Users</Link>
+                    <Link to='/wallpapers'>Exit</Link>
                 </nav>
             </header>
             <main className={styles.main__container}>

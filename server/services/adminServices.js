@@ -301,13 +301,16 @@ exports.authorizeUser = async (username, password, role) => {
     }
 };
 
-exports.updateUser = async (username, updateData) => {
+exports.updateUser = async (username, password, role) => {
     try {
-        if (updateData.password) {
-            updateData.password = await bcrypt.hash(updateData.password, 10);
+        const updateData = { role }; // Only update role initially
+
+        if (password) {
+            const hashedPassword = await bcrypt.hash(password, 12);
+            updateData.password = hashedPassword; // Only update password if provided
         }
-        const user = await AdminUser.findOneAndUpdate({ username }, updateData, { new: true });
-        return user;
+
+        await AdminUser.findOneAndUpdate({ username }, updateData, { new: true });
     } catch (error) {
         console.error('Error updating user:', error);
         throw new Error('An error occurred while updating the user');
