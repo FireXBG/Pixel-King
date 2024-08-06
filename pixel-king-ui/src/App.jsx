@@ -47,6 +47,7 @@ function App() {
                         </Route>
                     </Routes>
                     {window.location.pathname.indexOf('/admin') === -1 && <Footer />}
+
                 </>
             </AuthProvider>
         </BrowserRouter>
