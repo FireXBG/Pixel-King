@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import io from 'socket.io-client';
 import styles from './ManageWallpapers.module.css';
 import UploadWallpaper from './UploadWallpaper/UploadWallpaper';
 import EditTagsModal from './EditTagsModal/EditTagsModal';
 import AdminMessage from "../../../core/adminMessage/adminMessage";
+
+const socket = io(process.env.REACT_APP_BACKEND_URL);
 
 function ManageWallpapers() {
     const [uploadWallpapersMenu, setUploadWallpapersMenu] = useState(false);
@@ -18,12 +21,36 @@ function ManageWallpapers() {
     const [searchQuery, setSearchQuery] = useState('');
     const [adminMessage, setAdminMessage] = useState(null); // Admin message state
     const [storageQuota, setStorageQuota] = useState(null); // Storage quota state
+    const [uploadProgress, setUploadProgress] = useState(null); // Upload progress state
     const imagesPerPage = 20;
     const cancelTokenSource = useRef(null);
 
+    const checkUploadStatus = async () => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/checkUploadStatus`);
+            if (response.data.isUploadInProgress) {
+                setUploadProgress('Calculating...'); // Initial state before receiving progress updates
+                // Start listening for socket updates
+                socket.on('uploadProgress', (data) => {
+                    console.log('Received upload progress:', data.percentage);
+                    setUploadProgress(data.percentage);
+                });
+            } else {
+                setUploadProgress(null);
+            }
+        } catch (error) {
+            console.error('Error checking upload status:', error);
+        }
+    };
+
     useEffect(() => {
+        checkUploadStatus(); // Check upload status when component mounts
         fetchWallpapers();
         fetchStorageQuota(); // Fetch storage quota on component mount
+
+        return () => {
+            socket.off('uploadProgress');
+        };
     }, [filter, currentPage]);
 
     const fetchWallpapers = async () => {
@@ -67,8 +94,12 @@ function ManageWallpapers() {
     const handleUploadSuccess = () => {
         console.log("Upload success handler called");
         setUploadWallpapersMenu(false);
+        setUploadProgress('Calculating...'); // Set initial state before receiving progress updates
         fetchWallpapers();
         fetchStorageQuota(); // Fetch updated storage quota after upload
+
+        // Check upload status after 2 seconds
+        setTimeout(checkUploadStatus, 2000);
     };
 
     const handleDelete = async (wallpaperId) => {
@@ -153,6 +184,15 @@ function ManageWallpapers() {
         setAdminMessage(null);
     };
 
+    useEffect(() => {
+        if (uploadProgress === 100) {
+            setTimeout(() => {
+                setUploadProgress(null);
+            }, 2000); // Hide the progress bar after 2 seconds when it reaches 100%
+        }
+        console.log('Upload progress updated:', uploadProgress);
+    }, [uploadProgress]);
+
     return (
         <div className={styles.manageWallpapersContainer}>
             {adminMessage && (
@@ -162,8 +202,19 @@ function ManageWallpapers() {
                     onClose={handleMessageClose}
                 />
             )}
-            <button className='admin__button' onClick={toggleUploadMenu}>Upload Wallpapers</button>
+            <button className='admin__button' onClick={toggleUploadMenu}>
+                {uploadWallpapersMenu ? 'Cancel Upload' : 'Upload Wallpapers'}
+            </button>
             {uploadWallpapersMenu && <UploadWallpaper onSuccess={handleUploadSuccess} />}
+
+            {uploadProgress !== null && (
+                <div className={styles.uploadProgress}>
+                    <div className={styles.progressBar} style={{ width: `${uploadProgress === 'Calculating...' ? 0 : uploadProgress}%` }}></div>
+                    <div className={styles.progressText}>
+                        {uploadProgress === 'Calculating...' ? 'Calculating progress...' : `Processing... ${Math.round(uploadProgress)}%`}
+                    </div>
+                </div>
+            )}
 
             <div className={styles.filterContainer}>
                 <label htmlFor="filter">Filter: </label>

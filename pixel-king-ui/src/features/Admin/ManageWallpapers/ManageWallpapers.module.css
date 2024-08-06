@@ -243,3 +243,29 @@
     color: rgba(251, 174, 253, 0.33);
     font-size: 0.6vw;
 }
+
+.uploadProgressBarContainer {
+    margin-top: 1vw;
+    width: 100%;
+    text-align: center;
+}
+
+.uploadProgressBar {
+    width: 80%;
+    background-color: #090A1F;
+    border-radius: 0.5vw;
+    overflow: hidden;
+    margin: 0 auto;
+    box-shadow: 0 0 0.5vw rgba(0, 0, 0, 0.5);
+}
+
+.uploadProgress {
+    padding-top: 0.8vw;
+    height: 3vw;
+    background-image: linear-gradient(to right, #F72585, #8A4CF0);
+    border-radius: 0.5vw;
+    text-align: center;
+    color: white;
+    transition: width 0.3s ease;
+    margin-top: 1vw;
+}

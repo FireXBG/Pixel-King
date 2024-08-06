@@ -65,7 +65,7 @@ const assembleFile = async (fileId, totalChunks) => {
             readStream.on('error', reject);
         });
 
-        fs.unlinkSync(chunkPath); // Remove chunk file after it's been read
+        fs.unlinkSync(chunkPath);
     }
 
     writeStream.end();
@@ -138,6 +138,7 @@ router.post('/upload', upload.single('chunk'), async (req, res) => {
     const { fileId, chunkIndex, totalChunks } = req.body;
 
     try {
+        console.log(`Uploading chunk ${chunkIndex} of ${totalChunks} for file ${fileId}`);
         if (!receivedChunks[fileId]) {
             receivedChunks[fileId] = new Array(parseInt(totalChunks)).fill(false);
         }
@@ -160,13 +161,17 @@ router.post('/uploadComplete', async (req, res) => {
 
     const { files } = req.body;
     isUploadInProgress = true;
+    let processedFiles = 0;
+    const totalFiles = files.length;
+
+    const io = getIO(); // Initialize socket.io
 
     res.status(200).json({ message: 'Files uploaded successfully. Processing in progress.' });
 
     await (async () => {
         try {
             for (const file of files) {
-                const {fileId, totalChunks, metadata} = file;
+                const { fileId, totalChunks, metadata } = file;
 
                 // Wait until all chunks are received before calling assembleFile
                 while (!receivedChunks[fileId].every(chunk => chunk)) {
@@ -183,7 +188,13 @@ router.post('/uploadComplete', async (req, res) => {
                     path: assembledFilePath,
                     mimetype: 'image/jpeg'
                 }, fileMetadata.tags, fileMetadata.view, fileMetadata.isPaid);
+
                 fs.unlinkSync(assembledFilePath);
+
+                processedFiles++;
+                const progressPercentage = (processedFiles / totalFiles) * 100;
+                console.log(`Processed file ${processedFiles} of ${totalFiles} (${progressPercentage.toFixed(2)}%)`); // Log progress
+                io.emit('uploadProgress', { percentage: progressPercentage }); // Emit progress
             }
 
             // Send upload completion email after all files are processed

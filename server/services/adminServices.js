@@ -10,7 +10,6 @@ const fs = require('fs');
 const path = require('path');
 const tempDir = path.join(__dirname, '..', 'temp');
 const Jimp = require('jimp');
-const { getIO } = require('../config/socket');
 
 if (!fs.existsSync(tempDir)) {
     fs.mkdirSync(tempDir);
