@@ -11,7 +11,7 @@ function Contact() {
         const formData = new FormData(event.target);
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/admin/contact`, {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/contact`, {
                 method: 'POST',
                 body: formData
             });
@@ -19,6 +19,7 @@ function Contact() {
             if (response.ok) {
                 setFormStatus('success');
                 setMessage('Your message has been sent successfully!');
+                event.target.reset(); // Reset the form after successful submission
             } else {
                 setFormStatus('error');
                 setMessage('There was an error sending your message. Please try again.');
@@ -35,8 +36,6 @@ function Contact() {
             <div className={styles.contacts__wrapper}>
                 <div className={styles.info__container}>
                     <h2>Empowering Creativity, One Pixel at a Time</h2>
-                    <p>Email: example@example.com</p>
-                    <p>Social: </p>
                 </div>
                 {formStatus === 'success' ? (
                     <p className={styles.successMessage}>{message}</p>
@@ -49,10 +48,10 @@ function Contact() {
                         <label htmlFor="message">Message:</label>
                         <textarea id="message" name="message" required></textarea>
                         <button type="submit">Submit</button>
+                        {formStatus === 'error' && (
+                            <p className={styles.errorMessage}>{message}</p>
+                        )}
                     </form>
-                )}
-                {formStatus === 'error' && (
-                    <p className={styles.errorMessage}>{message}</p>
                 )}
             </div>
         </div>

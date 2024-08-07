@@ -284,17 +284,6 @@ router.post('/download', async (req, res) => {
     }
 });
 
-router.post('/contact', async (req, res) => {
-    const data = req.body;
-    try {
-        await adminServices.sendContactEmail(data);
-        res.status(200).json({ message: 'Email sent successfully' });
-    } catch (error) {
-        console.error('Error sending email:', error);
-        res.status(500).json({ error: 'An error occurred while sending the email.' });
-    }
-});
-
 router.get('/users', isAuthorized , async (req, res) => {
     try {
         const users = await adminServices.getAllUsers();
@@ -401,6 +390,16 @@ router.get('/getStorageQuota', isAuthorized, async (req, res) => {
         res.status(500).json({ error: 'An error occurred while fetching storage quota.' });
     }
 })
+
+router.post('/contact', upload.none(), async (req, res) => {
+    const data = req.body;
+    try {
+        await adminServices.sendContactEmail(data);
+        res.status(200).json({ message: 'Email sent successfully' });
+    } catch (error) {
+        res.status(500).json({ error: 'An error occurred while sending the email.' });
+    }
+});
 
 function isAuthorized(req, res, next) {
     const authHeader = req.headers.authorization;
