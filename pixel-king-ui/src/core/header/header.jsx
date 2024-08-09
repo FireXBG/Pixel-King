@@ -16,10 +16,12 @@ export default function Header() {
 
     return (
         <header className={styles.header}>
-            <div className={styles.header__logo_container}>
-                <img className={styles.header__logo} src={logo} alt="Pixel King" />
-                <p className={styles.header_logo_text}>pixel king</p>
-            </div>
+            <Link to='/'>
+                <div className={styles.header__logo_container}>
+                    <img className={styles.header__logo} src={logo} alt="Pixel King"/>
+                    <p className={styles.header_logo_text}>pixel king</p>
+                </div>
+            </Link>
             <nav>
                 <ul className={styles.header__nav__list}>
                     <li><Link className={styles.header__link} to="/">Home</Link></li>

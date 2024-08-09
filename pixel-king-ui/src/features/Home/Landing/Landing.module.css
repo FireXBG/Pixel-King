@@ -52,4 +52,8 @@
     .landing_main_images {
         display: none;
     }
+
+    .landing__shadow__1 {
+        display: none;
+    }
 }

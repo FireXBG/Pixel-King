@@ -19,9 +19,11 @@ export default function Wallpapers() {
     const [selectedWallpaper, setSelectedWallpaper] = useState(null);
     const [imagesLoaded, setImagesLoaded] = useState(new Array(9).fill(false));
     const [userChangedDeviceType, setUserChangedDeviceType] = useState(false);
+    const [showNoResults, setShowNoResults] = useState(false);
     const imagesPerPage = 9;
     const cancelTokenSource = useRef(null);
     const debounceTimeout = useRef(null);
+    const noResultsTimeout = useRef(null);
 
     useEffect(() => {
         fetchWallpapers(deviceType, currentPage, searchQuery, true);
@@ -46,6 +48,9 @@ export default function Wallpapers() {
             if (debounceTimeout.current) {
                 clearTimeout(debounceTimeout.current);
             }
+            if (noResultsTimeout.current) {
+                clearTimeout(noResultsTimeout.current);
+            }
         };
     }, [deviceType, userChangedDeviceType]);
 
@@ -56,6 +61,10 @@ export default function Wallpapers() {
 
         cancelTokenSource.current = axios.CancelToken.source();
         setImagesLoaded(new Array(imagesPerPage).fill(false));
+        setShowNoResults(false);
+        if (noResultsTimeout.current) {
+            clearTimeout(noResultsTimeout.current);
+        }
 
         try {
             let url = `${process.env.REACT_APP_BACKEND_URL}/api/wallpapers?view=${type}&page=${page}&limit=${imagesPerPage}`;
@@ -79,6 +88,12 @@ export default function Wallpapers() {
                 updatedImagesLoaded[index] = false;
             });
             setImagesLoaded(updatedImagesLoaded);
+
+            if (fetchedWallpapers.length === 0) {
+                noResultsTimeout.current = setTimeout(() => {
+                    setShowNoResults(true);
+                }, 3000);
+            }
         } catch (error) {
             if (axios.isCancel(error)) {
                 console.log('Request canceled', error.message);
@@ -199,7 +214,7 @@ export default function Wallpapers() {
                 </>
             )}
 
-            {wallpapers.length === 0 && allImagesLoaded && (
+            {wallpapers.length === 0 && allImagesLoaded && showNoResults && (
                 <div className={styles.noResults}>
                     No wallpapers found.
                 </div>
