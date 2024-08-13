@@ -14,6 +14,8 @@ import ProtectedRoute from './auth/ProtectedRoute';
 import Contact from "./features/Contact/Contact";
 import Footer from "./core/footer/footer";
 import Privacy from "./features/Privacy/Privacy";
+import Login from "./features/Login/Login";
+import Register from "./features/Register/Register";
 
 function AppLayout() {
     const location = useLocation();
@@ -28,6 +30,8 @@ function AppLayout() {
                 <Route path="/license" element={<License />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path='/privacy' element={<Privacy />} />
+                <Route path='/login' element={<Login />}/>
+                <Route path="/register" element={<Register />} />
                 <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin/*" element={
                     <ProtectedRoute>

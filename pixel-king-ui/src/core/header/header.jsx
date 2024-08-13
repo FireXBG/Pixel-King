@@ -25,8 +25,10 @@ export default function Header() {
             <nav>
                 <ul className={styles.header__nav__list}>
                     <li><Link className={styles.header__link} to="/">Home</Link></li>
-                    <li><Link className={styles.header__link} to="/license">License</Link></li>
+                    <li><Link className={styles.header__link} to="/upgrade">Premium</Link></li>
                     <li><Link className={styles.header__link} to="/contact">Contact</Link></li>
+                    <li><Link className={styles.header__link} to="/login">Login</Link></li>
+                    <li><Link className={styles.header__link} to="/register">Register</Link></li>
                     <li><Link className={styles.header__link} to="/wallpapers">Wallpapers</Link></li>
                 </ul>
             </nav>
