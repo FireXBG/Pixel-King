@@ -20,7 +20,11 @@ const userSchema = new Schema({
         type: String,
         required: true,
         enum: ['free', 'premium'],
-    }
+    },
+    favouriteWallpapers: [{
+        type: Schema.Types.ObjectId,
+        ref: 'AdminWallpapers'
+    }]
 })
 
 module.exports = model('User', userSchema);
