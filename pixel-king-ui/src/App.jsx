@@ -14,24 +14,27 @@ import ProtectedRoute from './auth/ProtectedRoute';
 import Contact from "./features/Contact/Contact";
 import Footer from "./core/footer/footer";
 import Privacy from "./features/Privacy/Privacy";
-import Login from "./features/Login/Login";
-import Register from "./features/Register/Register";
+import Login from "./features/UserAuth/Login/Login";
+import Register from "./features/UserAuth/Register/Register";
+import UserLayout from "./features/UserAuth/layout";
 
 function AppLayout() {
     const location = useLocation();
     const isAdminRoute = location.pathname.startsWith('/admin');
+    const isAuthRoute = location.pathname === '/login' || location.pathname === '/register';
 
     return (
         <>
-            {!isAdminRoute && <Header />}
+            {/* Only show the Header if not on an admin or auth route */}
+            {!isAdminRoute && !isAuthRoute && <Header />}
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/wallpapers" element={<Wallpapers />} />
                 <Route path="/license" element={<License />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path='/privacy' element={<Privacy />} />
-                <Route path='/login' element={<Login />}/>
-                <Route path="/register" element={<Register />} />
+                <Route path='/login' element={<UserLayout view='login' />} />
+                <Route path='/register' element={<UserLayout view='register' />} />
                 <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin/*" element={
                     <ProtectedRoute>
@@ -51,10 +54,12 @@ function AppLayout() {
                     } />
                 </Route>
             </Routes>
-            {!isAdminRoute && <Footer />}
+            {/* Only show the Footer if not on an admin or auth route */}
+            {!isAdminRoute && !isAuthRoute && <Footer />}
         </>
     );
 }
+
 
 function App() {
     return (

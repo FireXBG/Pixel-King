@@ -35,6 +35,18 @@ p {
     line-height: 2vw;
 }
 
+.button1 {
+    background-color: var(--linear-gradient);
+    color: white;
+    padding: 0.6vw 1vw;
+    border-radius: 0.5vw;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    border: 0.1vw solid #000000;
+}
+
 .admin__button {
     background-color: var(--linear-gradient);
     color: white;

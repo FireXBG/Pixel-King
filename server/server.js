@@ -15,8 +15,26 @@ const port = process.env.PORT || 3001;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
 
+// CORS Configuration
+app.use(cors({
+    origin: process.env.CORS_ORIGIN,
+    credentials: true
+}));
+
+// Middleware to block unauthorized access
+// app.use((req, res, next) => {
+//     const allowedOrigins = [process.env.CORS_ORIGIN];
+//     const origin = req.headers.origin || req.headers.referer;
+//
+//     if (allowedOrigins.includes(origin)) {
+//         next();
+//     } else {
+//         res.status(403).json({ message: 'Forbidden: You are not allowed to access this resource.' });
+//     }
+// });
+
+// API Routes
 app.use('/api', routes);
 
 const server = http.createServer(app);

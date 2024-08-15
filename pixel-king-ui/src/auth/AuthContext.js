@@ -7,6 +7,7 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [userRole, setUserRole] = useState(null);
+    const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -20,6 +21,14 @@ export const AuthProvider = ({ children }) => {
             } else {
                 setIsAuthenticated(false);
                 setUserRole(null);
+            }
+
+            const userToken = localStorage.getItem('userToken');
+            if (userToken) {
+                axios.defaults.headers.common['Authorization'] = `Bearer ${userToken}`;
+                setIsUserAuthenticated(true);
+            } else {
+                setIsUserAuthenticated(false);
             }
         };
 
@@ -39,6 +48,13 @@ export const AuthProvider = ({ children }) => {
         navigate('/admin/wallpapers');
     };
 
+    const userLogin = (token) => {
+        localStorage.setItem('userToken', token);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        setIsUserAuthenticated(true);
+        navigate('/');
+    };
+
     const logout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('role');
@@ -48,8 +64,23 @@ export const AuthProvider = ({ children }) => {
         navigate('/admin/login');
     };
 
+    const userLogout = () => {
+        localStorage.removeItem('userToken');
+        delete axios.defaults.headers.common['Authorization'];
+        setIsUserAuthenticated(false);
+        navigate('/login');
+    };
+
     return (
-        <AuthContext.Provider value={{ isAuthenticated, userRole, login, logout }}>
+        <AuthContext.Provider value={{
+            isAuthenticated,
+            userRole,
+            login,
+            logout,
+            isUserAuthenticated,
+            userLogin,
+            userLogout
+        }}>
             {children}
         </AuthContext.Provider>
     );

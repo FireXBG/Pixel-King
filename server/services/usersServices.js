@@ -36,7 +36,7 @@ exports.register = async (data) => {
             throw new Error('Email already registered');
         }
 
-        const hashedPass = await bcrypt.hash(data.password, 10);
+        const hashedPass = await bcrypt.hash(data.password, 12);
 
         const user = new User({
             username: data.username,
