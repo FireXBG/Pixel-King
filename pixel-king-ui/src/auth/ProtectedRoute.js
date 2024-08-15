@@ -3,14 +3,16 @@ import { Navigate } from 'react-router-dom';
 import AuthContext from './AuthContext';
 
 const ProtectedRoute = ({ children, roles }) => {
-    const { isAuthenticated, userRole } = useContext(AuthContext);
+    const { isAuthenticated, isUserAuthenticated, userRole } = useContext(AuthContext);
 
-    if (!isAuthenticated) {
-        return <Navigate to="/admin/login" />;
+    if (!isUserAuthenticated && !isAuthenticated) {
+        return roles && roles.includes('admin') ? <Navigate to="/admin/login" /> : <Navigate to="/login" />;
     }
 
-    if (roles && roles.length > 0 && !roles.includes(userRole)) {
-        return <Navigate to="/admin/wallpapers" />;
+    if (roles && roles.length > 0) {
+        if (roles.includes('admin') && userRole !== 'admin') {
+            return <Navigate to="/" />;
+        }
     }
 
     return children;

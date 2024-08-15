@@ -47,13 +47,35 @@ p {
     border: 0.1vw solid #000000;
 }
 
+.button2 {
+    background:
+            linear-gradient(#060716, #060716) padding-box,
+            linear-gradient(60deg, #F72585, #8A4CF0) border-box;
+    border: 0.1vw solid transparent;
+    border-radius: 10vw;
+    display: inline-block;
+    font-size: 0.8vw;
+    color: white;
+    padding: 0.5vw 2vw;
+}
+
+.addButton {
+    padding: 0;
+    width: 2vw;
+    height: 2vw;
+    font-size: 0.8vw;
+}
+
+.button2:hover {
+    cursor: pointer;
+}
+
 .admin__button {
     background-color: var(--linear-gradient);
     color: white;
     padding: 0.6vw 1vw;
     border-radius: 0.5vw;
     cursor: pointer;
-    font-size: 1rem;
     font-weight: 600;
     transition: all 0.3s;
     border: 0.2vw solid #F72585;

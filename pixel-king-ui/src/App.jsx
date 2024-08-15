@@ -14,9 +14,8 @@ import ProtectedRoute from './auth/ProtectedRoute';
 import Contact from "./features/Contact/Contact";
 import Footer from "./core/footer/footer";
 import Privacy from "./features/Privacy/Privacy";
-import Login from "./features/UserAuth/Login/Login";
-import Register from "./features/UserAuth/Register/Register";
 import UserLayout from "./features/UserAuth/layout";
+import Account from "./features/MyAccount/MyAccount";
 
 function AppLayout() {
     const location = useLocation();
@@ -35,9 +34,14 @@ function AppLayout() {
                 <Route path='/privacy' element={<Privacy />} />
                 <Route path='/login' element={<UserLayout view='login' />} />
                 <Route path='/register' element={<UserLayout view='register' />} />
+                <Route path="/account" element={
+                    <ProtectedRoute>
+                        <Account />
+                    </ProtectedRoute>
+                }/>
                 <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin/*" element={
-                    <ProtectedRoute>
+                    <ProtectedRoute roles={['admin']}>
                         <AdminLayout />
                     </ProtectedRoute>
                 }>

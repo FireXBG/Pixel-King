@@ -1,0 +1,155 @@
+.heading {
+    background: linear-gradient(to right, #F72585, #8A4CF0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 3vw;
+    font-weight: 800;
+    text-align: center;
+    margin: 2vw 0;
+}
+
+.itemsWrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 5vw 10vw;
+}
+
+.itemsWrapper p {
+    color: white;
+}
+
+.smallItemsWrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.secondHeading {
+    font-size: 2vw;
+    color: white;
+}
+
+.smallItem {
+    background: #060716;
+    min-height: 10vw;
+    padding: 2vw;
+    border-radius: 3vw;
+    max-width: 50vw;
+    min-width: 35vw;
+}
+
+.smallItemCredits {
+    background: #060716;
+    min-height: 10vw;
+    padding: 2vw;
+    border-radius: 3vw;
+    max-width: 50vw;
+    min-width: 35vw;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.creditsContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 1vw;
+}
+
+.creditsInfo {
+    max-width: 70%;
+    margin-top: 2vw;
+}
+
+.firstSmallWrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.infoActionButtons {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1vw;
+}
+
+.infoContainer {
+    padding-top: 0.5vw;
+}
+
+.spanGradient {
+    background: linear-gradient(to right, #F72585, #8A4CF0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+}
+
+.creditsCount {
+    background: linear-gradient(to right, #F72585, #8A4CF0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+    font-size: 2.5vw;
+}
+
+.bigItem {
+    background: #060716;
+    min-height: 20vw;
+    padding: 2vw;
+    border-radius: 3vw;
+    max-width: 50vw;
+    min-width: 35vw;
+}
+
+.prosAndCons {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 5vw;
+    margin-top: 2vw;
+}
+
+.pros {
+    display: flex;
+    flex-direction: column;
+    gap: 1vw;
+}
+
+.pros li {
+    display: flex;
+    flex-direction: row;
+    gap: 1vw;
+}
+
+.pros img {
+    width: 1vw;
+    height: 1vw;
+    margin-top: 0.5vw;
+}
+
+.cons {
+    display: flex;
+    flex-direction: column;
+    gap: 1vw;
+}
+
+.cons li {
+    display: flex;
+    flex-direction: row;
+    gap: 1vw;
+}
+
+.cons img {
+    width: 1vw;
+    height: 1vw;
+    margin-top: 0.5vw;
+}
+
+.bigItem button {
+    margin-top: 5vw;
+    margin-left: 70%;
+}
