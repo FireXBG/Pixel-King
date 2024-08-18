@@ -17,6 +17,7 @@
 
 .itemsWrapper p {
     color: white;
+    font-size: 1vw;
 }
 
 .smallItemsWrapper {
@@ -152,4 +153,125 @@
 .bigItem button {
     margin-top: 5vw;
     margin-left: 70%;
+}
+
+@media screen and (max-width: 768px) {
+    .itemsWrapper {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .itemsWrapper p {
+        font-size: 3vw;
+    }
+
+    .secondHeading {
+        font-size: 4vw;
+        text-align: center;
+    }
+
+    .heading {
+        font-size: 6vw;
+        font-weight: 600;
+        margin-top: 5vw;
+    }
+
+    .smallItemsWrapper {
+        gap: 5vw;
+    }
+
+    .smallItem,
+    .smallItemCredits {
+        min-width: 80vw;
+        min-height: 20vw;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 5vw;
+        padding: 5vw;
+    }
+
+    .infoContainer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2vw;
+    }
+
+    .firstSmallWrapper {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .infoActionButtons {
+        margin-top: 5vw;
+        gap: 2vw;
+    }
+
+    .infoActionButtons button {
+        font-size: 2vw;
+        padding: 1.5vw 5vw;
+        min-width: 30vw;
+    }
+
+    .creditsContainer {
+        min-height: 20vw;
+        flex-direction: column;
+    }
+
+    .creditsCount {
+        font-size: 10vw !important;
+        height: 20vw;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .creditsContainer button {
+        font-size: 4vw;
+        height: 7vw;
+        width: 7vw;
+        font-weight: 100;
+    }
+
+    .bigItem {
+        min-width: 80vw;
+        min-height: 40vw;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 5vw;
+        padding: 5vw;
+        margin-top: 5vw;
+    }
+
+    .prosAndCons {
+        flex-direction: column;
+        gap: 5vw;
+    }
+
+    .pros,
+    .cons {
+        gap: 5vw;
+    }
+
+    .pros li,
+    .cons li {
+        gap: 2vw;
+        align-items: center;
+    }
+
+    .prosAndCons img {
+        width: 4vw;
+        height: 4vw;
+    }
+
+    .bigItem button {
+        margin-top: 5vw;
+        margin-left: 0;
+        font-size: 3vw;
+        padding: 1.5vw 5vw;
+    }
 }
