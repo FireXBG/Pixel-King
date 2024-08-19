@@ -19,7 +19,8 @@ const userSchema = new Schema({
     plan: {
         type: String,
         required: true,
-        enum: ['free', 'premium'],
+        enum: ['free', 'Premium', 'King'],
+        default: 'free'
     },
     credits: {
         type: Number,

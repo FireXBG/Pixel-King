@@ -1,11 +1,17 @@
+import React from 'react';
 import styles from './Plans.module.css';
-import pros from '../../assets/pro.png'
+import pros from '../../assets/pro.png';
 import {useEffect, useState} from "react";
 import axios from "axios";
+import { loadStripe } from '@stripe/stripe-js';
+
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
 export default function Plans() {
     const [currentPlan, setCurrentPlan] = useState('Free');
     const [pixels, setPixels] = useState(0);
+    const [loading, setLoading] = useState(false);
+
     useEffect(() => {
         axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/users/info`, {
             headers: {
@@ -17,8 +23,37 @@ export default function Plans() {
             setPixels(response.data.credits);
         }).catch(error => {
             console.error('Error during user info:', error);
-        })
+        });
     }, []);
+
+    const handleUpgrade = async (planId, planName) => {
+        setLoading(true);
+        try {
+            const stripe = await stripePromise;
+            const { data } = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/stripe/create-checkout-session`, {
+                planId: planId,
+                token: localStorage.getItem('userToken'),
+                planName: planName
+            }, {
+                headers: {
+                    Authorization: localStorage.getItem('userToken')
+                }
+            });
+
+            // Redirect to Stripe Checkout
+            const result = await stripe.redirectToCheckout({
+                sessionId: data.sessionId,
+            });
+
+            if (result.error) {
+                console.error('Stripe error:', result.error.message);
+            }
+        } catch (error) {
+            console.error('Error creating checkout session:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className={styles.shopWrapper}>
@@ -42,7 +77,7 @@ export default function Plans() {
                                 <p>Unlimited HD Downloads</p>
                             </li>
                         </ul>
-                        <button className='button2 currentPlan'>Current Plan</button>
+                        <button className='button2 currentPlan' disabled>Current Plan</button>
                     </div>
                 </div>
                 <div className={styles.plan}>
@@ -67,11 +102,13 @@ export default function Plans() {
                                 <p>Includes all free plan features</p>
                             </li>
                         </ul>
-                        <button className='button2'>Upgrade Now</button>
+                        <button className='button2' onClick={() => handleUpgrade('price_1PpX8MFqQKSFArkNHlkLIemb', 'Premium')} disabled={loading}>
+                            {loading ? 'Processing...' : 'Upgrade Now'}
+                        </button>
                     </div>
                 </div>
                 <div className={styles.plan}>
-                <h2>Free</h2>
+                    <h2>Pro</h2>
                     <p className={styles.price}>€2.99 <br /><span>Per Month</span></p>
                     <div className={styles.pros}>
                         <ul>
@@ -96,7 +133,9 @@ export default function Plans() {
                                 <p>No Ads</p>
                             </li>
                         </ul>
-                        <button className='button2'>Upgrade Now</button>
+                        <button className='button2' onClick={() => handleUpgrade('price_1PpX8dFqQKSFArkNqeSYnCOw', 'King')} disabled={loading}>
+                            {loading ? 'Processing...' : 'Upgrade Now'}
+                        </button>
                     </div>
                 </div>
             </div>

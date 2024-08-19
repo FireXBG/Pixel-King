@@ -13,8 +13,7 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3001;
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+const paymentsController = require('./controllers/paymentControllers');
 
 // CORS Configuration
 app.use(cors({
@@ -22,17 +21,11 @@ app.use(cors({
     credentials: true
 }));
 
-// Middleware to block unauthorized access
-// app.use((req, res, next) => {
-//     const allowedOrigins = [process.env.CORS_ORIGIN];
-//     const origin = req.headers.origin || req.headers.referer;
-//
-//     if (allowedOrigins.includes(origin)) {
-//         next();
-//     } else {
-//         res.status(403).json({ message: 'Forbidden: You are not allowed to access this resource.' });
-//     }
-// });
+app.use('/api/stripe', paymentsController)
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 
 // API Routes
 app.use('/api', routes);
