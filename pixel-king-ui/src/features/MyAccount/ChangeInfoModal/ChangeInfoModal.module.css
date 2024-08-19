@@ -1,0 +1,61 @@
+/* ChangeInfoModal.module.css and ChangePasswordModal.module.css */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.89);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modalContent {
+    background: #060716;
+    color: white;
+    padding: 5vw;
+    border-radius: 10px;
+    max-width: 500px;
+    width: 100%;
+}
+
+.modalContent h2 {
+    text-align: center;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+form label:first-child {
+    margin-top: 1vw;
+}
+
+form label {
+    margin-bottom: 1vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5vw;
+}
+
+form input:focus {
+    outline: none;
+}
+
+form input {
+    padding: 0.6vw;
+    margin-bottom: 2vw;
+    border-radius: 0.5vw;
+    border: 0.1vw solid #ccc;
+    width: 100%;
+}
+
+.buttonsWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1vw;
+}

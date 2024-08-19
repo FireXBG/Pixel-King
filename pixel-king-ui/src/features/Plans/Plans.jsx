@@ -101,7 +101,7 @@ export default function Plans() {
                 </div>
             </div>
             <h1 className='mainH1'>Pixels</h1>
-            <div className={styles.creditsContainer}>
+            <div>
                 <form className={styles.creditsForm}>
                     <label>
                         <p>Current Pixels: {pixels}</p>

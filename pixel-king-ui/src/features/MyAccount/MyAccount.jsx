@@ -1,11 +1,16 @@
-import styles from './MyAccount.module.css';
-import pros from '../../assets/pro.png'
-import cons from '../../assets/cons.png'
-import {useEffect, useState} from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
+import ChangeInfoModal from './ChangeInfoModal/ChangeInfoModal';
+import ChangePasswordModal from './ChangePassModal/ChangePassModal';
+import styles from './MyAccount.module.css';
+import pros from '../../assets/pro.png';
+import cons from '../../assets/cons.png';
 
 export default function MyAccount() {
     const [userInfo, setUserInfo] = useState('');
+    const [isChangeInfoModalOpen, setIsChangeInfoModalOpen] = useState(false);
+    const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
+
     useEffect(() => {
         axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/users/info`, {
             headers: {
@@ -31,8 +36,18 @@ export default function MyAccount() {
                                 <p>Email: <span className={styles.spanGradient}>{userInfo.email}</span></p>
                             </div>
                             <div className={styles.infoActionButtons}>
-                                <button className='button2'>Change Info</button>
-                                <button className='button2'>Change Password</button>
+                                <button
+                                    className='button2'
+                                    onClick={() => setIsChangeInfoModalOpen(true)}
+                                >
+                                    Change Info
+                                </button>
+                                <button
+                                    className='button2'
+                                    onClick={() => setIsChangePasswordModalOpen(true)}
+                                >
+                                    Change Password
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -50,28 +65,29 @@ export default function MyAccount() {
                     <div className={styles.prosAndCons}>
                         <ul className={styles.pros}>
                             <li>
-                                <img src={pros} />
+                                <img src={pros} alt="Pros" />
                                 <p>Access to thousands of wallpapers</p>
-                            </li>                            <li>
-                                <img src={pros} />
+                            </li>
+                            <li>
+                                <img src={pros} alt="Pros" />
                                 <p>Download up to 10 4K wallpapers per day</p>
                             </li>
                             <li>
-                                <img src={pros} />
+                                <img src={pros} alt="Pros" />
                                 <p>Add wallpapers to favorites</p>
                             </li>
                         </ul>
                         <ul className={styles.cons}>
                             <li>
-                                <img src={cons}/>
+                                <img src={cons} alt="Cons" />
                                 <p>Free 8K wallpapers</p>
                             </li>
                             <li>
-                                <img src={cons}/>
+                                <img src={cons} alt="Cons" />
                                 <p>Daily credits</p>
                             </li>
                             <li>
-                                <img src={cons}/>
+                                <img src={cons} alt="Cons" />
                                 <p>Free custom wallpapers</p>
                             </li>
                         </ul>
@@ -79,6 +95,9 @@ export default function MyAccount() {
                     <button className='button2'>Upgrade Now</button>
                 </div>
             </div>
+
+            {isChangeInfoModalOpen && <ChangeInfoModal onClose={() => setIsChangeInfoModalOpen(false)} />}
+            {isChangePasswordModalOpen && <ChangePasswordModal onClose={() => setIsChangePasswordModalOpen(false)} />}
         </div>
     );
 }
