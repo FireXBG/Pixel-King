@@ -96,7 +96,7 @@ export default function MyAccount() {
                 </div>
             </div>
 
-            {isChangeInfoModalOpen && <ChangeInfoModal onClose={() => setIsChangeInfoModalOpen(false)} />}
+            {isChangeInfoModalOpen && <ChangeInfoModal username={userInfo.username} email={userInfo.email} onClose={() => setIsChangeInfoModalOpen(false)} />}
             {isChangePasswordModalOpen && <ChangePasswordModal onClose={() => setIsChangePasswordModalOpen(false)} />}
         </div>
     );
