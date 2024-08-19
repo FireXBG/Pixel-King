@@ -24,4 +24,16 @@ router.post('/register', async (req, res) => {
     }
 });
 
+router.get('/info', async (req, res) => {
+    const token = req.headers.authorization;
+    try {
+        const userInfo = await userServices.userInfo(token);
+        console.log(userInfo);
+        res.status(200).json(userInfo);
+    } catch (error) {
+        console.error("Error during user info:", error);
+        res.status(500).json({ error: error.message });
+    }
+})
+
 module.exports = router;

@@ -53,3 +53,19 @@ exports.register = async (data) => {
         throw new Error(error.message || 'An error occurred during registration');
     }
 };
+
+exports.userInfo = async (token) => {
+    const userId = jwt.verify(token, process.env.JWT_SECRET).id;
+    const user = await User.findById(userId);
+
+    if(!user) {
+        throw new Error('User not found');
+    }
+
+    return {
+        username: user.username,
+        email: user.email,
+        plan: user.plan,
+        credits: user.credits
+    };
+}
