@@ -6,7 +6,7 @@ import AuthContext from '../../auth/AuthContext'; // Import the AuthContext
 
 export default function Header() {
     const [menuOpen, setMenuOpen] = useState(false);
-    const { isUserAuthenticated, userLogout } = useContext(AuthContext); // Use isUserAuthenticated instead of isAuthenticated
+    const { isUserAuthenticated, userLogout } = useContext(AuthContext);
 
     const toggleMenu = () => {
         setMenuOpen(!menuOpen);
@@ -14,7 +14,7 @@ export default function Header() {
 
     const handleLogout = () => {
         userLogout();
-        toggleMenu(); // Close the mobile menu after logout
+        toggleMenu();
     };
 
     return (

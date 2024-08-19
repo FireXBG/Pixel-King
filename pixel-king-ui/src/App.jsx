@@ -16,6 +16,7 @@ import Footer from "./core/footer/footer";
 import Privacy from "./features/Privacy/Privacy";
 import UserLayout from "./features/UserAuth/layout";
 import Account from "./features/MyAccount/MyAccount";
+import Plans from "./features/Plans/Plans";
 
 function AppLayout() {
     const location = useLocation();
@@ -32,6 +33,7 @@ function AppLayout() {
                 <Route path="/license" element={<License />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path='/privacy' element={<Privacy />} />
+                <Route path='/upgrade' element={<Plans />}/>
                 <Route path='/login' element={<UserLayout view='login' />} />
                 <Route path='/register' element={<UserLayout view='register' />} />
                 <Route path="/account" element={

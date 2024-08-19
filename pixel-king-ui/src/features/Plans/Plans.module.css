@@ -1,0 +1,125 @@
+.shopWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.shopWrapper h1:first-child {
+    margin-top: 0;
+}
+
+.plansContainer {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    place-items: center;
+    gap: 5vw;
+    color: white;
+}
+
+.plansContainer div:first-child {
+    background: linear-gradient(to bottom, #000000, rgb(72, 0, 62));
+}
+
+.plansContainer div:nth-child(2) {
+    background: linear-gradient(to bottom, #000000, rgb(64, 0, 146));
+}
+
+.plansContainer div:last-child {
+    background: linear-gradient(to bottom, #000000, rgb(135, 0, 0));
+}
+
+.plan {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2vw;
+    height: 35vw;
+    min-width: 20vw;
+    border-radius: 1.6vw;
+    gap: 1vw;
+}
+
+.price {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.price span {
+    color: #939393;
+    font-weight: 100;
+}
+
+.pros {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: #040409 !important;
+    max-width: 16vw;
+    border-radius: 1.6vw;
+    min-width: 20vw;
+    height: 100%;
+}
+
+.pros ul {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1vw;
+    list-style: none;
+    padding: 1vw;
+}
+
+.pros ul li:first-child {
+    margin-top: 1.5vw;
+}
+
+.pros ul li {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 1vw;
+    padding: 0 0.5vw;
+}
+
+.pros ul li img {
+    width: 1vw;
+    height: 1vw;
+}
+
+.pros ul li p {
+    font-size: 0.8vw;
+    font-weight: 100;
+}
+
+.plan button {
+    margin-left: 50%;
+    margin-bottom: 2vw;
+    transform: translateX(-50%);
+}
+
+.creditsForm {
+    flex-direction: column;
+    align-items: center;
+    margin: 2vw;
+}
+
+.creditsForm label {
+    font-size: 2vw;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2vw;
+}
+
+.creditsForm input {
+    border: 1px solid #939393;
+    border-radius: 0.5vw;
+    padding: 0.5vw;
+    width: 5vw;
+}
+
+.creditsForm input:focus {
+    outline: none;
+}

@@ -35,6 +35,16 @@ p {
     line-height: 2vw;
 }
 
+.mainH1 {
+    background: linear-gradient(to right, #F72585, #8A4CF0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 4.5vw;
+    font-weight: 800;
+    text-align: center;
+    margin: 5vw 0;
+}
+
 .button1 {
     background-color: var(--linear-gradient);
     color: white;
@@ -57,6 +67,18 @@ p {
     font-size: 0.8vw;
     color: white;
     padding: 0.5vw 2vw;
+    transition: 0.3s;
+}
+
+.button2:hover {
+    cursor: pointer;
+    background: linear-gradient(60deg, #F72585, #8A4CF0) border-box;
+}
+
+.currentPlan {
+    background: var(--linear-gradient);
+    border: none;
+    padding: 0.6vw;
 }
 
 .addButton {

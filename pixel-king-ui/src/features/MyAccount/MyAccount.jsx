@@ -5,7 +5,7 @@ import {useEffect, useState} from "react";
 import axios from "axios";
 
 export default function MyAccount() {
-    const [userInfo, setUserInfo] = useState(null);
+    const [userInfo, setUserInfo] = useState('');
     useEffect(() => {
         axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/users/info`, {
             headers: {
