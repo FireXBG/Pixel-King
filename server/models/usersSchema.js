@@ -21,6 +21,10 @@ const userSchema = new Schema({
         required: true,
         enum: ['free', 'premium'],
     },
+    credits: {
+        type: Number,
+        default: 0
+    },
     favouriteWallpapers: [{
         type: Schema.Types.ObjectId,
         ref: 'AdminWallpapers'
