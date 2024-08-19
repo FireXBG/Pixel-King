@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import styles from './adminMessage.module.css';
 
-export default function AdminMessage({ title, message, onClose }) {
+export default function AdminMessage({ title, message, onClose = () => {} }) {
     const [isExiting, setIsExiting] = useState(false);
 
     const handleClose = () => {

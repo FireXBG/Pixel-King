@@ -11,7 +11,7 @@ export default function MyAccount() {
     const [isChangeInfoModalOpen, setIsChangeInfoModalOpen] = useState(false);
     const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
 
-    useEffect(() => {
+    const fetchUserInfo = () => {
         axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/users/info`, {
             headers: {
                 Authorization: localStorage.getItem('userToken')
@@ -20,8 +20,22 @@ export default function MyAccount() {
             setUserInfo(response.data);
         }).catch(error => {
             console.error('Error during user info:', error);
-        })
+        });
+    };
+
+    useEffect(() => {
+        fetchUserInfo();
     }, []);
+
+    const handleInfoModalClose = () => {
+        setIsChangeInfoModalOpen(false);
+        fetchUserInfo(); // Refetch the user info after closing the modal
+    };
+
+    const handlePasswordModalClose = () => {
+        setIsChangePasswordModalOpen(false);
+        fetchUserInfo(); // Refetch the user info after closing the modal
+    };
 
     return (
         <div>
@@ -96,8 +110,18 @@ export default function MyAccount() {
                 </div>
             </div>
 
-            {isChangeInfoModalOpen && <ChangeInfoModal username={userInfo.username} email={userInfo.email} onClose={() => setIsChangeInfoModalOpen(false)} />}
-            {isChangePasswordModalOpen && <ChangePasswordModal onClose={() => setIsChangePasswordModalOpen(false)} />}
+            {isChangeInfoModalOpen && (
+                <ChangeInfoModal
+                    username={userInfo.username}
+                    email={userInfo.email}
+                    onClose={handleInfoModalClose}
+                />
+            )}
+            {isChangePasswordModalOpen && (
+                <ChangePasswordModal
+                    onClose={handlePasswordModalClose}
+                />
+            )}
         </div>
     );
 }

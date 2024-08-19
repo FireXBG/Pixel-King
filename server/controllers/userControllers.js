@@ -36,4 +36,29 @@ router.get('/info', async (req, res) => {
     }
 })
 
+router.post('/updateUserInfo', async (req, res) => {
+    const data = req.body;
+    const token = req.headers.authorization;
+    try {
+        const updatedUserInfo = await userServices.updateUserInfo(data, token);
+        res.status(200).json(updatedUserInfo);
+    } catch (error) {
+        console.error("Error during user info update:", error);
+        res.status(500).json({ error: error.message });
+    }
+})
+
+router.post('/updatePassword', async (req, res) => {
+    const data = req.body;
+    const token = req.headers.authorization;
+    try {
+        const updatedPassword = await userServices.updatePassword(data, token);
+        res.status(200).json(updatedPassword);
+    } catch (error) {
+        console.error("Error during user password update:", error);
+        res.status(500).json({ error: error.message });
+    }
+})
+
+
 module.exports = router;
