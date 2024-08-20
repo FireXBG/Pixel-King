@@ -8,33 +8,35 @@ import cons from '../../assets/cons.png';
 
 export default function MyAccount() {
     const [userInfo, setUserInfo] = useState('');
+    const [stripeDetails, setStripeDetails] = useState(null);
     const [isChangeInfoModalOpen, setIsChangeInfoModalOpen] = useState(false);
     const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
 
-    const fetchUserInfo = () => {
-        axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/users/info`, {
+    const fetchAccountDetails = () => {
+        axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/users/account-details`, {
             headers: {
                 Authorization: localStorage.getItem('userToken')
             }
         }).then(response => {
             setUserInfo(response.data);
+            setStripeDetails(response.data.stripeDetails);
         }).catch(error => {
-            console.error('Error during user info:', error);
+            console.error('Error during fetching account details:', error);
         });
     };
 
     useEffect(() => {
-        fetchUserInfo();
+        fetchAccountDetails();
     }, []);
 
     const handleInfoModalClose = () => {
         setIsChangeInfoModalOpen(false);
-        fetchUserInfo(); // Refetch the user info after closing the modal
+        fetchAccountDetails(); // Refetch user info after closing the modal
     };
 
     const handlePasswordModalClose = () => {
         setIsChangePasswordModalOpen(false);
-        fetchUserInfo(); // Refetch the user info after closing the modal
+        fetchAccountDetails(); // Refetch user info after closing the modal
     };
 
     return (
@@ -68,14 +70,20 @@ export default function MyAccount() {
                     <div className={styles.smallItemCredits}>
                         <h2 className={styles.secondHeading}>Credits</h2>
                         <div className={styles.creditsContainer}>
-                            <p className={styles.creditsCount}>{userInfo?.credits}</p>
+                            <p className={styles.creditsCount}>{userInfo.credits}</p>
                             <button className='button2 addButton'>+</button>
                         </div>
                     </div>
                 </div>
                 <div className={styles.bigItem}>
                     <h2 className={styles.secondHeading}>Plan</h2>
-                    <p>Current plan: Free</p>
+                    <p>Current plan: {userInfo.plan ? userInfo.plan.toUpperCase() : 'Loading...'}</p>
+                    {stripeDetails && (
+                        <div>
+                            <p>Payment Method: {stripeDetails.cardBrand.toUpperCase()} **** **** **** {stripeDetails.cardLast4}</p>
+                            <p>Expires: {stripeDetails.cardExpiryMonth}/{stripeDetails.cardExpiryYear}</p>
+                        </div>
+                    )}
                     <div className={styles.prosAndCons}>
                         <ul className={styles.pros}>
                             <li>

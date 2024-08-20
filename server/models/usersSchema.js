@@ -26,6 +26,10 @@ const userSchema = new Schema({
         type: Number,
         default: 0
     },
+    customer_id: {
+        type: String,
+        default: ''
+    },
     favouriteWallpapers: [{
         type: Schema.Types.ObjectId,
         ref: 'AdminWallpapers'

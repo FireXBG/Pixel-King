@@ -6,6 +6,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const adminServices = require('../services/adminServices');
 const paymentServices = require('../services/paymentServices');
 const mongoose = require('mongoose');
+const User = require('../models/usersSchema');
 
 // Load the Stripe webhook secret
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -13,26 +14,40 @@ const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 // Route to create a checkout session
 router.post('/create-checkout-session', express.json(), async (req, res) => {
     const { planId, token, planName } = req.body;
-    console.log('Plan ID:', planId);
-    console.log('Token:', token);
     const CORS_ORIGIN = process.env.CORS_ORIGIN;
-    try {
-        const userId = (await adminServices.verifyToken(token)).id;
 
+    try {
+        const user = await adminServices.verifyToken(token);
+        let customerId = user.customer_id;
+
+        if (!customerId) {
+            const customer = await stripe.customers.create({
+                email: user.email,
+                metadata: {
+                    userId: user.id,
+                }
+            });
+
+            await User.findByIdAndUpdate(user.id, { customer_id: customer.id });
+            customerId = customer.id;
+        }
+
+        // Create a checkout session
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             mode: 'subscription',
             line_items: [
                 {
-                    price: planId, // Use the correct Price ID
+                    price: planId,
                     quantity: 1,
                 },
             ],
+            customer: customerId,
             success_url: `${CORS_ORIGIN}/success?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${CORS_ORIGIN}/cancel`,
             metadata: {
-                userId: userId,
-                selectedPlanId: planName, // Ensure this is correctly set
+                userId: user.id,
+                selectedPlanId: planName,
             },
         });
 
@@ -43,34 +58,35 @@ router.post('/create-checkout-session', express.json(), async (req, res) => {
     }
 });
 
+
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
     const sig = req.headers['stripe-signature'];
     let event;
 
     try {
-        // Pass the raw body (req.body) to the constructEvent method
         event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
     } catch (err) {
         console.error('⚠️  Webhook signature verification failed.', err.message);
         return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
-    // Handle the event
     switch (event.type) {
         case 'checkout.session.completed': {
             const session = event.data.object;
-            // console.log(`Checkout session completed for session ID: ${session.id}`);
-            // console.log(`User ID: ${session.metadata.userId}`);
-            // console.log(`Selected Plan: ${session.metadata.selectedPlanId}`);
 
             try {
-                await paymentServices.upgradePlan(session.metadata.selectedPlanId, session.metadata.userId);
+                // Update the user plan and customer_id
+                await User.findByIdAndUpdate(session.metadata.userId, {
+                    plan: session.metadata.selectedPlanId,
+                    customer_id: session.customer,
+                });
             } catch (error) {
                 console.error('Error upgrading plan:', error);
             }
             break;
         }
         case 'invoice.payment_succeeded': {
+            // Handle payment success events if needed
             const invoice = event.data.object;
             break;
         }

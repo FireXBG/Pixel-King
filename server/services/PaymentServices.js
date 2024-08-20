@@ -1,6 +1,6 @@
 const User = require('../models/usersSchema');
 
-exports.upgradePlan = async (plan, userId) => {
+exports.upgradePlan = async (plan, userId, customerId) => {
     console.log('Upgrading plan:', plan, 'for user:', userId);
 
     try {
@@ -11,6 +11,9 @@ exports.upgradePlan = async (plan, userId) => {
         }
 
         user.plan = plan;
+        if (customerId) {
+            user.customer_id = customerId;
+        }
 
         await user.save();
     } catch (error) {
