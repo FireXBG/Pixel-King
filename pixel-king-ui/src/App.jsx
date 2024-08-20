@@ -17,6 +17,7 @@ import Privacy from "./features/Privacy/Privacy";
 import UserLayout from "./features/UserAuth/layout";
 import Account from "./features/MyAccount/MyAccount";
 import Plans from "./features/Plans/Plans";
+import Success from "./features/Plans/Success/Success";
 
 function AppLayout() {
     const location = useLocation();
@@ -36,6 +37,7 @@ function AppLayout() {
                 <Route path='/upgrade' element={<Plans />}/>
                 <Route path='/login' element={<UserLayout view='login' />} />
                 <Route path='/register' element={<UserLayout view='register' />} />
+                <Route path='/success' element={<Success />} />
                 <Route path="/account" element={
                     <ProtectedRoute>
                         <Account />

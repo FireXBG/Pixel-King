@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from './Plans.module.css';
 import pros from '../../assets/pro.png';
-import {useEffect, useState} from "react";
-import axios from "axios";
+import axios from 'axios';
 import { loadStripe } from '@stripe/stripe-js';
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
@@ -11,6 +11,7 @@ export default function Plans() {
     const [currentPlan, setCurrentPlan] = useState('Free');
     const [pixels, setPixels] = useState(0);
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/users/info`, {
@@ -18,7 +19,6 @@ export default function Plans() {
                 Authorization: localStorage.getItem('userToken')
             }
         }).then(response => {
-            console.log(response.data);
             setCurrentPlan(response.data.plan);
             setPixels(response.data.credits);
         }).catch(error => {
@@ -27,6 +27,12 @@ export default function Plans() {
     }, []);
 
     const handleUpgrade = async (planId, planName) => {
+        if (planName === 'Free') {
+            // If the user is downgrading to Free, redirect to /account
+            navigate('/account');
+            return;
+        }
+
         setLoading(true);
         try {
             const stripe = await stripePromise;
@@ -47,6 +53,8 @@ export default function Plans() {
 
             if (result.error) {
                 console.error('Stripe error:', result.error.message);
+            } else {
+                navigate('/my-account');
             }
         } catch (error) {
             console.error('Error creating checkout session:', error);
@@ -77,7 +85,13 @@ export default function Plans() {
                                 <p>Unlimited HD Downloads</p>
                             </li>
                         </ul>
-                        <button className='button2 currentPlan' disabled>Current Plan</button>
+                        <button
+                            className={`button2 ${currentPlan === 'Free' ? 'currentPlan' : ''}`}
+                            onClick={() => currentPlan !== 'Free' && handleUpgrade('price_1PpX8MFqQKSFArkNHlkLIemb', 'Free')}
+                            disabled={currentPlan === 'Free'}
+                        >
+                            {currentPlan === 'Free' ? 'Current Plan' : 'Downgrade'}
+                        </button>
                     </div>
                 </div>
                 <div className={styles.plan}>
@@ -102,13 +116,17 @@ export default function Plans() {
                                 <p>Includes all free plan features</p>
                             </li>
                         </ul>
-                        <button className='button2' onClick={() => handleUpgrade('price_1PpX8MFqQKSFArkNHlkLIemb', 'Premium')} disabled={loading}>
-                            {loading ? 'Processing...' : 'Upgrade Now'}
+                        <button
+                            className={`button2 ${currentPlan === 'Premium' ? 'currentPlan' : ''}`}
+                            onClick={() => handleUpgrade('price_1PpX8MFqQKSFArkNHlkLIemb', 'Premium')}
+                            disabled={loading || currentPlan === 'Premium'}
+                        >
+                            {currentPlan === 'Premium' ? 'Current Plan' : loading ? 'Processing...' : 'Upgrade Now'}
                         </button>
                     </div>
                 </div>
                 <div className={styles.plan}>
-                    <h2>Pro</h2>
+                    <h2>King</h2>
                     <p className={styles.price}>€2.99 <br /><span>Per Month</span></p>
                     <div className={styles.pros}>
                         <ul>
@@ -133,8 +151,12 @@ export default function Plans() {
                                 <p>No Ads</p>
                             </li>
                         </ul>
-                        <button className='button2' onClick={() => handleUpgrade('price_1PpX8dFqQKSFArkNqeSYnCOw', 'King')} disabled={loading}>
-                            {loading ? 'Processing...' : 'Upgrade Now'}
+                        <button
+                            className={`button2 ${currentPlan === 'King' ? 'currentPlan' : ''}`}
+                            onClick={() => handleUpgrade('price_1PpX8dFqQKSFArkNqeSYnCOw', 'King')}
+                            disabled={loading || currentPlan === 'King'}
+                        >
+                            {currentPlan === 'King' ? 'Current Plan' : loading ? 'Processing...' : 'Upgrade Now'}
                         </button>
                     </div>
                 </div>

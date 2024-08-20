@@ -81,4 +81,30 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
     res.json({ received: true });
 });
 
+router.get('/verify-session', async (req, res) => {
+    const sessionId = req.query.session_id;
+
+    try {
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+        if (session.payment_status === 'paid') {
+            return res.json({
+                success: true,
+                session,
+            });
+        } else {
+            return res.json({
+                success: false,
+                message: 'Payment not completed.',
+            });
+        }
+    } catch (error) {
+        console.error('Error fetching checkout session:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+});
+
 module.exports = router;

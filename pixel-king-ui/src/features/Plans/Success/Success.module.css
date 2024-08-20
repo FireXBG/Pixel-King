@@ -1,0 +1,22 @@
+.main {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 8vw;
+}
+
+.p {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: white;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.failed {
+    font-size: 3vw;
+    color: red;
+    text-align: center;
+    padding-bottom: 40vw;
+    margin-top: 20vw;
+}
