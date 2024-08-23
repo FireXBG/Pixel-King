@@ -5,11 +5,11 @@ import ChangePasswordModal from './ChangePassModal/ChangePassModal';
 import styles from './MyAccount.module.css';
 
 export default function MyAccount() {
-    const [userInfo, setUserInfo] = useState(null); // Start with null to indicate loading
+    const [userInfo, setUserInfo] = useState(null);
     const [stripeDetails, setStripeDetails] = useState(null);
     const [isChangeInfoModalOpen, setIsChangeInfoModalOpen] = useState(false);
     const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
-    const [isCancelPlanModalOpen, setIsCancelPlanModalOpen] = useState(false); // State to manage the cancel plan modal
+    const [isCancelPlanModalOpen, setIsCancelPlanModalOpen] = useState(false);
 
     const fetchAccountDetails = () => {
         axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/users/account-details`, {
@@ -17,9 +17,10 @@ export default function MyAccount() {
                 Authorization: localStorage.getItem('userToken')
             }
         }).then(response => {
-            console.log('Account details fetched:', response.data); // Log the response data
             setUserInfo(response.data);
             setStripeDetails(response.data.stripeDetails);
+            console.log("Fetched User Info:", response.data);
+            console.log("Fetched Stripe Details:", response.data.stripeDetails);
         }).catch(error => {
             console.error('Error during fetching account details:', error);
         });
@@ -31,16 +32,16 @@ export default function MyAccount() {
 
     const handleInfoModalClose = () => {
         setIsChangeInfoModalOpen(false);
-        fetchAccountDetails(); // Refetch user info after closing the modal
+        fetchAccountDetails();
     };
 
     const handlePasswordModalClose = () => {
         setIsChangePasswordModalOpen(false);
-        fetchAccountDetails(); // Refetch user info after closing the modal
+        fetchAccountDetails();
     };
 
     const handleCancelPlan = () => {
-        setIsCancelPlanModalOpen(true); // Open the cancel plan confirmation modal
+        setIsCancelPlanModalOpen(true);
     };
 
     const confirmCancelPlan = async () => {
@@ -50,13 +51,24 @@ export default function MyAccount() {
                     Authorization: localStorage.getItem('userToken')
                 }
             });
-
-            // Fetch updated user info after canceling the plan
             fetchAccountDetails();
         } catch (error) {
             console.error('Error cancelling plan:', error);
         } finally {
             setIsCancelPlanModalOpen(false);
+        }
+    };
+
+    const handleRenewPlan = async () => {
+        try {
+            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/stripe/renew`, {}, {
+                headers: {
+                    Authorization: localStorage.getItem('userToken')
+                }
+            });
+            fetchAccountDetails();
+        } catch (error) {
+            console.error('Error renewing plan:', error);
         }
     };
 
@@ -101,47 +113,27 @@ export default function MyAccount() {
                     <p>Current plan: {userInfo?.plan ? userInfo.plan.toUpperCase() : 'Loading...'}</p>
                     {stripeDetails && (
                         <div>
-                            <p>Payment Method: {stripeDetails.cardBrand.toUpperCase()} **** **** **** {stripeDetails.cardLast4}</p>
+                            <p>Payment Method: {stripeDetails.cardBrand.toUpperCase()} **** ****
+                                **** {stripeDetails.cardLast4}</p>
                             <p>Expires: {stripeDetails.cardExpiryMonth}/{stripeDetails.cardExpiryYear}</p>
-                            {stripeDetails.renews_at ? (
-                                <p>Renews at: {new Date(stripeDetails.renews_at * 1000).toLocaleDateString()}</p>
-                            ) : (
-                                <p>Plan Expires at: {new Date(stripeDetails.expires_at * 1000).toLocaleDateString()}</p>
+                            {stripeDetails.expires_at && (
+                                <p>Expires at: {new Date(stripeDetails.expires_at * 1000).toLocaleDateString()}</p>
                             )}
-                        </div>
-                    )}
-
-                    {userInfo?.plan === 'free' && (
-                        <div className={styles.prosAndCons}>
-                            <ul className={styles.pros}>
-                                <li>
-                                    <p>Access to thousands of wallpapers</p>
-                                </li>
-                                <li>
-                                    <p>Download up to 10 4K wallpapers per day</p>
-                                </li>
-                                <li>
-                                    <p>Add wallpapers to favorites</p>
-                                </li>
-                            </ul>
-                            <ul className={styles.cons}>
-                                <li>
-                                    <p>Free 8K wallpapers</p>
-                                </li>
-                                <li>
-                                    <p>Daily credits</p>
-                                </li>
-                                <li>
-                                    <p>Free custom wallpapers</p>
-                                </li>
-                            </ul>
+                            {stripeDetails.renews_at && (
+                                <p>Renews at: {new Date(stripeDetails.renews_at * 1000).toLocaleDateString()}</p>
+                            )}
                         </div>
                     )}
                     <div className={styles.buttonsWrapper}>
                         <button className='button2' onClick={() => window.location.href = '/upgrade'}>
                             {userInfo?.plan === 'free' ? 'Upgrade Now' : 'Change Plan'}
                         </button>
-                        {userInfo?.plan !== 'free' && (
+
+                        {stripeDetails?.cancel_at_period_end ? (
+                            <button className='button2' onClick={handleRenewPlan}>
+                                Renew Plan
+                            </button>
+                        ) : (
                             <button className='button2' onClick={handleCancelPlan}>
                                 Cancel Plan
                             </button>

@@ -77,7 +77,9 @@ router.get('/account-details', async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
+        // Fetch the user data from the database
         const user = await User.findById(tokenPayload.id);
+
         if (!user) {
             console.log("User not found in database");
             return res.status(404).json({ message: 'User not found in database' });
@@ -87,21 +89,29 @@ router.get('/account-details', async (req, res) => {
         console.log("User plan:", user.plan);
 
         let stripeDetails = null;
+
         if (user.plan !== 'free' && user.customer_id) {
             console.log("Fetching Stripe customer details for customer ID:", user.customer_id);
 
+            // Fetch customer details from Stripe
             const customer = await stripe.customers.retrieve(user.customer_id);
+            console.log("Stripe customer retrieved:", customer);
+
+            // Fetch the default payment method
             const paymentMethods = await stripe.paymentMethods.list({
                 customer: user.customer_id,
                 type: 'card',
             });
 
+            console.log("Payment methods retrieved:", paymentMethods);
+
             if (paymentMethods.data.length > 0) {
                 const card = paymentMethods.data[0].card;
 
+                // Fetch subscription details
                 const subscription = await stripe.subscriptions.list({
                     customer: user.customer_id,
-                    status: 'active',
+                    status: 'all',
                     limit: 1,
                 });
 
@@ -114,6 +124,7 @@ router.get('/account-details', async (req, res) => {
                         cardExpiryYear: card.exp_year,
                         renews_at: !activeSubscription.cancel_at_period_end ? activeSubscription.current_period_end : null,
                         expires_at: activeSubscription.cancel_at_period_end ? activeSubscription.current_period_end : null,
+                        cancel_at_period_end: activeSubscription.cancel_at_period_end,
                     };
                     console.log("Stripe details set:", stripeDetails);
                 } else {
@@ -139,6 +150,7 @@ router.get('/account-details', async (req, res) => {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 });
+
 
 
 module.exports = router;

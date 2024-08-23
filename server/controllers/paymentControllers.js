@@ -58,7 +58,6 @@ router.post('/create-checkout-session', express.json(), async (req, res) => {
     }
 });
 
-
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
     const sig = req.headers['stripe-signature'];
     let event;
@@ -182,6 +181,56 @@ router.post('/cancel-subscription', async (req, res) => {
         res.status(500).json({ message: 'Internal Server Error' });
     }
 });
+
+router.post('/renew', async (req, res) => {
+    try {
+        const token = req.headers.authorization;
+
+        // Verify token and get user ID
+        const { id } = await adminServices.verifyToken(token);
+
+        // Find the user in the database
+        const user = await User.findById(id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const customer_id = user.customer_id;
+        if (!customer_id) {
+            return res.status(400).json({ message: 'User does not have a Stripe customer ID' });
+        }
+
+        // Retrieve the active subscription associated with the customer
+        const subscriptions = await stripe.subscriptions.list({
+            customer: customer_id,
+            status: 'active',
+            limit: 1,
+        });
+
+        if (subscriptions.data.length === 0) {
+            return res.status(404).json({ message: 'No active subscription found for this customer' });
+        }
+
+        const subscriptionId = subscriptions.data[0].id;
+        const subscription = subscriptions.data[0];
+
+        if (subscription.cancel_at_period_end) {
+            // Renew the subscription by setting cancel_at_period_end to false
+            const renewedSubscription = await stripe.subscriptions.update(subscriptionId, {
+                cancel_at_period_end: false,
+            });
+
+            res.json({ message: 'Subscription renewed successfully', subscription: renewedSubscription });
+        } else {
+            res.json({ message: 'Subscription is already active and set to renew' });
+        }
+    } catch (error) {
+        console.error('Error renewing subscription:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
 
 
 
