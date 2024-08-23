@@ -154,6 +154,12 @@
     margin-top: 0.5vw;
 }
 
+.cons li p,
+.pros li p{
+    font-size: 0.8vw;
+    font-weight: 300;
+}
+
 .bigItem button {
     margin-top: 5vw;
 }

@@ -3,6 +3,8 @@ import axios from "axios";
 import ChangeInfoModal from './ChangeInfoModal/ChangeInfoModal';
 import ChangePasswordModal from './ChangePassModal/ChangePassModal';
 import styles from './MyAccount.module.css';
+import pros from '../../assets/pro.png';
+import cons from '../../assets/cons.png';
 
 export default function MyAccount() {
     const [userInfo, setUserInfo] = useState(null);
@@ -19,8 +21,6 @@ export default function MyAccount() {
         }).then(response => {
             setUserInfo(response.data);
             setStripeDetails(response.data.stripeDetails);
-            console.log("Fetched User Info:", response.data);
-            console.log("Fetched Stripe Details:", response.data.stripeDetails);
         }).catch(error => {
             console.error('Error during fetching account details:', error);
         });
@@ -101,7 +101,7 @@ export default function MyAccount() {
                         </div>
                     </div>
                     <div className={styles.smallItemCredits}>
-                        <h2 className={styles.secondHeading}>Credits</h2>
+                        <h2 className={styles.secondHeading}>Pixels</h2>
                         <div className={styles.creditsContainer}>
                             <p className={styles.creditsCount}>{userInfo?.credits}</p>
                             <button className='button2 addButton'>+</button>
@@ -124,18 +124,52 @@ export default function MyAccount() {
                             )}
                         </div>
                     )}
+                    {userInfo?.plan === 'free' && (
+                        <div className={styles.prosAndCons}>
+                            <ul className={styles.pros}>
+                                <li>
+                                    <img src={pros} alt="Pros" className={styles.icon} />
+                                    <p>Access to thousands of wallpapers</p>
+                                </li>
+                                <li>
+                                    <img src={pros} alt="Pros" className={styles.icon} />
+                                    <p>Download up to 10 4K wallpapers per day</p>
+                                </li>
+                                <li>
+                                    <img src={pros} alt="Pros" className={styles.icon} />
+                                    <p>Add wallpapers to favorites</p>
+                                </li>
+                            </ul>
+                            <ul className={styles.cons}>
+                                <li>
+                                    <img src={cons} alt="Cons" className={styles.icon} />
+                                    <p>No access to 8K wallpapers</p>
+                                </li>
+                                <li>
+                                    <img src={cons} alt="Cons" className={styles.icon} />
+                                    <p>Limited daily pixels</p>
+                                </li>
+                                <li>
+                                    <img src={cons} alt="Cons" className={styles.icon} />
+                                    <p>No custom wallpapers</p>
+                                </li>
+                            </ul>
+                        </div>
+                    )}
                     <div className={styles.buttonsWrapper}>
                         <button className='button2' onClick={() => window.location.href = '/upgrade'}>
                             {userInfo?.plan === 'free' ? 'Upgrade Now' : 'Change Plan'}
                         </button>
 
-                        {stripeDetails?.cancel_at_period_end ? (
-                            <button className='button2' onClick={handleRenewPlan}>
-                                Renew Plan
-                            </button>
-                        ) : (
+                        {userInfo?.plan !== 'free' && !stripeDetails?.cancel_at_period_end && (
                             <button className='button2' onClick={handleCancelPlan}>
                                 Cancel Plan
+                            </button>
+                        )}
+
+                        {stripeDetails?.cancel_at_period_end && (
+                            <button className='button2' onClick={handleRenewPlan}>
+                                Renew Plan
                             </button>
                         )}
                     </div>
