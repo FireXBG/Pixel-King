@@ -76,6 +76,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 
             try {
                 // Update the user plan and customer_id
+                console.log('Updating user plan and customer_id');
                 await User.findByIdAndUpdate(session.metadata.userId, {
                     plan: session.metadata.selectedPlanId,
                     customer_id: session.customer,
@@ -89,6 +90,27 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             // Handle payment success events if needed
             const invoice = event.data.object;
             break;
+        }
+        case 'customer.subscription.deleted': {
+            // Downgrade the user's plan in your database
+            const userId = event.data.object.metadata.userId;
+            console.log('Downgrading user plan:', userId);
+            const user = await User.findById(userId);
+            const customerId = user.customer_id;
+
+            // Retrieve the active subscription associated with the customer and check if the period end date has passed
+            const subscriptions = await stripe.subscriptions.list({
+                customer: customerId,
+                status: 'active',
+            });
+
+            if (subscriptions.data.length === 0) {
+                console.log('No active subscription found for this customer');
+                // Set user to free plan
+
+                await paymentServices.resetPlan(userId)
+                return;
+            }
         }
         default:
             console.log(`Unhandled event type ${event.type}`);
@@ -122,5 +144,45 @@ router.get('/verify-session', async (req, res) => {
         });
     }
 });
+
+router.post('/cancel-subscription', async (req, res) => {
+    try {
+        const token = req.headers.authorization;
+
+        // Verify token and get user ID
+        const { id } = await adminServices.verifyToken(token);
+
+        // Find the user in the database
+        const user = await User.findById(id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const customer_id = user.customer_id;
+        console.log('Customer ID:', customer_id);
+
+        // Retrieve the active subscription associated with the customer
+        const subscriptions = await stripe.subscriptions.list({
+            customer: customer_id,
+            status: 'active',
+        });
+
+        if (subscriptions.data.length === 0) {
+            return res.status(404).json({ message: 'No active subscription found for this customer' });
+        }
+
+        // Assume there is only one active subscription per user, cancel it
+        const subscriptionId = subscriptions.data[0].id;
+        const canceledSubscription = await stripe.subscriptions.update(subscriptionId, { cancel_at_period_end: true });
+
+        res.json({ message: 'Subscription cancellation scheduled successfully', subscription: canceledSubscription });
+    } catch (error) {
+        console.error('Error canceling subscription:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
+
 
 module.exports = router;

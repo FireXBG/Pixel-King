@@ -77,9 +77,7 @@ router.get('/account-details', async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Now fetch the full user data from the database using the user ID
         const user = await User.findById(tokenPayload.id);
-
         if (!user) {
             console.log("User not found in database");
             return res.status(404).json({ message: 'User not found in database' });
@@ -88,32 +86,39 @@ router.get('/account-details', async (req, res) => {
         console.log("User found in database:", user);
         console.log("User plan:", user.plan);
 
-        // If the plan is not free, fetch Stripe customer details
         let stripeDetails = null;
         if (user.plan !== 'free' && user.customer_id) {
             console.log("Fetching Stripe customer details for customer ID:", user.customer_id);
 
-            // Fetch customer details from Stripe
             const customer = await stripe.customers.retrieve(user.customer_id);
-            console.log("Stripe customer retrieved:", customer);
-
-            // Fetch the default payment method
             const paymentMethods = await stripe.paymentMethods.list({
                 customer: user.customer_id,
                 type: 'card',
             });
 
-            console.log("Payment methods retrieved:", paymentMethods);
-
             if (paymentMethods.data.length > 0) {
                 const card = paymentMethods.data[0].card;
-                stripeDetails = {
-                    cardBrand: card.brand,
-                    cardLast4: card.last4,
-                    cardExpiryMonth: card.exp_month,
-                    cardExpiryYear: card.exp_year,
-                };
-                console.log("Stripe details set:", stripeDetails);
+
+                const subscription = await stripe.subscriptions.list({
+                    customer: user.customer_id,
+                    status: 'active',
+                    limit: 1,
+                });
+
+                if (subscription.data.length > 0) {
+                    const activeSubscription = subscription.data[0];
+                    stripeDetails = {
+                        cardBrand: card.brand,
+                        cardLast4: card.last4,
+                        cardExpiryMonth: card.exp_month,
+                        cardExpiryYear: card.exp_year,
+                        renews_at: !activeSubscription.cancel_at_period_end ? activeSubscription.current_period_end : null,
+                        expires_at: activeSubscription.cancel_at_period_end ? activeSubscription.current_period_end : null,
+                    };
+                    console.log("Stripe details set:", stripeDetails);
+                } else {
+                    console.log("No active subscription found for customer ID:", user.customer_id);
+                }
             } else {
                 console.log("No payment methods found for customer ID:", user.customer_id);
             }
@@ -121,7 +126,6 @@ router.get('/account-details', async (req, res) => {
             console.log("User has a free plan or no customer ID:", { plan: user.plan, customer_id: user.customer_id });
         }
 
-        // Return the user and Stripe details to the frontend
         return res.json({
             username: user.username,
             email: user.email,
