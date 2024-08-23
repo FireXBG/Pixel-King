@@ -110,9 +110,9 @@ export default function MyAccount() {
                 </div>
                 <div className={styles.bigItem}>
                     <h2 className={styles.secondHeading}>Plan</h2>
-                    <p>Current plan: {userInfo?.plan ? userInfo.plan.toUpperCase() : 'Loading...'}</p>
+                    <p className={styles.currentPlan}>Current plan: <span className={styles.spanGradient}>{userInfo?.plan ? userInfo.plan.toUpperCase() : 'Loading...'}</span></p>
                     {stripeDetails && (
-                        <div>
+                        <div className={styles.planInfo}>
                             <p>Payment Method: {stripeDetails.cardBrand.toUpperCase()} **** ****
                                 **** {stripeDetails.cardLast4}</p>
                             <p>Expires: {stripeDetails.cardExpiryMonth}/{stripeDetails.cardExpiryYear}</p>

@@ -171,6 +171,16 @@
     gap: 1vw;
 }
 
+.planInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 1vw;
+}
+
+.currentPlan {
+    margin-bottom: 1vw;
+}
+
 @media screen and (max-width: 768px) {
     .itemsWrapper {
         flex-direction: column;
