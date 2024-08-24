@@ -1,3 +1,30 @@
+/* HTML: <div class="loader"></div> */
+.loader {
+    width: 0.8vw;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    animation: l5 1s infinite linear alternate;
+}
+
+@keyframes l5 {
+    0% {
+        box-shadow: 1vw 0 #8A4CF0, -1vw 0 rgba(138, 76, 240, 0.82);
+        background: #24143b;
+    }
+    33% {
+        box-shadow: 1vw 0 #8A4CF0, -1vw 0 rgba(36, 20, 59, 0.82);
+        background: #24143b;
+    }
+    66% {
+        box-shadow: 1vw 0 rgba(36, 20, 59, 0.82), -1vw 0 #8A4CF0;
+        background: #24143b;
+    }
+    100% {
+        box-shadow: 1vw 0 rgba(138, 76, 240, 0.82), -1vw 0 #000;
+        background: #000;
+    }
+}
+
 .heading {
     background: linear-gradient(to right, #F72585, #8A4CF0);
     -webkit-background-clip: text;
@@ -171,6 +198,10 @@
     gap: 1vw;
 }
 
+.buttonsWrapper button {
+    min-width: 10vw;
+}
+
 .planInfo {
     display: flex;
     flex-direction: column;
@@ -179,6 +210,10 @@
 
 .currentPlan {
     margin-bottom: 1vw;
+}
+
+.modalActions button {
+    min-width: 13.5vw;
 }
 
 @media screen and (max-width: 768px) {

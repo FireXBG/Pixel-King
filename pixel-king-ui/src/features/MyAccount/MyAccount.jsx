@@ -12,6 +12,7 @@ export default function MyAccount() {
     const [isChangeInfoModalOpen, setIsChangeInfoModalOpen] = useState(false);
     const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
     const [isCancelPlanModalOpen, setIsCancelPlanModalOpen] = useState(false);
+    const [loadingButton, setLoadingButton] = useState(""); // Keep track of which button is loading
 
     const fetchAccountDetails = () => {
         axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/users/account-details`, {
@@ -45,21 +46,28 @@ export default function MyAccount() {
     };
 
     const confirmCancelPlan = async () => {
+        setLoadingButton("cancelModal");
         try {
             await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/stripe/cancel-subscription`, {}, {
                 headers: {
                     Authorization: localStorage.getItem('userToken')
                 }
             });
+
             fetchAccountDetails();
         } catch (error) {
             console.error('Error cancelling plan:', error);
         } finally {
-            setIsCancelPlanModalOpen(false);
+            // Add a short delay before resetting the loading state
+            setTimeout(() => {
+                setLoadingButton(""); // Reset loading state
+                setIsCancelPlanModalOpen(false);
+            }, 500); // 500ms delay
         }
     };
 
     const handleRenewPlan = async () => {
+        setLoadingButton("renew");
         try {
             await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/stripe/renew`, {}, {
                 headers: {
@@ -69,6 +77,8 @@ export default function MyAccount() {
             fetchAccountDetails();
         } catch (error) {
             console.error('Error renewing plan:', error);
+        } finally {
+            setLoadingButton(""); // Reset loading state
         }
     };
 
@@ -87,15 +97,21 @@ export default function MyAccount() {
                             <div className={styles.infoActionButtons}>
                                 <button
                                     className='button2'
-                                    onClick={() => setIsChangeInfoModalOpen(true)}
+                                    onClick={() => {
+                                        setLoadingButton("info");
+                                        setIsChangeInfoModalOpen(true);
+                                    }}
                                 >
-                                    Change Info
+                                    {loadingButton === "info" ? <div className={styles.loader}></div> : "Change Info"}
                                 </button>
                                 <button
                                     className='button2'
-                                    onClick={() => setIsChangePasswordModalOpen(true)}
+                                    onClick={() => {
+                                        setLoadingButton("password");
+                                        setIsChangePasswordModalOpen(true);
+                                    }}
                                 >
-                                    Change Password
+                                    {loadingButton === "password" ? <div className={styles.loader}></div> : "Change Password"}
                                 </button>
                             </div>
                         </div>
@@ -110,7 +126,7 @@ export default function MyAccount() {
                 </div>
                 <div className={styles.bigItem}>
                     <h2 className={styles.secondHeading}>Plan</h2>
-                    <p className={styles.currentPlan}>Current plan: <span className={styles.spanGradient}>{userInfo?.plan ? userInfo.plan.toUpperCase() : 'Loading...'}</span></p>
+                    <p className={styles.currentPlan}>Current plan: <span className={styles.spanGradient}>{userInfo?.plan ? userInfo.plan.toUpperCase() : <div className={styles.loader}></div>}</span></p>
                     {stripeDetails && (
                         <div className={styles.planInfo}>
                             <p>Payment Method: {stripeDetails.cardBrand.toUpperCase()} **** ****
@@ -163,13 +179,13 @@ export default function MyAccount() {
 
                         {userInfo?.plan !== 'free' && !stripeDetails?.cancel_at_period_end && (
                             <button className='button2' onClick={handleCancelPlan}>
-                                Cancel Plan
+                                {loadingButton === "cancel" ? <div className={styles.loader}></div> : "Cancel Plan"}
                             </button>
                         )}
 
                         {stripeDetails?.cancel_at_period_end && (
                             <button className='button2' onClick={handleRenewPlan}>
-                                Renew Plan
+                                {loadingButton === "renew" ? <div className={styles.loader}></div> : "Renew Plan"}
                             </button>
                         )}
                     </div>
@@ -193,16 +209,26 @@ export default function MyAccount() {
                     <div className={styles.modal}>
                         <h2>Are you sure you want to cancel your plan?</h2>
                         <div className={styles.modalActions}>
-                            <button className='button2' onClick={confirmCancelPlan}>
-                                Yes, Cancel Plan
+                            <button
+                                className='button2'
+                                onClick={() => {
+                                    setLoadingButton("cancelModal");
+                                    confirmCancelPlan();
+                                }}
+                            >
+                                {loadingButton === "cancelModal" ? <div className={styles.loader}></div> : "Yes, Cancel Plan"}
                             </button>
-                            <button className='button2' onClick={() => setIsCancelPlanModalOpen(false)}>
+                            <button
+                                className='button2'
+                                onClick={() => setIsCancelPlanModalOpen(false)}
+                            >
                                 No, Keep Plan
                             </button>
                         </div>
                     </div>
                 </div>
             )}
+
         </div>
     );
 }

@@ -63,7 +63,9 @@ p {
             linear-gradient(60deg, #F72585, #8A4CF0) border-box;
     border: 0.1vw solid transparent;
     border-radius: 10vw;
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 0.8vw;
     color: white;
     padding: 0.5vw 2vw;
