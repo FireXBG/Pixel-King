@@ -21,6 +21,7 @@ router.post('/create-checkout-session', express.json(), async (req, res) => {
         let customerId = user.customer_id;
 
         if (!customerId) {
+            // Create a new customer if one does not exist
             const customer = await stripe.customers.create({
                 email: user.email,
                 metadata: {
@@ -40,6 +41,11 @@ router.post('/create-checkout-session', express.json(), async (req, res) => {
         });
 
         const currentSubscriptionId = subscriptions.data.length > 0 ? subscriptions.data[0].id : null;
+
+        // If upgrading from Premium to King, cancel the old subscription before creating a new one
+        if (currentSubscriptionId) {
+            await stripe.subscriptions.update(currentSubscriptionId, { cancel_at_period_end: true });
+        }
 
         // Create a checkout session
         const session = await stripe.checkout.sessions.create({
@@ -86,14 +92,14 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             try {
                 const user = await User.findById(session.metadata.userId);
 
-                // Cancel the previous subscription if it exists
+                // Cancel the previous subscription if it exists and wasn't already canceled
                 const currentSubscriptionId = session.metadata.currentSubscriptionId;
                 if (currentSubscriptionId) {
-                    // Cancel the old plan subscription
-                    await stripe.subscriptions.update(currentSubscriptionId, { cancel_at_period_end: true });
+                    await stripe.subscriptions.del(currentSubscriptionId);
                 }
 
                 // Update the user's plan in the database to the new plan
+                console.log('Upgrading user plan:', session.metadata.selectedPlanId);
                 await paymentServices.upgradePlan(session.metadata.selectedPlanId, session.metadata.userId, session.customer);
             } catch (error) {
                 console.error('Error upgrading plan:', error);
@@ -306,6 +312,30 @@ router.post('/downgrade', express.json(), async (req, res) => {
     }
 });
 
+router.post('/create-customer-portal-session', express.json(), async (req, res) => {
+    try {
+        const token = req.body.token;
+        const userId = await adminServices.verifyToken(token).id;
+        const user = await User.findById(userId);
+
+        if (!user.customer_id) {
+            return res.status(400).json({ message: 'No Stripe customer ID found for this user' });
+        }
+
+        // Create a session for the Stripe Customer Portal
+        const session = await stripe.billingPortal.sessions.create({
+            customer: user.customer_id,
+            return_url: process.env.CORS_ORIGIN + '/account', // Redirect the user back to your account page
+        });
+
+        console.log('Creating customer portal session:', session.url);
+
+        res.json({ url: session.url });
+    } catch (error) {
+        console.error('Error creating customer portal session:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
 
 
 module.exports = router;

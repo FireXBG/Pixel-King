@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate, useLocation } from "react-router-dom";
 import ChangeInfoModal from './ChangeInfoModal/ChangeInfoModal';
 import ChangePasswordModal from './ChangePassModal/ChangePassModal';
 import styles from './MyAccount.module.css';
 import pros from '../../assets/pro.png';
 import cons from '../../assets/cons.png';
-import {useNavigate, useLocation} from "react-router-dom";
 
 export default function MyAccount() {
     const [userInfo, setUserInfo] = useState(null);
@@ -81,6 +81,21 @@ export default function MyAccount() {
             fetchAccountDetails();
         } catch (error) {
             console.error('Error renewing plan:', error);
+        } finally {
+            setLoadingButton(""); // Reset loading state
+        }
+    };
+
+    const handleModifyPaymentMethod = async () => {
+        try {
+            setLoadingButton("modifyPayment");
+            const { data } = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/stripe/create-customer-portal-session`, {
+                token: localStorage.getItem('userToken')
+            });
+
+            window.location.href = data.url; // Redirect to the Stripe Customer Portal
+        } catch (error) {
+            console.error('Error redirecting to Stripe Customer Portal:', error);
         } finally {
             setLoadingButton(""); // Reset loading state
         }
@@ -187,6 +202,16 @@ export default function MyAccount() {
                             </button>
                         )}
 
+                        {stripeDetails && !stripeDetails?.cancel_at_period_end && (
+                            <button
+                                className='button2'
+                                onClick={handleModifyPaymentMethod}
+                                disabled={loadingButton === "modifyPayment"}
+                            >
+                                {loadingButton === "modifyPayment" ? <div className={styles.loader}></div> : "Manage Payment Info"}
+                            </button>
+                        )}
+
                         {stripeDetails?.cancel_at_period_end && (
                             <button className='button2' onClick={handleRenewPlan}>
                                 {loadingButton === "renew" ? <div className={styles.loader}></div> : "Renew Plan"}
@@ -232,7 +257,6 @@ export default function MyAccount() {
                     </div>
                 </div>
             )}
-
         </div>
     );
 }

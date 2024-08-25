@@ -30,7 +30,10 @@ export default function Plans() {
     }, []);
 
     const handleUpgradeOrDowngrade = async (planId, planName) => {
-        if (currentPlan === 'King' && planName === 'Premium') {
+        if (currentPlan.toLowerCase() === 'free' && planName === 'Free') {
+            // Redirect to /account when on the free plan and clicking downgrade
+            navigate('/account');
+        } else if (currentPlan === 'King' && planName === 'Premium') {
             // Downgrading from King to Premium, show modal
             setSelectedPlan({ id: planId, name: planName });
             setShowConfirmModal(true);
@@ -61,7 +64,7 @@ export default function Plans() {
                 if (result.error) {
                     console.error('Stripe error:', result.error.message);
                 } else {
-                    navigate('/my-account');
+                    navigate('/account');
                 }
             } catch (error) {
                 console.error('Error creating checkout session:', error);
