@@ -4,13 +4,17 @@ import styles from './Plans.module.css';
 import pros from '../../assets/pro.png';
 import axios from 'axios';
 import { loadStripe } from '@stripe/stripe-js';
+import ConfirmModal from '../../shared/confirmModal/confirmModal';
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
 export default function Plans() {
-    const [currentPlan, setCurrentPlan] = useState('Free');
+    const [currentPlan, setCurrentPlan] = useState('free'); // Default to 'free' for accurate comparison
     const [pixels, setPixels] = useState(0);
     const [loading, setLoading] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedPlan, setSelectedPlan] = useState(null);
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -27,31 +31,16 @@ export default function Plans() {
     }, []);
 
     const handleUpgrade = async (planId, planName) => {
-        if (planName === 'Free') {
+        if (planName === 'free') {
             // Redirect to /account when downgrading to Free
             navigate('/account');
             return;
         }
-        if (currentPlan === 'King' && planName === 'Premium') {
-            // Downgrading from King to Premium, send to the downgrade endpoint
-            setLoading(true);
-            try {
-                const { data } = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/stripe/downgrade`, {
-                    newPlanId: planId,
-                    token: localStorage.getItem('userToken'),
-                    planName: planName
-                }, {
-                    headers: {
-                        Authorization: localStorage.getItem('userToken')
-                    }
-                });
 
-                navigate('/account');
-            } catch (error) {
-                console.error('Error downgrading subscription:', error);
-            } finally {
-                setLoading(false);
-            }
+        if (currentPlan === 'King' && planName === 'Premium') {
+            // Open the modal for confirmation
+            setSelectedPlan({ planId, planName });
+            setIsModalOpen(true);
             return;
         }
 
@@ -86,6 +75,35 @@ export default function Plans() {
         }
     };
 
+    const confirmDowngrade = async () => {
+        if (!selectedPlan) return;
+
+        setLoading(true);
+        setIsModalOpen(false);
+
+        try {
+            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/stripe/downgrade`, {
+                newPlanId: selectedPlan.planId,
+                token: localStorage.getItem('userToken'),
+                planName: selectedPlan.planName
+            }, {
+                headers: {
+                    Authorization: localStorage.getItem('userToken')
+                }
+            });
+
+            navigate('/account');
+        } catch (error) {
+            console.error('Error downgrading subscription:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+    };
+
     return (
         <div className={styles.shopWrapper}>
             <h1 className='mainH1'>Plans</h1>
@@ -109,11 +127,11 @@ export default function Plans() {
                             </li>
                         </ul>
                         <button
-                            className={currentPlan === 'Free' ? "button2 currentPlan" : "button2"}
-                            onClick={() => currentPlan !== 'Free' && handleUpgrade('price_1PpX8MFqQKSFArkNHlkLIemb', 'Free')}
-                            disabled={currentPlan === 'Free'}
+                            className={currentPlan === 'free' ? "button2 currentPlan" : "button2"}
+                            onClick={() => currentPlan !== 'free' && handleUpgrade('price_1PpX8MFqQKSFArkNHlkLIemb', 'free')}
+                            disabled={currentPlan === 'free'}
                         >
-                            {currentPlan === 'Free' ? 'Current Plan' : 'Downgrade'}
+                            {currentPlan === 'free' ? 'Current Plan' : 'Downgrade'}
                         </button>
                     </div>
                 </div>
@@ -194,6 +212,15 @@ export default function Plans() {
                     </label>
                 </form>
             </div>
+
+            {isModalOpen && (
+                <ConfirmModal
+                    title="Confirm Downgrade"
+                    message="Are you sure you want to downgrade from King to Premium?"
+                    onConfirm={confirmDowngrade}
+                    onCancel={closeModal}
+                />
+            )}
         </div>
     );
 }

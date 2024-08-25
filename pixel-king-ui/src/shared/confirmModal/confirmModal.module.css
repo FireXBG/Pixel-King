@@ -1,0 +1,45 @@
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modalContent {
+    background: #060716;
+    padding: 2vw;
+    border-radius: 1.6vw;
+    max-width: 40vw;
+    text-align: center;
+    color: white;
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.modalContent h2 {
+    margin-bottom: 1.5vw;
+    font-size: 2vw;
+    background: linear-gradient(to right, #F72585, #8A4CF0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.modalContent p {
+    font-size: 1.2vw;
+    margin-bottom: 2vw;
+}
+
+.buttons {
+    display: flex;
+    justify-content: space-around;
+    gap: 1vw;
+}
+
+.buttons button:focus {
+    outline: none;
+}
