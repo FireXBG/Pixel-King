@@ -74,12 +74,24 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             const session = event.data.object;
 
             try {
-                // Update the user plan and customer_id
-                console.log('Updating user plan and customer_id');
-                await User.findByIdAndUpdate(session.metadata.userId, {
-                    plan: session.metadata.selectedPlanId,
-                    customer_id: session.customer,
-                });
+                const user = await User.findById(session.metadata.userId);
+                if (user.plan !== 'free') {
+                    // Retrieve the active subscription associated with the customer
+                    const subscriptions = await stripe.subscriptions.list({
+                        customer: user.customer_id,
+                        status: 'active',
+                    });
+
+                    console.log('Subscriptions: ', subscriptions.data);
+
+                    // If an active subscription exists, cancel it
+                    if (subscriptions.data.length > 0) {
+                        const oldSubscriptionId = subscriptions.data[0].id;
+                        await stripe.subscriptions.update(oldSubscriptionId, { cancel_at_period_end: true });
+                    }
+                }
+
+                await paymentServices.upgradePlan(session.metadata.selectedPlanId, session.metadata.userId, session.customer);
             } catch (error) {
                 console.error('Error upgrading plan:', error);
             }
@@ -231,6 +243,66 @@ router.post('/renew', async (req, res) => {
     }
 });
 
+router.post('/downgrade', express.json(), async (req, res) => {
+    console.log('Downgrade endpoint hit');
+    try {
+        const { newPlanId, token, planName } = req.body;
+        console.log('Request body:', req.body);
+
+        // Verify the token and get the user ID
+        const { id } = await adminServices.verifyToken(token);
+        console.log('Verified user ID:', id);
+
+        // Retrieve the user from the database
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const customer_id = user.customer_id;
+        if (!customer_id) {
+            return res.status(400).json({ message: 'User does not have a Stripe customer ID' });
+        }
+
+        // Retrieve the customer from Stripe
+        const customer = await stripe.customers.retrieve(customer_id);
+        console.log('Customer retrieved:', customer);
+
+        // Log the current currency
+        console.log(`Customer's current currency: ${customer.currency}`);
+
+        // Retrieve the active subscription associated with the customer
+        const subscriptions = await stripe.subscriptions.list({
+            customer: customer_id,
+            status: 'active',
+            limit: 1,
+        });
+
+        if (subscriptions.data.length === 0) {
+            return res.status(404).json({ message: 'No active subscription found for this customer' });
+        }
+
+        const subscriptionId = subscriptions.data[0].id;
+        console.log('Updating subscription to new plan:', newPlanId);
+
+        // Update the subscription to the new Euro-based plan
+        const updatedSubscription = await stripe.subscriptions.update(subscriptionId, {
+            items: [{
+                id: subscriptions.data[0].items.data[0].id,
+                price: newPlanId, // Euro-based price ID
+            }],
+            proration_behavior: 'create_prorations', // Ensure prorations are handled
+        });
+
+        await paymentServices.upgradePlan(planName, id, customer_id);
+
+        console.log('Subscription downgraded successfully');
+        res.json({ message: 'Subscription downgraded successfully', subscription: updatedSubscription });
+    } catch (error) {
+        console.error('Error downgrading subscription:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
 
 
 

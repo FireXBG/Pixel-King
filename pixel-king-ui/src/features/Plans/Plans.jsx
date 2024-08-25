@@ -28,11 +28,34 @@ export default function Plans() {
 
     const handleUpgrade = async (planId, planName) => {
         if (planName === 'Free') {
-            // If the user is downgrading to Free, redirect to /account
+            // Redirect to /account when downgrading to Free
             navigate('/account');
             return;
         }
+        if (currentPlan === 'King' && planName === 'Premium') {
+            // Downgrading from King to Premium, send to the downgrade endpoint
+            setLoading(true);
+            try {
+                const { data } = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/stripe/downgrade`, {
+                    newPlanId: planId,  // Ensure newPlanId is sent
+                    token: localStorage.getItem('userToken'),
+                    planName: planName
+                }, {
+                    headers: {
+                        Authorization: localStorage.getItem('userToken')
+                    }
+                });
 
+                navigate('/my-account');
+            } catch (error) {
+                console.error('Error downgrading subscription:', error);
+            } finally {
+                setLoading(false);
+            }
+            return;
+        }
+
+        // Handle upgrade
         setLoading(true);
         try {
             const stripe = await stripePromise;
@@ -73,20 +96,20 @@ export default function Plans() {
                     <div className={styles.pros}>
                         <ul>
                             <li>
-                                <img src={pros} />
+                                <img src={pros} alt="Pros" />
                                 <p>Up to 10 (4K) wallpapers per month</p>
                             </li>
                             <li>
-                                <img src={pros} />
+                                <img src={pros} alt="Pros" />
                                 <p>Weekly Wallpapers</p>
                             </li>
                             <li>
-                                <img src={pros} />
+                                <img src={pros} alt="Pros" />
                                 <p>Unlimited HD Downloads</p>
                             </li>
                         </ul>
                         <button
-                            className={`button2 ${currentPlan === 'Free' ? 'currentPlan' : ''}`}
+                            className={currentPlan === 'Free' ? "button2 currentPlan" : "button2"}
                             onClick={() => currentPlan !== 'Free' && handleUpgrade('price_1PpX8MFqQKSFArkNHlkLIemb', 'Free')}
                             disabled={currentPlan === 'Free'}
                         >
@@ -100,28 +123,28 @@ export default function Plans() {
                     <div className={styles.pros}>
                         <ul>
                             <li>
-                                <img src={pros}/>
+                                <img src={pros} alt="Pros"/>
                                 <p>Unlimited HD & 4K Downloads</p>
                             </li>
                             <li>
-                                <img src={pros}/>
+                                <img src={pros} alt="Pros"/>
                                 <p>60 Pixels per Month</p>
                             </li>
                             <li>
-                                <img src={pros}/>
+                                <img src={pros} alt="Pros"/>
                                 <p>Up to 20 (8K) Download per month</p>
                             </li>
                             <li>
-                                <img src={pros}/>
+                                <img src={pros} alt="Pros"/>
                                 <p>Includes all free plan features</p>
                             </li>
                         </ul>
                         <button
-                            className={`button2 ${currentPlan === 'Premium' ? 'currentPlan' : ''}`}
-                            onClick={() => handleUpgrade('price_1PpX8MFqQKSFArkNHlkLIemb', 'Premium')}
+                            className={currentPlan === 'Premium' ? "button2 currentPlan" : "button2"}
+                            onClick={() => currentPlan !== 'Premium' && handleUpgrade('price_1PpX8MFqQKSFArkNHlkLIemb', 'Premium')}
                             disabled={loading || currentPlan === 'Premium'}
                         >
-                            {currentPlan === 'Premium' ? 'Current Plan' : loading ? 'Processing...' : 'Upgrade Now'}
+                            {currentPlan === 'Premium' ? 'Current Plan' : currentPlan === 'King' ? 'Downgrade' : loading ? 'Processing...' : 'Upgrade Now'}
                         </button>
                     </div>
                 </div>
@@ -131,29 +154,29 @@ export default function Plans() {
                     <div className={styles.pros}>
                         <ul>
                             <li>
-                                <img src={pros}/>
+                                <img src={pros} alt="Pros"/>
                                 <p>Unlimited 8K Downloads</p>
                             </li>
                             <li>
-                                <img src={pros}/>
+                                <img src={pros} alt="Pros"/>
                                 <p>125 Pixels per month</p>
                             </li>
                             <li>
-                                <img src={pros}/>
+                                <img src={pros} alt="Pros"/>
                                 <p>Includes all Premium features</p>
                             </li>
                             <li>
-                                <img src={pros}/>
+                                <img src={pros} alt="Pros"/>
                                 <p>No Download limits</p>
                             </li>
                             <li>
-                                <img src={pros}/>
+                                <img src={pros} alt="Pros"/>
                                 <p>No Ads</p>
                             </li>
                         </ul>
                         <button
-                            className={`button2 ${currentPlan === 'King' ? 'currentPlan' : ''}`}
-                            onClick={() => handleUpgrade('price_1PpX8dFqQKSFArkNqeSYnCOw', 'King')}
+                            className={currentPlan === 'King' ? "button2 currentPlan" : "button2"}
+                            onClick={() => currentPlan !== 'King' && handleUpgrade('price_1PraTvFqQKSFArkNw1mqHNPe', 'King')}
                             disabled={loading || currentPlan === 'King'}
                         >
                             {currentPlan === 'King' ? 'Current Plan' : loading ? 'Processing...' : 'Upgrade Now'}

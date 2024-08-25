@@ -5,6 +5,7 @@ import ChangePasswordModal from './ChangePassModal/ChangePassModal';
 import styles from './MyAccount.module.css';
 import pros from '../../assets/pro.png';
 import cons from '../../assets/cons.png';
+import {useNavigate} from "react-router-dom";
 
 export default function MyAccount() {
     const [userInfo, setUserInfo] = useState(null);
@@ -13,6 +14,8 @@ export default function MyAccount() {
     const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
     const [isCancelPlanModalOpen, setIsCancelPlanModalOpen] = useState(false);
     const [loadingButton, setLoadingButton] = useState(""); // Keep track of which button is loading
+
+    const navigate = useNavigate();
 
     const fetchAccountDetails = () => {
         axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/users/account-details`, {
@@ -173,7 +176,7 @@ export default function MyAccount() {
                         </div>
                     )}
                     <div className={styles.buttonsWrapper}>
-                        <button className='button2' onClick={() => window.location.href = '/upgrade'}>
+                        <button className='button2' onClick={() => navigate('/upgrade')}>
                             {userInfo?.plan === 'free' ? 'Upgrade Now' : 'Change Plan'}
                         </button>
 
