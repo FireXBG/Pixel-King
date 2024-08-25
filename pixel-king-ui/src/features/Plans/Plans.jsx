@@ -37,7 +37,7 @@ export default function Plans() {
             setLoading(true);
             try {
                 const { data } = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/stripe/downgrade`, {
-                    newPlanId: planId,  // Ensure newPlanId is sent
+                    newPlanId: planId,
                     token: localStorage.getItem('userToken'),
                     planName: planName
                 }, {
@@ -46,7 +46,7 @@ export default function Plans() {
                     }
                 });
 
-                navigate('/my-account');
+                navigate('/account');
             } catch (error) {
                 console.error('Error downgrading subscription:', error);
             } finally {
