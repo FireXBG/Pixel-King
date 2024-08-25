@@ -32,6 +32,15 @@ router.post('/create-checkout-session', express.json(), async (req, res) => {
             customerId = customer.id;
         }
 
+        // Retrieve the current active subscription if any
+        const subscriptions = await stripe.subscriptions.list({
+            customer: customerId,
+            status: 'active',
+            limit: 1,
+        });
+
+        const currentSubscriptionId = subscriptions.data.length > 0 ? subscriptions.data[0].id : null;
+
         // Create a checkout session
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
@@ -48,6 +57,7 @@ router.post('/create-checkout-session', express.json(), async (req, res) => {
             metadata: {
                 userId: user.id,
                 selectedPlanId: planName,
+                currentSubscriptionId: currentSubscriptionId // Store current subscription ID
             },
         });
 
@@ -75,22 +85,15 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 
             try {
                 const user = await User.findById(session.metadata.userId);
-                if (user.plan !== 'free') {
-                    // Retrieve the active subscription associated with the customer
-                    const subscriptions = await stripe.subscriptions.list({
-                        customer: user.customer_id,
-                        status: 'active',
-                    });
 
-                    console.log('Subscriptions: ', subscriptions.data);
-
-                    // If an active subscription exists, cancel it
-                    if (subscriptions.data.length > 0) {
-                        const oldSubscriptionId = subscriptions.data[0].id;
-                        await stripe.subscriptions.update(oldSubscriptionId, { cancel_at_period_end: true });
-                    }
+                // Cancel the previous subscription if it exists
+                const currentSubscriptionId = session.metadata.currentSubscriptionId;
+                if (currentSubscriptionId) {
+                    // Cancel the old plan subscription
+                    await stripe.subscriptions.update(currentSubscriptionId, { cancel_at_period_end: true });
                 }
 
+                // Update the user's plan in the database to the new plan
                 await paymentServices.upgradePlan(session.metadata.selectedPlanId, session.metadata.userId, session.customer);
             } catch (error) {
                 console.error('Error upgrading plan:', error);
@@ -118,8 +121,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             if (subscriptions.data.length === 0) {
                 console.log('No active subscription found for this customer');
                 // Set user to free plan
-
-                await paymentServices.resetPlan(userId)
+                await paymentServices.resetPlan(userId);
                 return;
             }
         }

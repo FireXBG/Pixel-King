@@ -9,12 +9,11 @@ import ConfirmModal from '../../shared/confirmModal/confirmModal';
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
 export default function Plans() {
-    const [currentPlan, setCurrentPlan] = useState('free'); // Default to 'free' for accurate comparison
+    const [currentPlan, setCurrentPlan] = useState('Free');
     const [pixels, setPixels] = useState(0);
     const [loading, setLoading] = useState(false);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedPlan, setSelectedPlan] = useState(null);
-
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [selectedPlan, setSelectedPlan] = useState(null); // Store selected plan for upgrade/downgrade
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -30,78 +29,111 @@ export default function Plans() {
         });
     }, []);
 
-    const handleUpgrade = async (planId, planName) => {
-        if (planName === 'free') {
-            // Redirect to /account when downgrading to Free
-            navigate('/account');
-            return;
-        }
-
+    const handleUpgradeOrDowngrade = async (planId, planName) => {
         if (currentPlan === 'King' && planName === 'Premium') {
-            // Open the modal for confirmation
-            setSelectedPlan({ planId, planName });
-            setIsModalOpen(true);
-            return;
-        }
+            // Downgrading from King to Premium, show modal
+            setSelectedPlan({ id: planId, name: planName });
+            setShowConfirmModal(true);
+        } else if (currentPlan === 'Premium' && planName === 'King') {
+            // Upgrading from Premium to King, show modal
+            setSelectedPlan({ id: planId, name: planName });
+            setShowConfirmModal(true);
+        } else {
+            // Proceed directly to upgrade (like Free to Premium)
+            setLoading(true);
+            try {
+                const stripe = await stripePromise;
+                const { data } = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/stripe/create-checkout-session`, {
+                    planId: planId,
+                    token: localStorage.getItem('userToken'),
+                    planName: planName
+                }, {
+                    headers: {
+                        Authorization: localStorage.getItem('userToken')
+                    }
+                });
 
-        // Handle upgrade
-        setLoading(true);
-        try {
-            const stripe = await stripePromise;
-            const { data } = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/stripe/create-checkout-session`, {
-                planId: planId,
-                token: localStorage.getItem('userToken'),
-                planName: planName
-            }, {
-                headers: {
-                    Authorization: localStorage.getItem('userToken')
+                // Redirect to Stripe Checkout
+                const result = await stripe.redirectToCheckout({
+                    sessionId: data.sessionId,
+                });
+
+                if (result.error) {
+                    console.error('Stripe error:', result.error.message);
+                } else {
+                    navigate('/my-account');
                 }
-            });
-
-            // Redirect to Stripe Checkout
-            const result = await stripe.redirectToCheckout({
-                sessionId: data.sessionId,
-            });
-
-            if (result.error) {
-                console.error('Stripe error:', result.error.message);
-            } else {
-                navigate('/my-account');
+            } catch (error) {
+                console.error('Error creating checkout session:', error);
+            } finally {
+                setLoading(false);
             }
-        } catch (error) {
-            console.error('Error creating checkout session:', error);
-        } finally {
-            setLoading(false);
         }
     };
 
-    const confirmDowngrade = async () => {
-        if (!selectedPlan) return;
-
+    const handleConfirmUpgradeOrDowngrade = async () => {
         setLoading(true);
-        setIsModalOpen(false);
+        setShowConfirmModal(false); // Close the modal
 
-        try {
-            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/stripe/downgrade`, {
-                newPlanId: selectedPlan.planId,
-                token: localStorage.getItem('userToken'),
-                planName: selectedPlan.planName
-            }, {
-                headers: {
-                    Authorization: localStorage.getItem('userToken')
+        if (selectedPlan.name === 'Premium' && currentPlan === 'King') {
+            // Handle downgrade from King to Premium
+            try {
+                await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/stripe/downgrade`, {
+                    newPlanId: selectedPlan.id,
+                    token: localStorage.getItem('userToken'),
+                    planName: selectedPlan.name
+                }, {
+                    headers: {
+                        Authorization: localStorage.getItem('userToken')
+                    }
+                });
+                navigate('/my-account');
+            } catch (error) {
+                console.error('Error during plan downgrade:', error);
+            } finally {
+                setLoading(false);
+            }
+        } else if (selectedPlan.name === 'King' && currentPlan === 'Premium') {
+            // Handle upgrade from Premium to King
+            try {
+                // Cancel the current Premium subscription
+                await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/stripe/cancel-subscription`, {}, {
+                    headers: {
+                        Authorization: localStorage.getItem('userToken')
+                    }
+                });
+
+                // Proceed with the upgrade to King plan
+                const stripe = await stripePromise;
+                const { data } = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/stripe/create-checkout-session`, {
+                    planId: selectedPlan.id,
+                    token: localStorage.getItem('userToken'),
+                    planName: selectedPlan.name
+                }, {
+                    headers: {
+                        Authorization: localStorage.getItem('userToken')
+                    }
+                });
+
+                const result = await stripe.redirectToCheckout({
+                    sessionId: data.sessionId,
+                });
+
+                if (result.error) {
+                    console.error('Stripe error:', result.error.message);
+                } else {
+                    navigate('/my-account');
                 }
-            });
-
-            navigate('/account');
-        } catch (error) {
-            console.error('Error downgrading subscription:', error);
-        } finally {
-            setLoading(false);
+            } catch (error) {
+                console.error('Error upgrading to King plan:', error);
+            } finally {
+                setLoading(false);
+            }
         }
     };
 
-    const closeModal = () => {
-        setIsModalOpen(false);
+    const handleCancelModal = () => {
+        setShowConfirmModal(false);
     };
 
     return (
@@ -127,11 +159,11 @@ export default function Plans() {
                             </li>
                         </ul>
                         <button
-                            className={currentPlan === 'free' ? "button2 currentPlan" : "button2"}
-                            onClick={() => currentPlan !== 'free' && handleUpgrade('price_1PpX8MFqQKSFArkNHlkLIemb', 'free')}
-                            disabled={currentPlan === 'free'}
+                            className={currentPlan.toLowerCase() === 'free' ? "button2 currentPlan" : "button2"}
+                            onClick={() => currentPlan.toLowerCase() !== 'free' && handleUpgradeOrDowngrade('price_1PpX8MFqQKSFArkNHlkLIemb', 'Free')}
+                            disabled={currentPlan.toLowerCase() === 'free'}
                         >
-                            {currentPlan === 'free' ? 'Current Plan' : 'Downgrade'}
+                            {currentPlan.toLowerCase() === 'free' ? 'Current Plan' : 'Downgrade'}
                         </button>
                     </div>
                 </div>
@@ -158,11 +190,11 @@ export default function Plans() {
                             </li>
                         </ul>
                         <button
-                            className={currentPlan === 'Premium' ? "button2 currentPlan" : "button2"}
-                            onClick={() => currentPlan !== 'Premium' && handleUpgrade('price_1PpX8MFqQKSFArkNHlkLIemb', 'Premium')}
-                            disabled={loading || currentPlan === 'Premium'}
+                            className={currentPlan.toLowerCase() === 'premium' ? "button2 currentPlan" : "button2"}
+                            onClick={() => handleUpgradeOrDowngrade('price_1PpX8MFqQKSFArkNHlkLIemb', 'Premium')}
+                            disabled={loading || currentPlan.toLowerCase() === 'premium'}
                         >
-                            {currentPlan === 'Premium' ? 'Current Plan' : currentPlan === 'King' ? 'Downgrade' : loading ? 'Processing...' : 'Upgrade Now'}
+                            {currentPlan.toLowerCase() === 'premium' ? 'Current Plan' : currentPlan.toLowerCase() === 'king' ? 'Downgrade' : loading ? 'Processing...' : 'Upgrade Now'}
                         </button>
                     </div>
                 </div>
@@ -193,11 +225,11 @@ export default function Plans() {
                             </li>
                         </ul>
                         <button
-                            className={currentPlan === 'King' ? "button2 currentPlan" : "button2"}
-                            onClick={() => currentPlan !== 'King' && handleUpgrade('price_1PraTvFqQKSFArkNw1mqHNPe', 'King')}
-                            disabled={loading || currentPlan === 'King'}
+                            className={currentPlan.toLowerCase() === 'king' ? "button2 currentPlan" : "button2"}
+                            onClick={() => handleUpgradeOrDowngrade('price_1PraTvFqQKSFArkNw1mqHNPe', 'King')}
+                            disabled={loading || currentPlan.toLowerCase() === 'king'}
                         >
-                            {currentPlan === 'King' ? 'Current Plan' : loading ? 'Processing...' : 'Upgrade Now'}
+                            {currentPlan.toLowerCase() === 'king' ? 'Current Plan' : loading ? 'Processing...' : 'Upgrade Now'}
                         </button>
                     </div>
                 </div>
@@ -213,12 +245,12 @@ export default function Plans() {
                 </form>
             </div>
 
-            {isModalOpen && (
+            {showConfirmModal && (
                 <ConfirmModal
-                    title="Confirm Downgrade"
-                    message="Are you sure you want to downgrade from King to Premium?"
-                    onConfirm={confirmDowngrade}
-                    onCancel={closeModal}
+                    title={`Confirm ${selectedPlan.name === 'Premium' ? 'Downgrade' : 'Upgrade'}`}
+                    message={`Are you sure you want to ${selectedPlan.name === 'Premium' ? 'downgrade' : 'upgrade'} your plan? The current plan will be canceled.`}
+                    onConfirm={handleConfirmUpgradeOrDowngrade}
+                    onCancel={handleCancelModal}
                 />
             )}
         </div>
