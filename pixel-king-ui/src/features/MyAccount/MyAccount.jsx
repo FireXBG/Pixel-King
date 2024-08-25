@@ -137,10 +137,10 @@ export default function MyAccount() {
                                 **** {stripeDetails.cardLast4}</p>
                             <p>Expires: {stripeDetails.cardExpiryMonth}/{stripeDetails.cardExpiryYear}</p>
                             {stripeDetails.expires_at && (
-                                <p>Expires at: {new Date(stripeDetails.expires_at * 1000).toLocaleDateString()}</p>
+                                <p>Plan expires at: {new Date(stripeDetails.expires_at * 1000).toLocaleDateString()}</p>
                             )}
                             {stripeDetails.renews_at && (
-                                <p>Renews at: {new Date(stripeDetails.renews_at * 1000).toLocaleDateString()}</p>
+                                <p>Plan renews at: {new Date(stripeDetails.renews_at * 1000).toLocaleDateString()}</p>
                             )}
                         </div>
                     )}
