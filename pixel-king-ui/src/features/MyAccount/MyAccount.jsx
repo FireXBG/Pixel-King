@@ -18,32 +18,41 @@ export default function MyAccount() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const fetchAccountDetails = () => {
-        axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/users/account-details`, {
-            headers: {
-                Authorization: localStorage.getItem('userToken')
-            }
-        }).then(response => {
+    const fetchAccountDetails = async () => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/users/account-details`, {
+                headers: {
+                    Authorization: localStorage.getItem('userToken')
+                }
+            });
             setUserInfo(response.data);
             setStripeDetails(response.data.stripeDetails);
-        }).catch(error => {
+        } catch (error) {
             console.error('Error during fetching account details:', error);
-        });
+        }
     };
 
     useEffect(() => {
         fetchAccountDetails();
     }, [location.pathname]);
 
-    const handleInfoModalClose = () => {
+    const handleInfoModalClose = async () => {
+        console.log('Closing info modal and showing loader');
         setIsChangeInfoModalOpen(false);
-        fetchAccountDetails();
+        setLoadingButton("info"); // Show loading on the "Change Info" button
+        await fetchAccountDetails(); // Fetch updated data
+        console.log('Data fetched, removing loader');
+        setLoadingButton("");
     };
 
-    const handlePasswordModalClose = () => {
+
+    const handlePasswordModalClose = async () => {
+        setLoadingButton("password");
         setIsChangePasswordModalOpen(false);
-        fetchAccountDetails();
+        await fetchAccountDetails();
+        setLoadingButton("");
     };
+
 
     const handleCancelPlan = () => {
         setIsCancelPlanModalOpen(true);
@@ -130,7 +139,8 @@ export default function MyAccount() {
                                         setIsChangePasswordModalOpen(true);
                                     }}
                                 >
-                                    {loadingButton === "password" ? <div className={styles.loader}></div> : "Change Password"}
+                                    {loadingButton === "password" ?
+                                        <div className={styles.loader}></div> : "Change Password"}
                                 </button>
                             </div>
                         </div>
