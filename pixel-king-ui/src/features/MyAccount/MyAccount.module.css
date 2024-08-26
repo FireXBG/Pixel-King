@@ -216,6 +216,18 @@
     min-width: 13.5vw;
 }
 
+.cardLogo {
+    width: 2vw;
+    height: 2vw;
+    object-fit: cover;
+}
+
+.paymentInfo {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5vw;
+}
+
 @media screen and (max-width: 768px) {
     .itemsWrapper {
         flex-direction: column;

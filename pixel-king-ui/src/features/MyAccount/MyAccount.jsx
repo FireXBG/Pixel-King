@@ -6,6 +6,8 @@ import ChangePasswordModal from './ChangePassModal/ChangePassModal';
 import styles from './MyAccount.module.css';
 import pros from '../../assets/pro.png';
 import cons from '../../assets/cons.png';
+import visa from '../../assets/visa.png';
+import mastercard from '../../assets/mastercard.png';
 
 export default function MyAccount() {
     const [userInfo, setUserInfo] = useState(null);
@@ -158,9 +160,14 @@ export default function MyAccount() {
                     <p className={styles.currentPlan}>Current plan: <span className={styles.spanGradient}>{userInfo?.plan ? userInfo.plan.toUpperCase() : <div className={styles.loader}></div>}</span></p>
                     {stripeDetails && (
                         <div className={styles.planInfo}>
-                            <p>Payment Method: {stripeDetails.cardBrand.toUpperCase()} **** ****
-                                **** {stripeDetails.cardLast4}</p>
-                            <p>Expires: {stripeDetails.cardExpiryMonth}/{stripeDetails.cardExpiryYear}</p>
+                            <p className={styles.paymentInfo}>Payment Method:
+                                **** **** **** {stripeDetails.cardLast4}
+                                {stripeDetails.cardBrand.toLowerCase() === "visa" &&
+                                    <img src={visa} alt="Visa" className={styles.cardLogo}/>}
+                                {stripeDetails.cardBrand.toLowerCase() === "mastercard" &&
+                                    <img src={mastercard} alt="MasterCard" className={styles.cardLogo}/>}
+                                {stripeDetails.cardBrand.toLowerCase() !== "visa" && stripeDetails.cardBrand.toLowerCase() !== "mastercard" && stripeDetails.cardBrand.toUpperCase()}
+                            </p>
                             {stripeDetails.expires_at && (
                                 <p>Plan expires at: {new Date(stripeDetails.expires_at * 1000).toLocaleDateString()}</p>
                             )}
@@ -173,7 +180,7 @@ export default function MyAccount() {
                         <div className={styles.prosAndCons}>
                             <ul className={styles.pros}>
                                 <li>
-                                    <img src={pros} alt="Pros" className={styles.icon} />
+                                    <img src={pros} alt="Pros" className={styles.icon}/>
                                     <p>Access to thousands of wallpapers</p>
                                 </li>
                                 <li>
