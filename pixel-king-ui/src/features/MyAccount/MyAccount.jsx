@@ -16,6 +16,7 @@ export default function MyAccount() {
     const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
     const [isCancelPlanModalOpen, setIsCancelPlanModalOpen] = useState(false);
     const [loadingButton, setLoadingButton] = useState("");
+    const [isLoading, setIsLoading] = useState(true); // New loading state
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -31,6 +32,8 @@ export default function MyAccount() {
             setStripeDetails(response.data.stripeDetails);
         } catch (error) {
             console.error('Error during fetching account details:', error);
+        } finally {
+            setIsLoading(false); // Stop loading when data is fetched
         }
     };
 
@@ -39,14 +42,11 @@ export default function MyAccount() {
     }, [location.pathname]);
 
     const handleInfoModalClose = async () => {
-        console.log('Closing info modal and showing loader');
         setIsChangeInfoModalOpen(false);
-        setLoadingButton("info"); // Show loading on the "Change Info" button
+        setLoadingButton("info");
         await fetchAccountDetails(); // Fetch updated data
-        console.log('Data fetched, removing loader');
         setLoadingButton("");
     };
-
 
     const handlePasswordModalClose = async () => {
         setLoadingButton("password");
@@ -54,7 +54,6 @@ export default function MyAccount() {
         await fetchAccountDetails();
         setLoadingButton("");
     };
-
 
     const handleCancelPlan = () => {
         setIsCancelPlanModalOpen(true);
@@ -73,9 +72,8 @@ export default function MyAccount() {
         } catch (error) {
             console.error('Error cancelling plan:', error);
         } finally {
-            // Add a short delay before resetting the loading state
             setTimeout(() => {
-                setLoadingButton(""); // Reset loading state
+                setLoadingButton("");
                 setIsCancelPlanModalOpen(false);
             }, 500); // 500ms delay
         }
@@ -115,127 +113,135 @@ export default function MyAccount() {
     return (
         <div>
             <h1 className={styles.heading}>My Account</h1>
-            <div className={styles.itemsWrapper}>
-                <div className={styles.smallItemsWrapper}>
-                    <div className={styles.smallItem}>
-                        <h2 className={styles.secondHeading}>Personal Info</h2>
-                        <div className={styles.firstSmallWrapper}>
-                            <div className={styles.infoContainer}>
-                                <p>Username: <span className={styles.spanGradient}>{userInfo?.username}</span></p>
-                                <p>Email: <span className={styles.spanGradient}>{userInfo?.email}</span></p>
+            <div className={`${styles.itemsWrapper} ${!isLoading ? styles.fadeIn : ''}`}>
+                {isLoading ? (
+                    <div className={styles.loaderWrapper}>
+                        <div className={styles.loader}></div> {/* Centered Loader */}
+                    </div>
+                ) : (
+                    <>
+                        <div className={styles.smallItemsWrapper}>
+                            <div className={styles.smallItem}>
+                                <h2 className={styles.secondHeading}>Personal Info</h2>
+                                <div className={styles.firstSmallWrapper}>
+                                    <div className={styles.infoContainer}>
+                                        <p>Username: <span className={styles.spanGradient}>{userInfo?.username}</span></p>
+                                        <p>Email: <span className={styles.spanGradient}>{userInfo?.email}</span></p>
+                                    </div>
+                                    <div className={styles.infoActionButtons}>
+                                        <button
+                                            className='button2'
+                                            onClick={() => {
+                                                setLoadingButton("info");
+                                                setIsChangeInfoModalOpen(true);
+                                            }}
+                                        >
+                                            {loadingButton === "info" ? <div className={styles.loader}></div> : "Change Info"}
+                                        </button>
+                                        <button
+                                            className='button2'
+                                            onClick={() => {
+                                                setLoadingButton("password");
+                                                setIsChangePasswordModalOpen(true);
+                                            }}
+                                        >
+                                            {loadingButton === "password" ?
+                                                <div className={styles.loader}></div> : "Change Password"}
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                            <div className={styles.infoActionButtons}>
-                                <button
-                                    className='button2'
-                                    onClick={() => {
-                                        setLoadingButton("info");
-                                        setIsChangeInfoModalOpen(true);
-                                    }}
-                                >
-                                    {loadingButton === "info" ? <div className={styles.loader}></div> : "Change Info"}
-                                </button>
-                                <button
-                                    className='button2'
-                                    onClick={() => {
-                                        setLoadingButton("password");
-                                        setIsChangePasswordModalOpen(true);
-                                    }}
-                                >
-                                    {loadingButton === "password" ?
-                                        <div className={styles.loader}></div> : "Change Password"}
-                                </button>
+                            <div className={styles.smallItemCredits}>
+                                <h2 className={styles.secondHeading}>Pixels</h2>
+                                <div className={styles.creditsContainer}>
+                                    <p className={styles.creditsCount}>{userInfo?.credits}</p>
+                                    <button className='button2 addButton'>+</button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div className={styles.smallItemCredits}>
-                        <h2 className={styles.secondHeading}>Pixels</h2>
-                        <div className={styles.creditsContainer}>
-                            <p className={styles.creditsCount}>{userInfo?.credits}</p>
-                            <button className='button2 addButton'>+</button>
-                        </div>
-                    </div>
-                </div>
-                <div className={styles.bigItem}>
-                    <h2 className={styles.secondHeading}>Plan</h2>
-                    <p className={styles.currentPlan}>Current plan: <span className={styles.spanGradient}>{userInfo?.plan ? userInfo.plan.toUpperCase() : <div className={styles.loader}></div>}</span></p>
-                    {stripeDetails && (
-                        <div className={styles.planInfo}>
-                            <p className={styles.paymentInfo}>Payment Method:
-                                **** **** **** {stripeDetails.cardLast4}
-                                {stripeDetails.cardBrand.toLowerCase() === "visa" &&
-                                    <img src={visa} alt="Visa" className={styles.cardLogo}/>}
-                                {stripeDetails.cardBrand.toLowerCase() === "mastercard" &&
-                                    <img src={mastercard} alt="MasterCard" className={styles.cardLogo}/>}
-                                {stripeDetails.cardBrand.toLowerCase() !== "visa" && stripeDetails.cardBrand.toLowerCase() !== "mastercard" && stripeDetails.cardBrand.toUpperCase()}
-                            </p>
-                            {stripeDetails.expires_at && (
-                                <p>Plan expires at: {new Date(stripeDetails.expires_at * 1000).toLocaleDateString()}</p>
+                        <div className={styles.bigItem}>
+                            <h2 className={styles.secondHeading}>Plan</h2>
+                            <p className={styles.currentPlan}>Current plan: <span className={styles.spanGradient}>{userInfo?.plan ? userInfo.plan.toUpperCase() : <div className={styles.loader}></div>}</span></p>
+                            {stripeDetails && (
+                                <div className={styles.planInfo}>
+                                    <p className={styles.paymentInfo}>Payment Method:
+                                        **** **** **** {stripeDetails.cardLast4}
+                                        {stripeDetails.cardBrand.toLowerCase() === "visa" &&
+                                            <img src={visa} alt="Visa" className={styles.cardLogo}/>}
+                                        {stripeDetails.cardBrand.toLowerCase() === "mastercard" &&
+                                            <img src={mastercard} alt="MasterCard" className={styles.cardLogo}/>}
+                                        {stripeDetails.cardBrand.toLowerCase() !== "visa" && stripeDetails.cardBrand.toLowerCase() !== "mastercard" && stripeDetails.cardBrand.toUpperCase()}
+                                    </p>
+                                    {stripeDetails.expires_at && (
+                                        <p>Plan expires at: {new Date(stripeDetails.expires_at * 1000).toLocaleDateString()}</p>
+                                    )}
+                                    {stripeDetails.renews_at && (
+                                        <p>Plan renews at: {new Date(stripeDetails.renews_at * 1000).toLocaleDateString()}</p>
+                                    )}
+                                </div>
                             )}
-                            {stripeDetails.renews_at && (
-                                <p>Plan renews at: {new Date(stripeDetails.renews_at * 1000).toLocaleDateString()}</p>
+                            {userInfo?.plan === 'free' && (
+                                <div className={styles.prosAndCons}>
+                                    <ul className={styles.pros}>
+                                        <li>
+                                            <img src={pros} alt="Pros" className={styles.icon}/>
+                                            <p>Access to thousands of wallpapers</p>
+                                        </li>
+                                        <li>
+                                            <img src={pros} alt="Pros" className={styles.icon} />
+                                            <p>Download up to 10 4K wallpapers per day</p>
+                                        </li>
+                                        <li>
+                                            <img src={pros} alt="Pros" className={styles.icon} />
+                                            <p>Add wallpapers to favorites</p>
+                                        </li>
+                                    </ul>
+                                    <ul className={styles.cons}>
+                                        <li>
+                                            <img src={cons} alt="Cons" className={styles.icon} />
+                                            <p>No access to 8K wallpapers</p>
+                                        </li>
+                                        <li>
+                                            <img src={cons} alt="Cons" className={styles.icon} />
+                                            <p>Limited daily pixels</p>
+                                        </li>
+                                        <li>
+                                            <img src={cons} alt="Cons" className={styles.icon} />
+                                            <p>No custom wallpapers</p>
+                                        </li>
+                                    </ul>
+                                </div>
                             )}
+                            <div className={styles.buttonsWrapper}>
+                                <button className='button2' onClick={() => navigate('/upgrade')}>
+                                    {userInfo?.plan === 'free' ? 'Upgrade Now' : 'Change Plan'}
+                                </button>
+
+                                {userInfo?.plan !== 'free' && !stripeDetails?.cancel_at_period_end && (
+                                    <button className='button2' onClick={handleCancelPlan}>
+                                        {loadingButton === "cancel" ? <div className={styles.loader}></div> : "Cancel Plan"}
+                                    </button>
+                                )}
+
+                                {stripeDetails && !stripeDetails?.cancel_at_period_end && (
+                                    <button
+                                        className='button2'
+                                        onClick={handleModifyPaymentMethod}
+                                        disabled={loadingButton === "modifyPayment"}
+                                    >
+                                        {loadingButton === "modifyPayment" ? <div className={styles.loader}></div> : "Manage Payment Info"}
+                                    </button>
+                                )}
+
+                                {stripeDetails?.cancel_at_period_end && (
+                                    <button className='button2' onClick={handleRenewPlan}>
+                                        {loadingButton === "renew" ? <div className={styles.loader}></div> : "Renew Plan"}
+                                    </button>
+                                )}
+                            </div>
                         </div>
-                    )}
-                    {userInfo?.plan === 'free' && (
-                        <div className={styles.prosAndCons}>
-                            <ul className={styles.pros}>
-                                <li>
-                                    <img src={pros} alt="Pros" className={styles.icon}/>
-                                    <p>Access to thousands of wallpapers</p>
-                                </li>
-                                <li>
-                                    <img src={pros} alt="Pros" className={styles.icon} />
-                                    <p>Download up to 10 4K wallpapers per day</p>
-                                </li>
-                                <li>
-                                    <img src={pros} alt="Pros" className={styles.icon} />
-                                    <p>Add wallpapers to favorites</p>
-                                </li>
-                            </ul>
-                            <ul className={styles.cons}>
-                                <li>
-                                    <img src={cons} alt="Cons" className={styles.icon} />
-                                    <p>No access to 8K wallpapers</p>
-                                </li>
-                                <li>
-                                    <img src={cons} alt="Cons" className={styles.icon} />
-                                    <p>Limited daily pixels</p>
-                                </li>
-                                <li>
-                                    <img src={cons} alt="Cons" className={styles.icon} />
-                                    <p>No custom wallpapers</p>
-                                </li>
-                            </ul>
-                        </div>
-                    )}
-                    <div className={styles.buttonsWrapper}>
-                        <button className='button2' onClick={() => navigate('/upgrade')}>
-                            {userInfo?.plan === 'free' ? 'Upgrade Now' : 'Change Plan'}
-                        </button>
-
-                        {userInfo?.plan !== 'free' && !stripeDetails?.cancel_at_period_end && (
-                            <button className='button2' onClick={handleCancelPlan}>
-                                {loadingButton === "cancel" ? <div className={styles.loader}></div> : "Cancel Plan"}
-                            </button>
-                        )}
-
-                        {stripeDetails && !stripeDetails?.cancel_at_period_end && (
-                            <button
-                                className='button2'
-                                onClick={handleModifyPaymentMethod}
-                                disabled={loadingButton === "modifyPayment"}
-                            >
-                                {loadingButton === "modifyPayment" ? <div className={styles.loader}></div> : "Manage Payment Info"}
-                            </button>
-                        )}
-
-                        {stripeDetails?.cancel_at_period_end && (
-                            <button className='button2' onClick={handleRenewPlan}>
-                                {loadingButton === "renew" ? <div className={styles.loader}></div> : "Renew Plan"}
-                            </button>
-                        )}
-                    </div>
-                </div>
+                    </>
+                )}
             </div>
 
             {isChangeInfoModalOpen && (

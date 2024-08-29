@@ -1,9 +1,32 @@
-/* HTML: <div class="loader"></div> */
+/* Fade-in Animation */
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.fadeIn {
+    opacity: 0;
+    animation: fadeIn 1s forwards;
+}
+
+/* Loader */
 .loader {
     width: 0.8vw;
     aspect-ratio: 1;
     border-radius: 50%;
     animation: l5 1s infinite linear alternate;
+}
+
+.loaderWrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 45vh;
+    width: 100%;
 }
 
 @keyframes l5 {
@@ -25,6 +48,7 @@
     }
 }
 
+/* Existing Styles */
 .heading {
     background: linear-gradient(to right, #F72585, #8A4CF0);
     -webkit-background-clip: text;
@@ -238,6 +262,30 @@
         align-items: center;
     }
 
+    .loader {
+        width: 5vw;
+        aspect-ratio: 1;
+    }
+
+    @keyframes l5 {
+        0% {
+            box-shadow: 7vw 0 #8A4CF0, -7vw 0 rgba(138, 76, 240, 0.82);
+            background: #24143b;
+        }
+        33% {
+            box-shadow: 7vw 0 #8A4CF0, -7vw 0 rgba(36, 20, 59, 0.82);
+            background: #24143b;
+        }
+        66% {
+            box-shadow: 7vw 0 rgba(36, 20, 59, 0.82), -7vw 0 #8A4CF0;
+            background: #24143b;
+        }
+        100% {
+            box-shadow: 7vw 0 rgba(138, 76, 240, 0.82), -7vw 0 #000;
+            background: #000;
+        }
+    }
+
     .itemsWrapper p {
         font-size: 3vw;
     }
@@ -322,6 +370,16 @@
         gap: 5vw;
         padding: 5vw;
         margin-top: 5vw;
+    }
+
+    .bigItem .buttonsWrapper {
+        flex-direction: column;
+        gap: 3vw;
+    }
+
+    .bigItem .buttonsWrapper button {
+        font-size: 2vw;
+        margin-top: 0;
     }
 
     .prosAndCons {
