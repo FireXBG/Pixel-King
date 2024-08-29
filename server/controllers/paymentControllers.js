@@ -103,6 +103,8 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
                 // Update the user's plan in the database to the new plan
                 console.log('Upgrading user plan:', session.metadata.selectedPlanId);
                 await paymentServices.upgradePlan(session.metadata.selectedPlanId, session.metadata.userId, session.customer);
+                console.log('Adding pixels based on their plan');
+                await paymentServices.addPixels(session.metadata.userId, session.metadata.selectedPlanId);
             } catch (error) {
                 console.error('Error upgrading plan:', error);
             }
