@@ -30,8 +30,8 @@ export default function Plans() {
     }, []);
 
     const handleUpgradeOrDowngrade = async (planId, planName) => {
-        if (currentPlan.toLowerCase() === 'free' && planName === 'Free') {
-            // Redirect to /account when on the free plan and clicking downgrade
+        if (planName.toLowerCase() === 'free') {
+            // Always redirect to /account when the Free plan is selected
             navigate('/account');
         } else if (currentPlan === 'King' && planName === 'Premium') {
             // Downgrading from King to Premium, show modal
@@ -42,7 +42,7 @@ export default function Plans() {
             setSelectedPlan({ id: planId, name: planName });
             setShowConfirmModal(true);
         } else {
-            // Proceed directly to upgrade (like Free to Premium)
+            // Proceed directly to upgrade (e.g., Free to Premium)
             setLoading(true);
             try {
                 const stripe = await stripePromise;
@@ -90,7 +90,7 @@ export default function Plans() {
                         Authorization: localStorage.getItem('userToken')
                     }
                 });
-                navigate('/my-account');
+                navigate('/account');
             } catch (error) {
                 console.error('Error during plan downgrade:', error);
             } finally {
@@ -163,8 +163,7 @@ export default function Plans() {
                         </ul>
                         <button
                             className={currentPlan.toLowerCase() === 'free' ? "button2 currentPlan" : "button2"}
-                            onClick={() => currentPlan.toLowerCase() !== 'free' && handleUpgradeOrDowngrade('price_1PpX8MFqQKSFArkNHlkLIemb', 'Free')}
-                            disabled={currentPlan.toLowerCase() === 'free'}
+                            onClick={() => handleUpgradeOrDowngrade('price_1PpX8MFqQKSFArkNHlkLIemb', 'Free')}
                         >
                             {currentPlan.toLowerCase() === 'free' ? 'Current Plan' : 'Downgrade'}
                         </button>

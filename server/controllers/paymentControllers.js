@@ -20,7 +20,7 @@ router.post('/create-checkout-session', express.json(), async (req, res) => {
         const user = await adminServices.verifyToken(token);
         let customerId = user.customer_id;
 
-        if (!customerId) {
+        if (!customerId || customerId === '') {
             // Create a new customer if one does not exist
             const customer = await stripe.customers.create({
                 email: user.email,
@@ -28,8 +28,6 @@ router.post('/create-checkout-session', express.json(), async (req, res) => {
                     userId: user.id,
                 }
             });
-
-            await User.findByIdAndUpdate(user.id, { customer_id: customer.id });
             customerId = customer.id;
         }
 
@@ -90,7 +88,11 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             const session = event.data.object;
 
             try {
+                // Retrieve the user based on the metadata userId
                 const user = await User.findById(session.metadata.userId);
+
+                // Update the user's customer ID in the database
+                await User.findByIdAndUpdate(user._id, { customer_id: session.customer });
 
                 // Cancel the previous subscription if it exists and wasn't already canceled
                 const currentSubscriptionId = session.metadata.currentSubscriptionId;
