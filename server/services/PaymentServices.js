@@ -43,11 +43,10 @@ exports.resetPlan = async (userId) => {
     }
 }
 
-exports.addPixels = async (userId, selectedPlan) => {
+exports.addPixels = async (userId, selectedPlan, customQuantity) => {
     console.log(userId);
     console.log(selectedPlan);
 
-    // Validate that userId is a valid ObjectId string
     if (!mongoose.Types.ObjectId.isValid(userId)) {
         throw new Error('Invalid userId format');
     }
@@ -63,25 +62,25 @@ exports.addPixels = async (userId, selectedPlan) => {
         const currentPixels = user.credits || 0;
         let pixels = 0;
 
-        // Add pixels based on the selected plan
-        switch (selectedPlan) {
-            case 'Premium': {
-                pixels = 60;
-                break;
-            }
-            case 'King': {
-                pixels = 125;
-                break;
-            }
-            default: {
-                throw new Error('Invalid plan selected');
+        if (selectedPlan === 'Custom') {
+            pixels = customQuantity;
+        } else {
+            switch (selectedPlan) {
+                case 'Premium': {
+                    pixels = 60;
+                    break;
+                }
+                case 'King': {
+                    pixels = 125;
+                    break;
+                }
+                default: {
+                    throw new Error('Invalid plan selected');
+                }
             }
         }
 
-        // Update user's credits
         user.credits = currentPixels + pixels;
-
-        // Save the updated user document
         await user.save();
     } catch (error) {
         console.error('Error adding pixels:', error);

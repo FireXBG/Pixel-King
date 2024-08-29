@@ -72,6 +72,57 @@ router.post('/create-checkout-session', express.json(), async (req, res) => {
     }
 });
 
+router.post('/create-pixels-checkout-session', express.json(), async (req, res) => {
+    const { quantity, token } = req.body;
+    const CORS_ORIGIN = process.env.CORS_ORIGIN;
+
+    try {
+        const user = await adminServices.verifyToken(token);
+        let customerId = user.customer_id;
+
+        if (!customerId || customerId === '') {
+            // Create a new customer if one does not exist
+            const customer = await stripe.customers.create({
+                email: user.email,
+                metadata: {
+                    userId: user.id,
+                }
+            });
+            customerId = customer.id;
+        }
+
+        // Create a checkout session
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            mode: 'payment',
+            line_items: [
+                {
+                    price_data: {
+                        currency: 'eur',
+                        product_data: {
+                            name: 'Pixels',
+                        },
+                        unit_amount: 5, // 5 cents per pixel
+                    },
+                    quantity,
+                },
+            ],
+            customer: customerId,
+            success_url: `${CORS_ORIGIN}/success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${CORS_ORIGIN}/cancel`,
+            metadata: {
+                userId: user.id,
+                quantity,
+            },
+        });
+
+        res.json({ sessionId: session.id });
+    } catch (error) {
+        console.error('Error creating checkout session:', error);
+        res.status(500).send('Internal Server Error');
+    }
+})
+
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
     const sig = req.headers['stripe-signature'];
     let event;
@@ -91,22 +142,28 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
                 // Retrieve the user based on the metadata userId
                 const user = await User.findById(session.metadata.userId);
 
-                // Update the user's customer ID in the database
-                await User.findByIdAndUpdate(user._id, { customer_id: session.customer });
-
-                // Cancel the previous subscription if it exists and wasn't already canceled
-                const currentSubscriptionId = session.metadata.currentSubscriptionId;
-                if (currentSubscriptionId) {
-                    await stripe.subscriptions.del(currentSubscriptionId);
+                if (!user) {
+                    throw new Error('User not found');
                 }
 
-                // Update the user's plan in the database to the new plan
-                console.log('Upgrading user plan:', session.metadata.selectedPlanId);
-                await paymentServices.upgradePlan(session.metadata.selectedPlanId, session.metadata.userId, session.customer);
-                console.log('Adding pixels based on their plan');
-                await paymentServices.addPixels(session.metadata.userId, session.metadata.selectedPlanId);
+                // Check if the session is for a plan upgrade or a pixel purchase
+                if (session.mode === 'subscription' && session.metadata.selectedPlanId) {
+                    // Handle plan upgrade
+                    console.log('Upgrading user plan:', session.metadata.selectedPlanId);
+                    await paymentServices.upgradePlan(session.metadata.selectedPlanId, session.metadata.userId, session.customer);
+
+                    console.log('Adding pixels based on their plan');
+                    await paymentServices.addPixels(session.metadata.userId, session.metadata.selectedPlanId);
+                } else if (session.mode === 'payment' && session.metadata.quantity) {
+                    // Handle pixel purchase
+                    const quantity = parseInt(session.metadata.quantity, 10); // Convert quantity to integer
+                    console.log('Adding purchased pixels:', quantity);
+                    await paymentServices.addPixels(session.metadata.userId, 'Custom', quantity);
+                } else {
+                    console.warn('Unhandled session type or missing metadata.');
+                }
             } catch (error) {
-                console.error('Error upgrading plan:', error);
+                console.error('Error processing session:', error);
             }
             break;
         }
@@ -141,6 +198,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 
     res.json({ received: true });
 });
+
 
 router.get('/verify-session', async (req, res) => {
     const sessionId = req.query.session_id;

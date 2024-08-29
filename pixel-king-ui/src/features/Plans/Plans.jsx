@@ -14,6 +14,7 @@ export default function Plans() {
     const [loading, setLoading] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [selectedPlan, setSelectedPlan] = useState(null); // Store selected plan for upgrade/downgrade
+    const [pixelQuantity, setPixelQuantity] = useState(0); // Store the number of pixels to purchase
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -71,6 +72,40 @@ export default function Plans() {
             } finally {
                 setLoading(false);
             }
+        }
+    };
+
+    const handlePixelPurchase = async (event) => {
+        event.preventDefault();
+        if (pixelQuantity <= 0) {
+            alert("Please enter a valid number of pixels to purchase.");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const stripe = await stripePromise;
+            const { data } = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/stripe/create-pixels-checkout-session`, {
+                quantity: pixelQuantity,
+                token: localStorage.getItem('userToken')
+            }, {
+                headers: {
+                    Authorization: localStorage.getItem('userToken')
+                }
+            });
+
+            // Redirect to Stripe Checkout
+            const result = await stripe.redirectToCheckout({
+                sessionId: data.sessionId,
+            });
+
+            if (result.error) {
+                console.error('Stripe error:', result.error.message);
+            }
+        } catch (error) {
+            console.error('Error creating pixels checkout session:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -238,11 +273,16 @@ export default function Plans() {
             </div>
             <h1 className='mainH1'>Pixels</h1>
             <div>
-                <form className={styles.creditsForm}>
+                <form className={styles.creditsForm} onSubmit={handlePixelPurchase}>
                     <label>
                         <p>Current Pixels: {pixels}</p>
-                        <input type='number' placeholder='Enter Pixels' />
-                        <button className='button2'>Add Pixels</button>
+                        <input
+                            type='number'
+                            placeholder='Enter Pixels'
+                            value={pixelQuantity}
+                            onChange={(e) => setPixelQuantity(parseInt(e.target.value))}
+                        />
+                        <button className='button2' disabled={loading || pixelQuantity <= 0}>Add Pixels</button>
                     </label>
                 </form>
             </div>
