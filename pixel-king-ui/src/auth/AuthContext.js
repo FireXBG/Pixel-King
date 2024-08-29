@@ -8,6 +8,7 @@ export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [userRole, setUserRole] = useState(null);
     const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
+    const [loading, setLoading] = useState(true); // New loading state
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -30,6 +31,8 @@ export const AuthProvider = ({ children }) => {
             } else {
                 setIsUserAuthenticated(false);
             }
+
+            setLoading(false); // Authentication check is complete
         };
 
         checkAuth();
@@ -79,7 +82,8 @@ export const AuthProvider = ({ children }) => {
             logout,
             isUserAuthenticated,
             userLogin,
-            userLogout
+            userLogout,
+            loading, // Expose loading state
         }}>
             {children}
         </AuthContext.Provider>
