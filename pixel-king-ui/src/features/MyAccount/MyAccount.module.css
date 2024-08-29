@@ -210,6 +210,9 @@
 
 .currentPlan {
     margin-bottom: 1vw;
+    display: flex;
+    align-items: center;
+    gap: 1vw;
 }
 
 .modalActions button {

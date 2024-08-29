@@ -15,7 +15,7 @@ export default function MyAccount() {
     const [isChangeInfoModalOpen, setIsChangeInfoModalOpen] = useState(false);
     const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
     const [isCancelPlanModalOpen, setIsCancelPlanModalOpen] = useState(false);
-    const [loadingButton, setLoadingButton] = useState(""); // Keep track of which button is loading
+    const [loadingButton, setLoadingButton] = useState("");
 
     const navigate = useNavigate();
     const location = useLocation();

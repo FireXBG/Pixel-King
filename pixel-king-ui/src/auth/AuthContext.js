@@ -83,7 +83,7 @@ export const AuthProvider = ({ children }) => {
             isUserAuthenticated,
             userLogin,
             userLogout,
-            loading, // Expose loading state
+            loading,
         }}>
             {children}
         </AuthContext.Provider>

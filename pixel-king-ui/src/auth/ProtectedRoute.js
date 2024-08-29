@@ -5,9 +5,8 @@ import AuthContext from './AuthContext';
 const ProtectedRoute = ({ children, roles }) => {
     const { isAuthenticated, isUserAuthenticated, userRole, loading } = useContext(AuthContext);
 
-    // Show a loading spinner or nothing while authentication is being checked
     if (loading) {
-        return <div>Loading...</div>; // Or return null if you don't want to show anything
+        return <div>Loading...</div>;
     }
 
     if (!isUserAuthenticated && !isAuthenticated) {
