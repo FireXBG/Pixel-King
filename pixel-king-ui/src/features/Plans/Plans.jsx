@@ -125,7 +125,7 @@ export default function Plans() {
                 if (result.error) {
                     console.error('Stripe error:', result.error.message);
                 } else {
-                    navigate('/my-account');
+                    navigate('/account');
                 }
             } catch (error) {
                 console.error('Error upgrading to King plan:', error);
@@ -144,7 +144,7 @@ export default function Plans() {
             <h1 className='mainH1'>Plans</h1>
             <div className={styles.plansContainer}>
                 <div className={styles.plan}>
-                    <h2>Free</h2>
+                    <h2 className={styles.planName}>Free</h2>
                     <p className={styles.price}>€0.00 <br /><span>For Ever</span></p>
                     <div className={styles.pros}>
                         <ul>
@@ -170,7 +170,7 @@ export default function Plans() {
                     </div>
                 </div>
                 <div className={styles.plan}>
-                    <h2>Premium</h2>
+                    <h2 className={styles.planName}>Premium</h2>
                     <p className={styles.price}>€1.99 <br /><span>Per Month</span></p>
                     <div className={styles.pros}>
                         <ul>
@@ -201,7 +201,7 @@ export default function Plans() {
                     </div>
                 </div>
                 <div className={styles.plan}>
-                    <h2>King</h2>
+                    <h2 className={styles.planName}>King</h2>
                     <p className={styles.price}>€2.99 <br /><span>Per Month</span></p>
                     <div className={styles.pros}>
                         <ul>

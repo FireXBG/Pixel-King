@@ -39,10 +39,16 @@
     gap: 1vw;
 }
 
+.planName {
+    font-size: 2vw;
+    font-weight: 100;
+}
+
 .price {
     display: flex;
     flex-direction: column;
     align-items: center;
+    font-size: 1.5vw;
 }
 
 .price span {
@@ -122,4 +128,65 @@
 
 .creditsForm input:focus {
     outline: none;
+}
+
+@media screen and (max-width: 768px) {
+    .shopWrapper {
+        margin-top: 5vw;
+    }
+
+    .shopWrapper h1 {
+        font-size: 8vw;
+    }
+
+    .plansContainer {
+        grid-template-columns: 1fr;
+    }
+
+    .plan {
+        height: 90vw;
+        min-width: 70vw;
+        border-radius: 5vw;
+        gap: 6vw;
+        padding: 4vw;
+    }
+
+    .price {
+        font-size: 3vw;
+        gap: 2vw;
+    }
+
+    .price span {
+        font-size: 2vw;
+    }
+
+    .pros {
+        max-width: 65vw;
+        min-width: 65vw;
+        border-radius: 4vw;
+    }
+
+    .pros ul {
+        padding: 4vw;
+        gap: 5vw;
+    }
+
+    .pros ul li img {
+        width: 2vw;
+        height: 2vw;
+    }
+
+    .planName {
+        font-size: 5vw;
+        font-weight: 400;
+    }
+
+    .pros ul li p {
+        font-size: 3vw;
+    }
+
+    .plan button {
+        font-size: 2vw;
+        padding: 2vw;
+    }
 }

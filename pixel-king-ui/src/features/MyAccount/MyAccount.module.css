@@ -257,6 +257,7 @@
 }
 
 @media screen and (max-width: 768px) {
+
     .itemsWrapper {
         flex-direction: column;
         align-items: center;
@@ -287,16 +288,16 @@
     }
 
     .itemsWrapper p {
-        font-size: 3vw;
+        font-size: 4vw;
     }
 
     .secondHeading {
-        font-size: 4vw;
+        font-size: 6vw;
         text-align: center;
     }
 
     .heading {
-        font-size: 6vw;
+        font-size: 10vw;
         font-weight: 600;
         margin-top: 5vw;
     }
@@ -317,11 +318,25 @@
         padding: 5vw;
     }
 
+    .currentPlan {
+        gap: 2vw;
+    }
+
+    .planInfo {
+        gap: 5vw;
+    }
+
+    .currentPlan span {
+        height: 5vw;
+        display: grid;
+        place-items: center;
+    }
+
     .infoContainer {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 2vw;
+        gap: 5vw;
     }
 
     .firstSmallWrapper {

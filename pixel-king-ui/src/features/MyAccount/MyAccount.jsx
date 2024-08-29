@@ -213,7 +213,11 @@ export default function MyAccount() {
                                 </div>
                             )}
                             <div className={styles.buttonsWrapper}>
-                                <button className='button2' onClick={() => navigate('/upgrade')}>
+                                <button className='button2' onClick={() => {
+                                    // reset scroll
+                                    window.scrollTo(0, 0);
+                                    navigate('/upgrade')
+                                }}>
                                     {userInfo?.plan === 'free' ? 'Upgrade Now' : 'Change Plan'}
                                 </button>
 
