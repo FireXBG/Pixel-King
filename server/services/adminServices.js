@@ -1,6 +1,7 @@
 const AdminUser = require('../models/adminUserSchema.js');
 const AdminWallpapers = require('../models/adminWallpapersSchema.js');
 const AdminEmails = require('../models/adminEmailsSchema.js');
+const DownloadLog = require('../models/downloadLogSchema.js');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
@@ -10,6 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const tempDir = path.join(__dirname, '..', 'temp');
 const Jimp = require('jimp');
+const {Mongoose} = require("mongoose");
 
 if (!fs.existsSync(tempDir)) {
     fs.mkdirSync(tempDir);
@@ -206,7 +208,7 @@ exports.updateWallpaperTagsAndIsPaid = async (wallpaperId, newTags, isPaid) => {
     }
 };
 
-exports.getWallpaperById = async (id, isPreview = false) => {
+exports.getWallpaperById = async (id, isPreview = false, userId) => {
     try {
         const fileContent = await getFile(id);
         if (!fileContent) {
@@ -514,4 +516,38 @@ exports.sendContactEmail = async (data) => {
     } catch (error) {
         throw new Error(error.message);
     }
+};
+
+exports.getToday4KDownloads = async (userId) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const downloads = await DownloadLog.countDocuments({
+        userId: userId,
+        resolution: '4K',
+        createdAt: { $gte: today }
+    });
+
+    return downloads;
+};
+
+exports.getToday8KDownloads = async (userId) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const downloads = await DownloadLog.countDocuments({
+        userId: userId,
+        resolution: '8K',
+        createdAt: { $gte: today }
+    });
+
+    return downloads;
+};
+
+exports.logDownload = async (userId, resolution) => {
+    await DownloadLog.create({
+        userId,
+        resolution,
+        createdAt: new Date()
+    });
 };

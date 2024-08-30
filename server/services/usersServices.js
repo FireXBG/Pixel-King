@@ -1,4 +1,5 @@
 const User = require('../models/usersSchema');
+const DownloadLog = require('../models/downloadLogSchema');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -28,16 +29,17 @@ exports.register = async (data) => {
         const userRegistered = await User.findOne({ username: data.username });
         const emailRegistered = await User.findOne({ email: data.email });
 
-        if(userRegistered) {
+        if (userRegistered) {
             throw new Error('Username already taken');
         }
 
-        if(emailRegistered) {
+        if (emailRegistered) {
             throw new Error('Email already registered');
         }
 
         const hashedPass = await bcrypt.hash(data.password, 12);
 
+        // Create the user instance but do not save yet
         const user = new User({
             username: data.username,
             email: data.email,
@@ -45,9 +47,21 @@ exports.register = async (data) => {
             plan: 'free'
         });
 
+        // Save the user to get the _id
         await user.save();
 
-        return jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '7d'});
+        // Now that the user is saved and has an _id, create the download log
+        const downloadLog = new DownloadLog({
+            userId: user._id,
+            DownloadsAvailable4K: 10, // Default values
+            DownloadsAvailable8K: 0   // Default values
+        });
+
+        // Save the download log
+        await downloadLog.save();
+
+        // Return the JWT token
+        return jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     } catch (error) {
         console.error("Error during user saving process:", error);
         throw new Error(error.message || 'An error occurred during registration');
@@ -138,4 +152,69 @@ exports.updatePassword = async (data, token) => {
     return {
         message: 'Password updated successfully'
     };
+}
+
+exports.chargePixels = async (userId, pixels) => {
+    const user = await User.findById(userId);
+
+    try {
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        console.log(user)
+
+        user.credits -= pixels;
+
+        if(user.credits < 0) {
+            throw new Error('Not enough credits');
+        }
+
+        await user.save();
+    } catch (error) {
+        throw new Error(error.message);
+    }
+}
+
+exports.hasFreeDownloads = async (userId, resolution) => {
+    const logsObj = await DownloadLog.find({ userId: userId});
+    const logs = logsObj[0];
+    try {
+        if(!logs) {
+            throw new Error('Logs not found for this user!');
+        }
+
+        if(resolution === '4K') {
+            console.log(logs.DownloadsAvailable4K);
+            return logs.DownloadsAvailable4K > 0;
+
+        } else if (resolution === '8K') {
+            return logs.DownloadsAvailable8K > 0;
+        }
+
+    } catch (error) {
+        throw new Error('An error occurred while checking free downloads');
+    }
+}
+
+exports.useFreeDownload = async (userId, resolution) => {
+    const logs = await DownloadLog.findOne({ userId: userId });
+
+    console.log(logs)
+
+    try {
+        if(!logs) {
+            throw new Error('Logs not found for this user!');
+        }
+
+        if(resolution === '4K') {
+            logs.DownloadsAvailable4K -= 1;
+        } else if (resolution === '8K') {
+            logs.DownloadsAvailable8K -= 1;
+        }
+
+        await logs.save();
+    } catch (error) {
+        throw new Error('An error occurred while using a free download: ' + error.message);
+    }
 }

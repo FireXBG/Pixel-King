@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const adminServices = require('../services/adminServices');
+const userServices = require('../services/usersServices');
 const { getFile } = require('../config/googleDrive');
 const multer = require('multer');
 const path = require('path');
@@ -238,11 +239,18 @@ router.delete('/wallpapers/:id', isAuthorized, async (req, res) => {
 
 router.post('/download', async (req, res) => {
     const { wallpaperId, resolution } = req.body;
+    const token = req.headers.authorization;
+
+    if (!token) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
     if (!wallpaperId || !resolution) {
         return res.status(400).json({ error: 'Wallpaper ID and resolution are required' });
     }
 
     try {
+        const userId = await adminServices.verifyToken(token).id;
         const wallpaper = await adminServices.getWallpaperDataById(wallpaperId);
         if (!wallpaper) {
             console.log('Wallpaper not found');
@@ -256,9 +264,22 @@ router.post('/download', async (req, res) => {
                 break;
             case '4K':
                 driveId = wallpaper.driveID_4K;
+                const isFree = await userServices.hasFreeDownloads(userId, resolution);
+                console.log('isFree:', isFree);
+                if(!isFree) {
+                    await userServices.chargePixels(userId, 5);
+                    break;
+                }
+                await userServices.useFreeDownload(userId, resolution);
                 break;
             case '8K':
                 driveId = wallpaper.driveID_8K;
+                const isFree8K = await userServices.hasFreeDownloads(userId, resolution);
+                if(!isFree8K) {
+                    await userServices.chargePixels(userId, 10);
+                    break;
+                }
+                await userServices.useFreeDownload(userId, resolution);
                 break;
             default:
                 return res.status(400).json({ error: 'Invalid resolution' });
