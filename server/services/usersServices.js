@@ -178,6 +178,7 @@ exports.chargePixels = async (userId, pixels) => {
 
 exports.hasFreeDownloads = async (userId, resolution) => {
     const logsObj = await DownloadLog.find({ userId: userId});
+    const user = await User.findById(userId);
     const logs = logsObj[0];
     try {
         if(!logs) {
@@ -185,10 +186,15 @@ exports.hasFreeDownloads = async (userId, resolution) => {
         }
 
         if(resolution === '4K') {
-            console.log(logs.DownloadsAvailable4K);
+            if(user.plan === 'Premium' || user.plan === 'King') {
+                return true;
+            }
             return logs.DownloadsAvailable4K > 0;
 
         } else if (resolution === '8K') {
+            if(user.plan === 'King') {
+                return true;
+            }
             return logs.DownloadsAvailable8K > 0;
         }
 
