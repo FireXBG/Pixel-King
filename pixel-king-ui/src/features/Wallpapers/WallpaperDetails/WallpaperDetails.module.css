@@ -153,6 +153,16 @@
     color: rgba(138, 76, 240, 0.35);
 }
 
+.pixelsImg {
+    width: 2vw;
+}
+
+.pixelsDownloadContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
 @media screen and (max-width: 768px) {
     .wallpaperDetails {
         max-width: 90vw;

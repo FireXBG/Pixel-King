@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styles from './WallpaperDetails.module.css';
+import pixels from '../../../assets/Diamond.png';
 import axios from 'axios';
 
 const resolutions = [
@@ -89,7 +90,18 @@ function WallpaperDetails({ wallpaper, onClose, userPlan, userCredits, onDownloa
                                         >
                                             {downloading === res.label
                                                 ? 'Downloading...'
-                                                : `${res.label} ${isFreeDownload ? '(Free)' : `- ${res.cost} Pixels`}`}
+                                                : (
+                                                    <div className={styles.pixelsDownloadContainer}>
+                                                        {res.label}
+                                                        {!isFreeDownload && (
+                                                            <>
+                                                                {' '}
+                                                                <img src={pixels} className={styles.pixelsImg} alt="Pixels icon" />
+                                                                {res.cost}
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                )}
                                         </button>
                                     </li>
                                 );

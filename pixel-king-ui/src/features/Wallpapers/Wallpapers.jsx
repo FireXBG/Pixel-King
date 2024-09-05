@@ -239,7 +239,7 @@ export default function Wallpapers() {
                 </div>
             )}
 
-            {selectedWallpaper && <WallpaperDetails wallpaper={selectedWallpaper} onClose={closeWallpaperDetails}/>}
+            {selectedWallpaper && <WallpaperDetails userPlan={userPlan} wallpaper={selectedWallpaper} onClose={closeWallpaperDetails}/>}
         </>
     );
 }
