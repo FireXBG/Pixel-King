@@ -21,7 +21,8 @@ export default function Header() {
                 });
                 setPixels(response.data.credits);
             } catch (error) {
-                console.error('Error fetching data:', error);
+                console.log('Error fetching user pixels:', error);
+                setPixels('0');
             }
         };
 

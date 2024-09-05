@@ -68,6 +68,11 @@ router.post('/updatePassword', async (req, res) => {
 router.get('/account-details', async (req, res) => {
     const userToken = req.headers.authorization;
 
+    if(!userToken) {
+        console.log("No token provided");
+        return res.status(401).json({ message: 'You are not logged in' });
+    }
+
     try {
         console.log("Verifying user with token:", userToken);
         const tokenPayload = await adminServices.verifyToken(userToken);
@@ -147,7 +152,7 @@ router.get('/account-details', async (req, res) => {
 
     } catch (error) {
         console.error('Error fetching account details:', error);
-        return res.status(500).json({ message: 'Internal Server Error' });
+        return res.status(500).json({ message: error });
     }
 });
 

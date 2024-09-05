@@ -8,6 +8,7 @@ import Desktop from './Desktop/Desktop';
 import Mobile from './Mobile/Mobile';
 import WallpaperDetails from './WallpaperDetails/WallpaperDetails';
 import AdComponent from '../../core/adComponent/adComponent';
+import { AuthProvider} from "../../auth/AuthContext";
 
 export default function Wallpapers() {
     const [initialDeviceType] = useState(window.innerWidth < 768 ? 'mobile' : 'desktop');
@@ -20,6 +21,7 @@ export default function Wallpapers() {
     const [imagesLoaded, setImagesLoaded] = useState(new Array(9).fill(false));
     const [userChangedDeviceType, setUserChangedDeviceType] = useState(false);
     const [showNoResults, setShowNoResults] = useState(false);
+    const [userPlan, setUserPlan] = useState(null);
     const imagesPerPage = 9;
     const cancelTokenSource = useRef(null);
     const debounceTimeout = useRef(null);
@@ -53,6 +55,23 @@ export default function Wallpapers() {
             }
         };
     }, [deviceType, userChangedDeviceType]);
+
+    useEffect(() => {
+        const fetchUserPlan = async () => {
+            try {
+                const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/users/account-details`, {
+                    headers: {
+                        Authorization: localStorage.getItem('userToken')
+                    }
+                });
+                setUserPlan(response.data.plan);
+            } catch (error) {
+                console.error('Error fetching user plan:', error);
+            }
+        };
+
+        fetchUserPlan();
+    }, []);
 
     const fetchWallpapers = async (type, page, tags, reset = false) => {
         if (cancelTokenSource.current) {

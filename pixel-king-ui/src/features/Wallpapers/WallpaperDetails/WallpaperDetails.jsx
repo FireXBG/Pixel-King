@@ -17,7 +17,7 @@ function WallpaperDetails({ wallpaper, onClose, userPlan, userCredits, onDownloa
         setTimeout(() => {
             onClose();
             setIsClosing(false);
-        }, 300); // Match the animation duration
+        }, 300);
     };
 
     const handleDownload = async (resolution) => {
