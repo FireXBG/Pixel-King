@@ -17,6 +17,8 @@ export default function Wallpapers() {
     const [wallpapers, setWallpapers] = useState([]);
     const [totalPages, setTotalPages] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
+    const [free4kDownloads, setFree4kDownloads] = useState(0);
+    const [free8kDownloads, setFree8kDownloads] = useState(0);
     const [selectedWallpaper, setSelectedWallpaper] = useState(null);
     const [imagesLoaded, setImagesLoaded] = useState(new Array(9).fill(false));
     const [userChangedDeviceType, setUserChangedDeviceType] = useState(false);
@@ -72,6 +74,24 @@ export default function Wallpapers() {
 
         fetchUserPlan();
     }, []);
+
+    useEffect(() => {
+        const getFreeDownloads = async () => {
+            try {
+                const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/users/free-downloads`, {
+                    headers: {
+                        Authorization: localStorage.getItem('userToken')
+                    }
+                });
+                setFree4kDownloads(response.data.DownloadsAvailable4K);
+                setFree8kDownloads(response.data.DownloadsAvailable8K);
+            } catch (error) {
+                console.error('Error fetching free downloads:', error);
+            }
+        }
+
+        getFreeDownloads();
+    }, [])
 
     const fetchWallpapers = async (type, page, tags, reset = false) => {
         if (cancelTokenSource.current) {
@@ -239,7 +259,7 @@ export default function Wallpapers() {
                 </div>
             )}
 
-            {selectedWallpaper && <WallpaperDetails userPlan={userPlan} wallpaper={selectedWallpaper} onClose={closeWallpaperDetails}/>}
+            {selectedWallpaper && <WallpaperDetails wallpaper={selectedWallpaper} free4kDownloads={free4kDownloads} free8kDownloads={free8kDownloads} userPlan={userPlan} onClose={closeWallpaperDetails}/>}
         </>
     );
 }

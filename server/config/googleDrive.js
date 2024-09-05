@@ -84,7 +84,6 @@ async function getFile(fileId) {
         throw new Error('fileId is undefined or null');
     }
 
-    console.log('Fetching file with ID:', fileId);
 
     const drive = google.drive({ version: 'v3', auth: oAuth2Client });
 

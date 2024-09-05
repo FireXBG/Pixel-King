@@ -120,7 +120,6 @@ router.get('/wallpapers/:driveId', async (req, res) => {
     }
 
     try {
-        console.log('Fetching file with Drive ID:', driveId);
         const fileContent = await adminServices.getWallpaperById(driveId, preview === 'true');
 
         if (!fileContent) {
@@ -265,7 +264,6 @@ router.post('/download', async (req, res) => {
             case '4K':
                 driveId = wallpaper.driveID_4K;
                 const isFree = await userServices.hasFreeDownloads(userId, resolution);
-                console.log('isFree:', isFree);
                 if(!isFree) {
                     await userServices.chargePixels(userId, 5);
                     break;
@@ -290,7 +288,6 @@ router.post('/download', async (req, res) => {
             return res.status(404).json({ error: 'Drive ID not found for the requested resolution' });
         }
 
-        console.log('Fetching file with ID:', driveId);
         const fileContent = await getFile(driveId);
         if (!fileContent) {
             console.log('File content not found');

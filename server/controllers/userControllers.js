@@ -90,9 +90,6 @@ router.get('/account-details', async (req, res) => {
             return res.status(404).json({ message: 'User not found in database' });
         }
 
-        console.log("User found in database:", user);
-        console.log("User plan:", user.plan);
-
         let stripeDetails = null;
 
         if (user.plan !== 'free' && user.customer_id) {
@@ -132,14 +129,8 @@ router.get('/account-details', async (req, res) => {
                         cancel_at_period_end: activeSubscription.cancel_at_period_end,
                     };
                     console.log("Stripe details set:", stripeDetails);
-                } else {
-                    console.log("No active subscription found for customer ID:", user.customer_id);
                 }
-            } else {
-                console.log("No payment methods found for customer ID:", user.customer_id);
             }
-        } else {
-            console.log("User has a free plan or no customer ID:", { plan: user.plan, customer_id: user.customer_id });
         }
 
         return res.json({
@@ -155,6 +146,29 @@ router.get('/account-details', async (req, res) => {
         return res.status(500).json({ message: error });
     }
 });
+
+router.get('/free-downloads', async (req, res) => {
+    const userToken = req.headers.authorization;
+
+    try {
+        const user = await adminServices.verifyToken(userToken);
+        const userId = user.id;
+
+        const downloads = await userServices.getFreeDownloads(userId);
+
+        console.log("Free downloads fetched:", downloads);
+
+        if (!user || !user.id) {
+            console.log("User not found");
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.status(200).json({ DownloadsAvailable4K: downloads.DownloadsAvailable4K, DownloadsAvailable8K: downloads.DownloadsAvailable8K });
+    } catch (error) {
+        console.error("Error fetching free downloads:", error);
+        res.status(500).json({ error: error.message });
+    }
+})
 
 
 

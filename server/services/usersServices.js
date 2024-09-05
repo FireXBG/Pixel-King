@@ -2,6 +2,7 @@ const User = require('../models/usersSchema');
 const DownloadLog = require('../models/downloadLogSchema');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const mongoose = require("mongoose");
 
 exports.login = async (data) => {
     try {
@@ -222,5 +223,19 @@ exports.useFreeDownload = async (userId, resolution) => {
         await logs.save();
     } catch (error) {
         throw new Error('An error occurred while using a free download: ' + error.message);
+    }
+}
+
+exports.getFreeDownloads = async (userId) => {
+    try {
+        console.log(userId)
+        const logs = await DownloadLog.findOne({ userId: userId });
+
+        return {
+            DownloadsAvailable4K: logs.DownloadsAvailable4K,
+            DownloadsAvailable8K: logs.DownloadsAvailable8K
+        }
+    } catch (error) {
+        throw new Error(error);
     }
 }
