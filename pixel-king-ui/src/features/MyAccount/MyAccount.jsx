@@ -16,7 +16,7 @@ export default function MyAccount() {
     const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
     const [isCancelPlanModalOpen, setIsCancelPlanModalOpen] = useState(false);
     const [loadingButton, setLoadingButton] = useState("");
-    const [isLoading, setIsLoading] = useState(true); // New loading state
+    const [isLoading, setIsLoading] = useState(true);
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -33,7 +33,7 @@ export default function MyAccount() {
         } catch (error) {
             console.error('Error during fetching account details:', error);
         } finally {
-            setIsLoading(false); // Stop loading when data is fetched
+            setIsLoading(false);
         }
     };
 
@@ -44,7 +44,7 @@ export default function MyAccount() {
     const handleInfoModalClose = async () => {
         setIsChangeInfoModalOpen(false);
         setLoadingButton("info");
-        await fetchAccountDetails(); // Fetch updated data
+        await fetchAccountDetails();
         setLoadingButton("");
     };
 

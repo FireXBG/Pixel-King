@@ -235,4 +235,17 @@
     .header__nav__list {
         display: none;
     }
+
+    .pixels__container {
+        display: none;
+    }
+
+    .header__special {
+        display: none;
+    }
+
+    .mobile_special {
+        background: transparent;
+        color: #CBCBCB;
+    }
 }
