@@ -7,6 +7,8 @@ const routes = require('./routes');
 const adminService = require('./services/adminServices');
 const { initializeDrive } = require('./config/googleDrive');
 const { initializeIO } = require('./config/socket');
+const cron = require('node-cron');
+const { runDailyTask } = require('./utils/ResetFreeDownloads');
 
 dotenv.config();
 
@@ -31,8 +33,17 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api', routes);
 
 const server = http.createServer(app);
-
 const io = initializeIO(server);
+
+app.get('/test-daily-task', (req, res) => {
+    runDailyTask();  // Manually trigger the daily task
+    res.status(200).json({ message: 'Daily task executed manually for testing' });
+});
+
+cron.schedule('0 0 * * *', () => {
+    console.log('Running the daily task');
+    runDailyTask();
+});
 
 server.listen(port, () => {
     console.log(`Server is running on port ${port}`);
