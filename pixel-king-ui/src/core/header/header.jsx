@@ -1,36 +1,17 @@
-import React, { useState, useEffect, useContext } from 'react';
+// core/header/Header.js
+
+import React, { useState, useContext } from 'react';
 import logo from '../../assets/logo.png';
-import pixelsImg from '../../assets/Diamond.png'
+import pixelsImg from '../../assets/Diamond.png';
 import styles from './header.module.css';
 import { Link } from 'react-router-dom';
 import AuthContext from '../../auth/AuthContext';
-import axios from "axios";
+import PixelsContext from '../../context/pixelsContext'; // Use PixelsContext
 
 export default function Header() {
     const [menuOpen, setMenuOpen] = useState(false);
-    const [pixels, setPixels] = useState('...');
+    const { pixels } = useContext(PixelsContext); // Access pixels from context
     const { isUserAuthenticated, userLogout } = useContext(AuthContext);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/users/account-details`, {
-                    headers: {
-                        Authorization: localStorage.getItem('userToken')
-                    }
-                });
-                setPixels(response.data.credits);
-            } catch (error) {
-                console.log('Error fetching user pixels:', error);
-                setPixels('0');
-            }
-        };
-
-        fetchData();
-
-        return () => {
-        };
-    }, []);
 
     const toggleMenu = () => {
         setMenuOpen(!menuOpen);
@@ -72,7 +53,7 @@ export default function Header() {
             <nav>
                 <ul className={styles.wallpapers_nav}>
                     <li className={styles.pixels__container}>
-                        <p><img src={pixelsImg}/>{pixels}</p>
+                        <p><img src={pixelsImg} alt="Pixels"/>{pixels}</p>
                     </li>
                     <li><Link className={`${styles.header__link} ${styles.header__special}`} to="/wallpapers">Wallpapers</Link></li>
                 </ul>
@@ -98,7 +79,7 @@ export default function Header() {
                         ) : (
                             <>
                                 <li><Link className={styles.mobile_link} to="/login" onClick={toggleMenu}>Login</Link></li>
-                                <li><Link className={styles.mobile_link} to="/register" onClick={toggleMenu}>Register</Link></li>
+                                <li><Link className={styles.mobile_link} to="/register">Register</Link></li>
                             </>
                         )}
                     </ul>

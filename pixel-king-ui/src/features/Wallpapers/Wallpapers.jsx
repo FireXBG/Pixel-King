@@ -8,7 +8,6 @@ import Desktop from './Desktop/Desktop';
 import Mobile from './Mobile/Mobile';
 import WallpaperDetails from './WallpaperDetails/WallpaperDetails';
 import AdComponent from '../../core/adComponent/adComponent';
-import { AuthProvider} from "../../auth/AuthContext";
 
 export default function Wallpapers() {
     const [initialDeviceType] = useState(window.innerWidth < 768 ? 'mobile' : 'desktop');
@@ -24,6 +23,7 @@ export default function Wallpapers() {
     const [userChangedDeviceType, setUserChangedDeviceType] = useState(false);
     const [showNoResults, setShowNoResults] = useState(false);
     const [userPlan, setUserPlan] = useState(null);
+    const [userCredits, setUserCredits] = useState(100); // Initial credits, update based on API
     const imagesPerPage = 9;
     const cancelTokenSource = useRef(null);
     const debounceTimeout = useRef(null);
@@ -67,6 +67,7 @@ export default function Wallpapers() {
                     }
                 });
                 setUserPlan(response.data.plan);
+                setUserCredits(response.data.credits);  // Fetch user credits from backend
             } catch (error) {
                 console.error('Error fetching user plan:', error);
             }
@@ -88,10 +89,10 @@ export default function Wallpapers() {
             } catch (error) {
                 console.error('Error fetching free downloads:', error);
             }
-        }
+        };
 
         getFreeDownloads();
-    }, [])
+    }, []);
 
     const fetchWallpapers = async (type, page, tags, reset = false) => {
         if (cancelTokenSource.current) {
@@ -177,11 +178,15 @@ export default function Wallpapers() {
         setSelectedWallpaper(null);
     };
 
+    const handleDownloadSuccess = (costInPixels) => {
+        // Deduct pixels immediately when a download is initiated
+        setUserCredits(prevCredits => prevCredits - costInPixels);
+    };
+
     const handleImageLoad = (index) => {
         setImagesLoaded((prev) => {
             const newImagesLoaded = [...prev];
             newImagesLoaded[index] = true;
-
             return newImagesLoaded;
         });
     };
@@ -259,7 +264,17 @@ export default function Wallpapers() {
                 </div>
             )}
 
-            {selectedWallpaper && <WallpaperDetails wallpaper={selectedWallpaper} free4kDownloads={free4kDownloads} free8kDownloads={free8kDownloads} userPlan={userPlan} onClose={closeWallpaperDetails}/>}
+            {selectedWallpaper && (
+                <WallpaperDetails
+                    wallpaper={selectedWallpaper}
+                    free4kDownloads={free4kDownloads}
+                    free8kDownloads={free8kDownloads}
+                    userPlan={userPlan}
+                    userCredits={userCredits}
+                    onDownloadSuccess={handleDownloadSuccess} // Pass the handler to update pixels
+                    onClose={closeWallpaperDetails}
+                />
+            )}
         </>
     );
 }

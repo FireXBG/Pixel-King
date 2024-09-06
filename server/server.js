@@ -36,7 +36,7 @@ const server = http.createServer(app);
 const io = initializeIO(server);
 
 app.get('/test-daily-task', (req, res) => {
-    runDailyTask();  // Manually trigger the daily task
+    runDailyTask();
     res.status(200).json({ message: 'Daily task executed manually for testing' });
 });
 

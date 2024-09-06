@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import styles from './WallpaperDetails.module.css';
-import pixels from '../../../assets/Diamond.png';
+import React, { useState, useContext } from 'react';
 import axios from 'axios';
+import styles from './WallpaperDetails.module.css';
+import pixelsImg from '../../../assets/Diamond.png';
+import PixelsContext from '../../../context/pixelsContext'; // Import the PixelsContext
 
 const resolutions = [
     { label: '1080p (Full HD)', key: 'HD', cost: 0 },
@@ -9,17 +10,9 @@ const resolutions = [
     { label: '8K (Ultra HD)', key: '8K', cost: 10 },
 ];
 
-function WallpaperDetails({ wallpaper, onClose, userPlan, userCredits, onDownloadSuccess, free4kDownloads, free8kDownloads }) {
-    const [isClosing, setIsClosing] = useState(false);
+function WallpaperDetails({ wallpaper, onClose, userPlan, free4kDownloads, free8kDownloads }) {
     const [downloading, setDownloading] = useState(null);
-
-    const handleClose = () => {
-        setIsClosing(true);
-        setTimeout(() => {
-            onClose();
-            setIsClosing(false);
-        }, 300);
-    };
+    const { updatePixels } = useContext(PixelsContext); // Access updatePixels from context
 
     const handleDownload = async (resolution) => {
         const costInPixels = resolution.cost;
@@ -31,48 +24,47 @@ function WallpaperDetails({ wallpaper, onClose, userPlan, userCredits, onDownloa
             (resolution.key === '4K' && free4kDownloads > 0) ||
             (resolution.key === '8K' && free8kDownloads > 0);
 
-        if (!isFreeDownload && userCredits < costInPixels) {
-            alert('Not enough pixels to download this wallpaper');
-            return;
-        }
+        if (!isFreeDownload && costInPixels > 0) {
+            // Proceed with the download and then fetch the updated pixel count
+            setDownloading(resolution.label);
 
-        setDownloading(resolution.label);
-        try {
-            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/download`, {
-                wallpaperId: wallpaper._id,
-                resolution: resolution.key,
-            }, {
-                headers: {
-                    Authorization: localStorage.getItem('userToken'),
-                },
-                responseType: 'blob',
-            });
+            try {
+                const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/download`, {
+                    wallpaperId: wallpaper._id,
+                    resolution: resolution.key,
+                }, {
+                    headers: {
+                        Authorization: localStorage.getItem('userToken'),
+                    },
+                    responseType: 'blob',
+                });
 
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `${wallpaper._id}_${resolution.label}.jpg`);
-            document.body.appendChild(link);
-            link.click();
-            link.parentNode.removeChild(link);
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', `${wallpaper._id}_${resolution.label}.jpg`);
+                document.body.appendChild(link);
+                link.click();
+                link.parentNode.removeChild(link);
 
-            // Deduct pixels after download if necessary
-            if (!isFreeDownload) {
-                onDownloadSuccess(costInPixels);
+                // Fetch updated pixels after download completes
+                await updatePixels();
+            } catch (error) {
+                console.error('Error downloading wallpaper:', error);
+                alert('Failed to download wallpaper.');
             }
-        } catch (error) {
-            console.error('Error downloading wallpaper:', error);
+
+            setDownloading(null);
         }
-        setDownloading(null);
     };
 
     const { _id, tags, thumbnailID } = wallpaper;
 
     return (
         <>
-            <div className={styles.overlay} onClick={handleClose}></div>
-            <div className={`${styles.wallpaperDetails} ${isClosing ? styles.wallpaperDetailsClosing : ''}`}>
-                <button className={styles.closeButton} onClick={handleClose}>×</button>
+            <div className={styles.overlay} onClick={onClose}></div>
+            <div className={`${styles.wallpaperDetails}`}>
+                <button className={styles.closeButton} onClick={onClose}>×</button>
                 <div className={styles.wallpaperPreview}>
                     <img src={`${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${thumbnailID}`} alt="Wallpaper Preview" />
                 </div>
@@ -108,11 +100,10 @@ function WallpaperDetails({ wallpaper, onClose, userPlan, userCredits, onDownloa
                                                 : (
                                                     <div className={styles.pixelsDownloadContainer}>
                                                         {res.label}
-                                                        {/* Show cost only if it's greater than 0 and the download is not free */}
                                                         {res.cost > 0 && !isFreeDownload && (
                                                             <>
                                                                 {' '}
-                                                                <img src={pixels} className={styles.pixelsImg} alt="Pixels icon" />
+                                                                <img src={pixelsImg} className={styles.pixelsImg} alt="Pixels icon" />
                                                                 {res.cost}
                                                             </>
                                                         )}
