@@ -14,6 +14,7 @@
     place-items: center;
     gap: 5vw;
     color: white;
+    margin-bottom: 5vw;
 }
 
 .plansContainer div:first-child {
@@ -41,14 +42,14 @@
 
 .planName {
     font-size: 2vw;
-    font-weight: 100;
+    font-weight: 700;
 }
 
 .price {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 1.5vw;
+    font-size: 1vw;
 }
 
 .price span {
@@ -104,89 +105,38 @@
     transform: translateX(-50%);
 }
 
-.creditsForm {
-    flex-direction: column;
-    align-items: center;
-    margin: 2vw;
-}
-
-.creditsForm label {
-    font-size: 2vw;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+/* New CSS for pixel grid and icons */
+.pixelGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 2vw;
+    margin: 2vw 0;
 }
 
-.creditsForm input {
-    border: 1px solid #939393;
-    border-radius: 0.5vw;
-    padding: 0.5vw;
-    width: 5vw;
+.pixelIcon {
+    width: 1.5vw;
+    height: 1.5vw;
+    margin-right: 0.5vw;
 }
 
-.creditsForm input:focus {
-    outline: none;
+.pixelPrice {
+    font-size: 1.5vw;
+    text-align: center;
 }
 
-@media screen and (max-width: 768px) {
-    .shopWrapper {
-        margin-top: 5vw;
-    }
+.button2 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1vw 2vw;
+    font-size: 1.5vw;
+    color: white;
+    background-color: #8A4CF0;
+    border: none;
+    border-radius: 1vw;
+    cursor: pointer;
+}
 
-    .shopWrapper h1 {
-        font-size: 8vw;
-    }
-
-    .plansContainer {
-        grid-template-columns: 1fr;
-    }
-
-    .plan {
-        height: 90vw;
-        min-width: 70vw;
-        border-radius: 5vw;
-        gap: 6vw;
-        padding: 4vw;
-    }
-
-    .price {
-        font-size: 3vw;
-        gap: 2vw;
-    }
-
-    .price span {
-        font-size: 2vw;
-    }
-
-    .pros {
-        max-width: 65vw;
-        min-width: 65vw;
-        border-radius: 4vw;
-    }
-
-    .pros ul {
-        padding: 4vw;
-        gap: 5vw;
-    }
-
-    .pros ul li img {
-        width: 2vw;
-        height: 2vw;
-    }
-
-    .planName {
-        font-size: 5vw;
-        font-weight: 400;
-    }
-
-    .pros ul li p {
-        font-size: 3vw;
-    }
-
-    .plan button {
-        font-size: 2vw;
-        padding: 2vw;
-    }
+.button2:hover {
+    background-color: #6f36c9;
 }

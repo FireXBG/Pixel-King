@@ -5,16 +5,15 @@ import pros from '../../assets/pro.png';
 import axios from 'axios';
 import { loadStripe } from '@stripe/stripe-js';
 import ConfirmModal from '../../shared/confirmModal/confirmModal';
+import pixelImg from '../../assets/Diamond.png'; // Imported Pixel Image
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
 export default function Plans() {
     const [currentPlan, setCurrentPlan] = useState('Free');
-    const [pixels, setPixels] = useState(0);
     const [loading, setLoading] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
-    const [selectedPlan, setSelectedPlan] = useState(null); // Store selected plan for upgrade/downgrade
-    const [pixelQuantity, setPixelQuantity] = useState(0); // Store the number of pixels to purchase
+    const [selectedPlan, setSelectedPlan] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -24,69 +23,17 @@ export default function Plans() {
             }
         }).then(response => {
             setCurrentPlan(response.data.plan);
-            setPixels(response.data.credits);
         }).catch(error => {
             console.error('Error during user info:', error);
         });
     }, []);
 
-    const handleUpgradeOrDowngrade = async (planId, planName) => {
-        if (planName.toLowerCase() === 'free') {
-            // Always redirect to /account when the Free plan is selected
-            navigate('/account');
-        } else if (currentPlan === 'King' && planName === 'Premium') {
-            // Downgrading from King to Premium, show modal
-            setSelectedPlan({ id: planId, name: planName });
-            setShowConfirmModal(true);
-        } else if (currentPlan === 'Premium' && planName === 'King') {
-            // Upgrading from Premium to King, show modal
-            setSelectedPlan({ id: planId, name: planName });
-            setShowConfirmModal(true);
-        } else {
-            // Proceed directly to upgrade (e.g., Free to Premium)
-            setLoading(true);
-            try {
-                const stripe = await stripePromise;
-                const { data } = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/stripe/create-checkout-session`, {
-                    planId: planId,
-                    token: localStorage.getItem('userToken'),
-                    planName: planName
-                }, {
-                    headers: {
-                        Authorization: localStorage.getItem('userToken')
-                    }
-                });
-
-                // Redirect to Stripe Checkout
-                const result = await stripe.redirectToCheckout({
-                    sessionId: data.sessionId,
-                });
-
-                if (result.error) {
-                    console.error('Stripe error:', result.error.message);
-                } else {
-                    navigate('/account');
-                }
-            } catch (error) {
-                console.error('Error creating checkout session:', error);
-            } finally {
-                setLoading(false);
-            }
-        }
-    };
-
-    const handlePixelPurchase = async (event) => {
-        event.preventDefault();
-        if (pixelQuantity <= 0) {
-            alert("Please enter a valid number of pixels to purchase.");
-            return;
-        }
-
+    const handlePixelPurchase = async (pixelAmount) => {
         setLoading(true);
         try {
             const stripe = await stripePromise;
             const { data } = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/stripe/create-pixels-checkout-session`, {
-                quantity: pixelQuantity,
+                quantity: pixelAmount,
                 token: localStorage.getItem('userToken')
             }, {
                 headers: {
@@ -94,7 +41,6 @@ export default function Plans() {
                 }
             });
 
-            // Redirect to Stripe Checkout
             const result = await stripe.redirectToCheckout({
                 sessionId: data.sessionId,
             });
@@ -107,71 +53,6 @@ export default function Plans() {
         } finally {
             setLoading(false);
         }
-    };
-
-    const handleConfirmUpgradeOrDowngrade = async () => {
-        setLoading(true);
-        setShowConfirmModal(false); // Close the modal
-
-        if (selectedPlan.name === 'Premium' && currentPlan === 'King') {
-            // Handle downgrade from King to Premium
-            try {
-                await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/stripe/downgrade`, {
-                    newPlanId: selectedPlan.id,
-                    token: localStorage.getItem('userToken'),
-                    planName: selectedPlan.name
-                }, {
-                    headers: {
-                        Authorization: localStorage.getItem('userToken')
-                    }
-                });
-                navigate('/account');
-            } catch (error) {
-                console.error('Error during plan downgrade:', error);
-            } finally {
-                setLoading(false);
-            }
-        } else if (selectedPlan.name === 'King' && currentPlan === 'Premium') {
-            // Handle upgrade from Premium to King
-            try {
-                // Cancel the current Premium subscription
-                await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/stripe/cancel-subscription`, {}, {
-                    headers: {
-                        Authorization: localStorage.getItem('userToken')
-                    }
-                });
-
-                // Proceed with the upgrade to King plan
-                const stripe = await stripePromise;
-                const { data } = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/stripe/create-checkout-session`, {
-                    planId: selectedPlan.id,
-                    token: localStorage.getItem('userToken'),
-                    planName: selectedPlan.name
-                }, {
-                    headers: {
-                        Authorization: localStorage.getItem('userToken')
-                    }
-                });
-
-                const result = await stripe.redirectToCheckout({
-                    sessionId: data.sessionId,
-                });
-
-                if (result.error) {
-                    console.error('Stripe error:', result.error.message);
-                } else {
-                    navigate('/account');
-                }
-            } catch (error) {
-                console.error('Error upgrading to King plan:', error);
-            } finally {
-                setLoading(false);
-            }
-        }
-    };
-
-    const handleCancelModal = () => {
-        setShowConfirmModal(false);
     };
 
     return (
@@ -196,10 +77,7 @@ export default function Plans() {
                                 <p>Unlimited HD Downloads</p>
                             </li>
                         </ul>
-                        <button
-                            className={currentPlan.toLowerCase() === 'free' ? "button2 currentPlan" : "button2"}
-                            onClick={() => handleUpgradeOrDowngrade('price_1PpX8MFqQKSFArkNHlkLIemb', 'Free')}
-                        >
+                        <button className={currentPlan.toLowerCase() === 'free' ? "button2 currentPlan" : "button2"}>
                             {currentPlan.toLowerCase() === 'free' ? 'Current Plan' : 'Downgrade'}
                         </button>
                     </div>
@@ -219,19 +97,15 @@ export default function Plans() {
                             </li>
                             <li>
                                 <img src={pros} alt="Pros"/>
-                                <p>Up to 20 (8K) Download per month</p>
+                                <p>Up to 20 (8K) Downloads per month</p>
                             </li>
                             <li>
                                 <img src={pros} alt="Pros"/>
-                                <p>Includes all free plan features</p>
+                                <p>Includes all Free plan features</p>
                             </li>
                         </ul>
-                        <button
-                            className={currentPlan.toLowerCase() === 'premium' ? "button2 currentPlan" : "button2"}
-                            onClick={() => handleUpgradeOrDowngrade('price_1PpX8MFqQKSFArkNHlkLIemb', 'Premium')}
-                            disabled={loading || currentPlan.toLowerCase() === 'premium'}
-                        >
-                            {currentPlan.toLowerCase() === 'premium' ? 'Current Plan' : currentPlan.toLowerCase() === 'king' ? 'Downgrade' : loading ? 'Processing...' : 'Upgrade Now'}
+                        <button className={currentPlan.toLowerCase() === 'premium' ? "button2 currentPlan" : "button2"}>
+                            {currentPlan.toLowerCase() === 'premium' ? 'Current Plan' : 'Upgrade Now'}
                         </button>
                     </div>
                 </div>
@@ -261,40 +135,35 @@ export default function Plans() {
                                 <p>No Ads</p>
                             </li>
                         </ul>
-                        <button
-                            className={currentPlan.toLowerCase() === 'king' ? "button2 currentPlan" : "button2"}
-                            onClick={() => handleUpgradeOrDowngrade('price_1PraTvFqQKSFArkNw1mqHNPe', 'King')}
-                            disabled={loading || currentPlan.toLowerCase() === 'king'}
-                        >
-                            {currentPlan.toLowerCase() === 'king' ? 'Current Plan' : loading ? 'Processing...' : 'Upgrade Now'}
+                        <button className={currentPlan.toLowerCase() === 'king' ? "button2 currentPlan" : "button2"}>
+                            {currentPlan.toLowerCase() === 'king' ? 'Current Plan' : 'Upgrade Now'}
                         </button>
                     </div>
                 </div>
             </div>
-            <h1 className='mainH1'>Pixels</h1>
-            <div>
-                <form className={styles.creditsForm} onSubmit={handlePixelPurchase}>
-                    <label>
-                        <p>Current Pixels: {pixels}</p>
-                        <input
-                            type='number'
-                            placeholder='Enter Pixels'
-                            value={pixelQuantity}
-                            onChange={(e) => setPixelQuantity(parseInt(e.target.value))}
-                        />
-                        <button className='button2' disabled={loading || pixelQuantity <= 0}>Add Pixels</button>
-                    </label>
-                </form>
-            </div>
 
-            {showConfirmModal && (
-                <ConfirmModal
-                    title={`Confirm ${selectedPlan.name === 'Premium' ? 'Downgrade' : 'Upgrade'}`}
-                    message={`Are you sure you want to ${selectedPlan.name === 'Premium' ? 'downgrade' : 'upgrade'} your plan? The current plan will be canceled.`}
-                    onConfirm={handleConfirmUpgradeOrDowngrade}
-                    onCancel={handleCancelModal}
-                />
-            )}
+            {/* New Grid Section for Pixel Purchase */}
+            <h1 className='mainH1'>Purchase Pixels</h1>
+            <div className={styles.pixelGrid}>
+                <button className="button2" onClick={() => handlePixelPurchase(60)}>
+                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon}/> <span className={styles.pixelPrice}>60</span>
+                </button>
+                <button className="button2" onClick={() => handlePixelPurchase(120)}>
+                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon}/> <span className={styles.pixelPrice}>120</span>
+                </button>
+                <button className="button2" onClick={() => handlePixelPurchase(240)}>
+                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon}/> <span className={styles.pixelPrice}>240</span>
+                </button>
+                <button className="button2" onClick={() => handlePixelPurchase(500)}>
+                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon}/> <span className={styles.pixelPrice}>500</span>
+                </button>
+                <button className="button2" onClick={() => handlePixelPurchase(1200)}>
+                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon}/> <span className={styles.pixelPrice}>1200</span>
+                </button>
+                <button className="button2" onClick={() => handlePixelPurchase(3100)}>
+                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon}/> <span className={styles.pixelPrice}>3100</span>
+                </button>
+            </div>
         </div>
     );
 }

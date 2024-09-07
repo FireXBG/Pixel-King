@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate, useLocation } from "react-router-dom";
+import {useNavigate, useLocation, Link} from "react-router-dom";
 import ChangeInfoModal from './ChangeInfoModal/ChangeInfoModal';
 import ChangePasswordModal from './ChangePassModal/ChangePassModal';
 import styles from './MyAccount.module.css';
@@ -155,7 +155,7 @@ export default function MyAccount() {
                                 <h2 className={styles.secondHeading}>Pixels</h2>
                                 <div className={styles.creditsContainer}>
                                     <p className={styles.creditsCount}>{userInfo?.credits}</p>
-                                    <button className='button2 addButton'>+</button>
+                                    <Link to='/upgrade' className='button2 addButton'>+</Link>
                                 </div>
                             </div>
                         </div>
