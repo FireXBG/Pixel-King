@@ -163,6 +163,11 @@
     align-items: center;
 }
 
+.freeDownloadInfo {
+    margin-left: 0.5vw;
+    color: #9f9f9f;
+}
+
 @media screen and (max-width: 768px) {
     .wallpaperDetails {
         max-width: 90vw;

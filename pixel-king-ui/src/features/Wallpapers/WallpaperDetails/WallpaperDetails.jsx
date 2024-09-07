@@ -24,39 +24,39 @@ function WallpaperDetails({ wallpaper, onClose, userPlan, free4kDownloads, free8
             (resolution.key === '4K' && free4kDownloads > 0) ||
             (resolution.key === '8K' && free8kDownloads > 0);
 
-        if (!isFreeDownload && costInPixels > 0) {
-            // Proceed with the download and then fetch the updated pixel count
-            setDownloading(resolution.label);
+        // Proceed with the download, regardless of whether it's free or not
+        setDownloading(resolution.label);
 
-            try {
-                const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/download`, {
-                    wallpaperId: wallpaper._id,
-                    resolution: resolution.key,
-                }, {
-                    headers: {
-                        Authorization: localStorage.getItem('userToken'),
-                    },
-                    responseType: 'blob',
-                });
+        try {
+            // Always make the request to the server, the server will handle the cost or free logic
+            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/download`, {
+                wallpaperId: wallpaper._id,
+                resolution: resolution.key,
+            }, {
+                headers: {
+                    Authorization: localStorage.getItem('userToken'),
+                },
+                responseType: 'blob',
+            });
 
-                const url = window.URL.createObjectURL(new Blob([response.data]));
-                const link = document.createElement('a');
-                link.href = url;
-                link.setAttribute('download', `${wallpaper._id}_${resolution.label}.jpg`);
-                document.body.appendChild(link);
-                link.click();
-                link.parentNode.removeChild(link);
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `${wallpaper._id}_${resolution.label}.jpg`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
 
-                // Fetch updated pixels after download completes
-                await updatePixels();
-            } catch (error) {
-                console.error('Error downloading wallpaper:', error);
-                alert('Failed to download wallpaper.');
-            }
-
-            setDownloading(null);
+            // Fetch updated pixels after download completes (if applicable)
+            await updatePixels();
+        } catch (error) {
+            console.error('Error downloading wallpaper:', error);
+            alert('Failed to download wallpaper.');
         }
+
+        setDownloading(null);
     };
+
 
     const { _id, tags, thumbnailID } = wallpaper;
 

@@ -8,7 +8,7 @@ const downloadLogSchema = new Schema({
     },
     DownloadsAvailable4K: {
         type: Number,
-        default: 10
+        default: 2
     },
     DownloadsAvailable8K: {
         type: Number,
