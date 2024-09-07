@@ -3,9 +3,11 @@ import axios from 'axios';
 import styles from './Login.module.css';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from '../../../auth/AuthContext';
+import PixelsContext from '../../../context/pixelsContext'; // Import PixelsContext
 
 export default function Login() {
     const { userLogin } = useContext(AuthContext);
+    const { updatePixels } = useContext(PixelsContext); // Access updatePixels from PixelsContext
     const navigate = useNavigate();
     const [error, setError] = useState(null);
 
@@ -20,10 +22,10 @@ export default function Login() {
 
             const token = response.data;
 
-            console.log(response)
-
             if (token) {
-                userLogin(token);
+                userLogin(token); // Call userLogin to save the token and login the user
+                updatePixels();
+                navigate('/account');
             } else {
                 throw new Error('Token not found in response');
             }
