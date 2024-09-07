@@ -38,11 +38,11 @@ export default function Login() {
             <h2 className={styles.heading}>Login</h2>
             <label>
                 Username
-                <input name='username' />
+                <input name='username' placeholder='Enter your username'/>
             </label>
             <label>
                 Password
-                <input name='password' type='password' />
+                <input name='password' type='password' placeholder='Enter your password' />
             </label>
             <button className='button1' type='submit'>Login</button>
             <p className={styles.p}>Don't have an account? <button onClick={() => navigate('/register')} className={styles.link}>Register</button></p>

@@ -6,6 +6,19 @@
 
 .content {
     position: absolute;
-    right: 10vw;
-    top: 20vh;
+    right: 0;
+    top: 0;
+    width: 35vw;
+    height: 100vh;
+    background: white;
+    display: grid;
+    place-items: center;
+}
+
+.goBack {
+    position: absolute;
+    top: 2vw;
+    left: 2vw;
+    color: white;
+    text-decoration: underline;
 }
