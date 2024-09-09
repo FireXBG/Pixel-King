@@ -109,3 +109,9 @@ p {
 .admin__button:hover {
     background-color: #F72585;
 }
+
+@media screen and (max-width: 768px) {
+    .mainH1 {
+        font-size: 10vw;
+    }
+}

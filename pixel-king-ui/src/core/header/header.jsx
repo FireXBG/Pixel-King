@@ -34,7 +34,7 @@ export default function Header() {
                 <nav>
                     <ul className={styles.header__nav__list}>
                         <li><Link className={styles.header__link} to="/">Home</Link></li>
-                        <li><Link className={styles.header__link} to="/upgrade">Premium</Link></li>
+                        <li><Link className={styles.header__link} to="/upgrade">Shop</Link></li>
                         <li><Link className={styles.header__link} to="/contact">Contact</Link></li>
                         {isUserAuthenticated ? (
                             <>
@@ -68,6 +68,7 @@ export default function Header() {
                     <div className={styles.close} onClick={toggleMenu}>&times;</div>
                     <ul className={styles.mobile_menu_list}>
                         <li><Link className={styles.mobile_link} to="/" onClick={toggleMenu}>Home</Link></li>
+                        <li><Link className={styles.mobile_link} to="/upgrade" onClick={toggleMenu}>Shop</Link></li> {/* Added Upgrade link here */}
                         <li><Link className={`${styles.mobile_link} ${styles.mobile_special}`} to="/wallpapers" onClick={toggleMenu}>Wallpapers</Link></li>
                         <li><Link className={styles.mobile_link} to="/license" onClick={toggleMenu}>License</Link></li>
                         <li><Link className={styles.mobile_link} to="/contact" onClick={toggleMenu}>Contact</Link></li>
@@ -79,7 +80,7 @@ export default function Header() {
                         ) : (
                             <>
                                 <li><Link className={styles.mobile_link} to="/login" onClick={toggleMenu}>Login</Link></li>
-                                <li><Link className={styles.mobile_link} to="/register">Register</Link></li>
+                                <li><Link className={styles.mobile_link} to="/register" onClick={toggleMenu}>Register</Link></li>
                             </>
                         )}
                     </ul>

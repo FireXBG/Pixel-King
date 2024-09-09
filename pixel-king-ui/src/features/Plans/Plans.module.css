@@ -42,7 +42,7 @@
 
 .planName {
     font-size: 2vw;
-    font-weight: 700;
+    font-weight: 800;
 }
 
 .price {
@@ -136,6 +136,7 @@
 .pixelPriceSpan {
     font-size: 1vw;
     text-align: center;
+    color: #dddddd;
 }
 
 .button2 {
@@ -153,4 +154,92 @@
 
 .button2:hover {
     background-color: #6f36c9;
+}
+
+@media screen and (max-width: 768px) {
+    .shopWrapper {
+        margin-top: 10vw;
+    }
+
+    .plansContainer {
+        grid-template-columns: 1fr;
+        gap: 5vw;
+        margin-top: 10vw;
+    }
+
+    .plan {
+        width: 75vw;
+        height: 110vw;
+        border-radius: 5vw;
+        padding: 5vw;
+    }
+
+    .planName {
+        font-size: 6vw;
+        font-weight: 600;
+    }
+
+    .price {
+        margin-top: 2vw;
+        font-size: 3vw;
+        gap: 2vw;
+    }
+
+    .pros {
+        max-width: 65vw;
+        min-width: 65vw;
+        height: 100%;
+        max-height: 80vw;
+        border-radius: 5vw;
+        margin-top: 5vw;
+    }
+
+    .pros ul {
+        gap: 5vw;
+        padding: 5vw;
+    }
+
+    .pros ul li {
+        gap: 4vw;
+    }
+
+    .pros ul li p {
+        font-size: 4vw;
+        line-height: 5vw;
+    }
+
+    .pros ul li img {
+        width: 3.5vw;
+        height: 3.5vw;
+    }
+
+    .plan button {
+        margin-bottom: 5vw;
+        padding: 2vw 5vw;
+        font-size: 3.5vw;
+    }
+
+    .pixelGrid {
+        grid-template-columns: 1fr 1fr;
+        gap: 5vw;
+        margin-top: 10vw;
+    }
+
+    .pixelGrid button {
+        padding: 2vw 10vw;
+    }
+
+    .pixelPrice {
+        font-size: 6vw;
+    }
+
+    .pixelPriceSpan {
+        font-size: 2vw;
+    }
+
+    .pixelGrid button img {
+        width: 6.5vw;
+        height: 6.5vw;
+        margin-right: 2vw;
+    }
 }
