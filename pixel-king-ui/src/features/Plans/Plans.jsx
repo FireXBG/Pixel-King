@@ -146,22 +146,27 @@ export default function Plans() {
             <h1 className='mainH1'>Purchase Pixels</h1>
             <div className={styles.pixelGrid}>
                 <button className="button2" onClick={() => handlePixelPurchase(60)}>
-                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon}/> <span className={styles.pixelPrice}>60</span>
+                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon}/> <span className={styles.pixelPrice}>60<span className={styles.pixelPriceSpan}>€3.00</span></span>
                 </button>
                 <button className="button2" onClick={() => handlePixelPurchase(120)}>
-                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon}/> <span className={styles.pixelPrice}>120</span>
+                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon}/> <span
+                    className={styles.pixelPrice}>120<span className={styles.pixelPriceSpan}>€3.00</span></span>
                 </button>
                 <button className="button2" onClick={() => handlePixelPurchase(240)}>
-                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon}/> <span className={styles.pixelPrice}>240</span>
+                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon}/> <span
+                    className={styles.pixelPrice}>240<span className={styles.pixelPriceSpan}>€6.00</span></span>
                 </button>
                 <button className="button2" onClick={() => handlePixelPurchase(500)}>
-                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon}/> <span className={styles.pixelPrice}>500</span>
+                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon}/> <span
+                    className={styles.pixelPrice}>500<span className={styles.pixelPriceSpan}>€25.00</span></span>
                 </button>
                 <button className="button2" onClick={() => handlePixelPurchase(1200)}>
-                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon}/> <span className={styles.pixelPrice}>1200</span>
+                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon}/> <span
+                    className={styles.pixelPrice}>1200<span className={styles.pixelPriceSpan}>€60.00</span></span>
                 </button>
                 <button className="button2" onClick={() => handlePixelPurchase(3100)}>
-                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon}/> <span className={styles.pixelPrice}>3100</span>
+                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon}/> <span
+                    className={styles.pixelPrice}>3100<span className={styles.pixelPriceSpan}>€155.00</span></span>
                 </button>
             </div>
         </div>

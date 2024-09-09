@@ -105,22 +105,36 @@
     transform: translateX(-50%);
 }
 
-/* New CSS for pixel grid and icons */
 .pixelGrid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 2vw;
-    margin: 2vw 0;
+    margin: 2vw 0 10vw;
+}
+
+.pixelGrid button {
+    border-radius: 1vw;
 }
 
 .pixelIcon {
-    width: 1.5vw;
-    height: 1.5vw;
-    margin-right: 0.5vw;
+    width: 3vw;
+    height: 3vw;
+    margin-left: -1.5vw;
+    margin-right: -0.5vw;
 }
 
 .pixelPrice {
-    font-size: 1.5vw;
+    min-width: 10vw;
+    font-size: 2vw;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 0.5vw;
+}
+
+.pixelPriceSpan {
+    font-size: 1vw;
     text-align: center;
 }
 
