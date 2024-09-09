@@ -189,11 +189,11 @@ export default function MyAccount() {
                                         </li>
                                         <li>
                                             <img src={pros} alt="Pros" className={styles.icon} />
-                                            <p>Download up to 10 4K wallpapers per day</p>
+                                            <p>Download up to 2 (4K) wallpapers per day</p>
                                         </li>
                                         <li>
                                             <img src={pros} alt="Pros" className={styles.icon} />
-                                            <p>Add wallpapers to favorites</p>
+                                            <p>Unlimited HD downloads</p>
                                         </li>
                                     </ul>
                                     <ul className={styles.cons}>
@@ -203,7 +203,7 @@ export default function MyAccount() {
                                         </li>
                                         <li>
                                             <img src={cons} alt="Cons" className={styles.icon} />
-                                            <p>Limited daily pixels</p>
+                                            <p>No monthly pixels</p>
                                         </li>
                                         <li>
                                             <img src={cons} alt="Cons" className={styles.icon} />
