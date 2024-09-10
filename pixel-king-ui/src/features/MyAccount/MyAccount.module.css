@@ -261,6 +261,7 @@
     .itemsWrapper {
         flex-direction: column;
         align-items: center;
+        margin-top: 18vw;
     }
 
     .loader {
@@ -292,7 +293,7 @@
     }
 
     .secondHeading {
-        font-size: 6vw;
+        font-size: 8vw;
         text-align: center;
     }
 
@@ -345,13 +346,13 @@
     }
 
     .infoActionButtons {
-        margin-top: 5vw;
-        gap: 2vw;
+        margin-top: 10vw;
+        gap: 3vw;
     }
 
     .infoActionButtons button {
-        font-size: 2vw;
-        padding: 1.5vw 5vw;
+        font-size: 3vw;
+        padding: 2vw 10vw;
         min-width: 30vw;
     }
 
@@ -421,8 +422,14 @@
     .bigItem button {
         margin-top: 5vw;
         margin-left: 0;
-        font-size: 3vw;
-        padding: 1.5vw 5vw;
+        font-size: 3vw !important;
+        padding: 2vw 10vw;
+    }
+
+    .cardLogo {
+        width: 8.5vw;
+        height: 8.5vw;
+        margin-top: -2.8vw;
     }
 }
 
