@@ -20,3 +20,25 @@
     padding-bottom: 40vw;
     margin-top: 20vw;
 }
+
+@media screen and (max-width: 768px) {
+    .main {
+        gap: 4vw;
+        margin-top: 25vw;
+    }
+
+    .main div {
+        display: flex;
+        flex-direction: column;
+        gap: 2vw;
+    }
+
+    .p {
+        font-size: 1.2rem;
+        line-height: 10vw;
+    }
+
+    .failed {
+        font-size: 5vw;
+    }
+}
