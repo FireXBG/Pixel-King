@@ -46,15 +46,21 @@ p {
 }
 
 .button1 {
-    background-color: var(--linear-gradient);
-    color: white;
-    padding: 0.6vw 1vw;
-    border-radius: 0.5vw;
+    background-color: white;
+    padding: 0.7vw 4vw;
+    border-radius: 100vw;
     cursor: pointer;
-    font-size: 1rem;
-    font-weight: 600;
-    transition: all 0.3s;
-    border: 0.08vw solid #000000;
+    font-size: 1vw;
+    font-weight: 200;
+    color: black !important;
+    border: 0.1vw solid white;
+    transition: 0.3s ease-in-out;
+}
+
+.button1:hover {
+    background: transparent;
+    border: 0.1vw solid white;
+    color: white !important;
 }
 
 .button2 {
@@ -118,6 +124,11 @@ p {
     .button2 {
         border: 0.4vw solid transparent;
         padding: 2vw 5vw;
+    }
+
+    .button1 {
+        padding: 2vw 10vw;
+        font-size: 3vw;
     }
 
     .addButton {

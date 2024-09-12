@@ -3,13 +3,16 @@ import axios from 'axios';
 import styles from './Login.module.css';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from '../../../auth/AuthContext';
-import PixelsContext from '../../../context/pixelsContext'; // Import PixelsContext
+import PixelsContext from '../../../context/pixelsContext';
 
 export default function Login() {
     const { userLogin } = useContext(AuthContext);
-    const { updatePixels } = useContext(PixelsContext); // Access updatePixels from PixelsContext
+    const { updatePixels } = useContext(PixelsContext);
     const navigate = useNavigate();
     const [error, setError] = useState(null);
+
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -23,7 +26,7 @@ export default function Login() {
             const token = response.data;
 
             if (token) {
-                userLogin(token); // Call userLogin to save the token and login the user
+                userLogin(token);
                 updatePixels();
                 navigate('/account');
             } else {
@@ -37,17 +40,41 @@ export default function Login() {
 
     return (
         <form className={styles.form} onSubmit={handleSubmit}>
-            <h2 className={styles.heading}>Login</h2>
-            <label>
-                Username
-                <input name='username' placeholder='Enter your username'/>
-            </label>
-            <label>
-                Password
-                <input name='password' type='password' placeholder='Enter your password' />
-            </label>
-            <button className='button1' type='submit'>Login</button>
-            <p className={styles.p}>Don't have an account? <button onClick={() => navigate('/register')} className={styles.link}>Register</button></p>
+            <h2 className={styles.heading}>WELCOME BACK!</h2>
+
+            <div className={`${styles.inputWrapper}`}>
+                <input
+                    name='username'
+                    className={styles.input}
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                />
+                <label className={`${styles.label} ${username && styles.filled}`}>
+                    Username
+                </label>
+            </div>
+
+            <div className={`${styles.inputWrapper}`}>
+                <input
+                    name='password'
+                    type='password'
+                    className={styles.input}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                />
+                <label className={`${styles.label} ${password && styles.filled}`}>
+                    Password
+                </label>
+            </div>
+
+            <button className='button1' type='submit'>LOGIN</button>
+            <p className={styles.p}>DON'T HAVE AN ACCOUNT?
+                <button onClick={() => navigate('/register')} className={styles.link}>
+                    REGISTER
+                </button>
+            </p>
             {error && <p className={styles.error}>{error}</p>}
         </form>
     );

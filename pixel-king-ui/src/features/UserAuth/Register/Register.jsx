@@ -6,7 +6,10 @@ import { useNavigate } from 'react-router-dom';
 export default function Register() {
     const navigate = useNavigate();
     const [error, setError] = useState(null);
-    const [termsAccepted, setTermsAccepted] = useState(false); // State to handle checkbox
+    const [termsAccepted, setTermsAccepted] = useState(false);
+    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -32,30 +35,66 @@ export default function Register() {
 
     return (
         <form className={styles.form} onSubmit={handleSubmit}>
-            <h2 className={styles.heading}>Register</h2>
+            <h2 className={styles.heading}>NICE TO MEET YOU!</h2>
             {error && <p className={styles.error}>{error}</p>}
-            <label>
-                Username
-                <input name='username' placeholder='Create a username'/>
-            </label>
-            <label>
-                Email
-                <input name='email' type='email' placeholder='Enter your email'/>
-            </label>
-            <label>
-                Password
-                <input name='password' type='password' placeholder='Create a password' />
-            </label>
+
+            <div className={`${styles.inputWrapper}`}>
+                <input
+                    name='username'
+                    className={styles.input}
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                />
+                <label className={`${styles.label} ${username && styles.filled}`}>
+                    Username
+                </label>
+            </div>
+
+            <div className={`${styles.inputWrapper}`}>
+                <input
+                    name='email'
+                    type='email'
+                    className={styles.input}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                />
+                <label className={`${styles.label} ${email && styles.filled}`}>
+                    Email
+                </label>
+            </div>
+
+            <div className={`${styles.inputWrapper}`}>
+                <input
+                    name='password'
+                    type='password'
+                    className={styles.input}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                />
+                <label className={`${styles.label} ${password && styles.filled}`}>
+                    Password
+                </label>
+            </div>
+
             <label className={styles.checkboxLabel}>
                 <input
                     type="checkbox"
                     checked={termsAccepted}
                     onChange={(e) => setTermsAccepted(e.target.checked)}
                 />
-                I accept the <a href="/terms" className={styles.link}>terms and conditions</a>.
+                <p className={styles.linkP}>I accept the <a href="/privacy" className={styles.link}>Privacy Policy</a>.</p>
             </label>
+
             <button className='button1' type='submit'>Register</button>
-            <p>Already have an account? <button onClick={() => navigate('/login')} className={styles.link}>Login</button></p>
+
+            <p className={styles.p}>Already have an account?
+                <button onClick={() => navigate('/login')} className={styles.link}>
+                    Login
+                </button>
+            </p>
         </form>
     );
 }
