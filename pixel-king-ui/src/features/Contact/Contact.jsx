@@ -35,7 +35,7 @@ function Contact() {
             <h1 className={styles.mainH1}>CONTACT US</h1>
             <div className={styles.contacts__wrapper}>
                 <div className={styles.info__container}>
-                    <h2>Empowering Creativity, One Pixel at a Time</h2>
+                    <h2 className={styles.h2}>Empowering Creativity, One Pixel at a Time</h2>
                 </div>
                 {formStatus === 'success' ? (
                     <p className={styles.successMessage}>{message}</p>

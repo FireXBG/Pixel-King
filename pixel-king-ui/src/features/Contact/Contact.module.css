@@ -16,6 +16,12 @@
     min-height: 40vh;
 }
 
+.h2 {
+    font-size: 4vw;
+    line-height: 6vw;
+    font-weight: 800;
+}
+
 .info__container {
     display: flex;
     flex-direction: column;
