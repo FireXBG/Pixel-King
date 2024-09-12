@@ -28,15 +28,20 @@ export default function Register() {
                 navigate('/login');
             }
         } catch (error) {
-            setError('Registration failed. Please try again.');
-            console.error('Registration failed:', error);
+            // Check for error message in the response and display it
+            if (error.response && error.response.data && error.response.data.error) {
+                setError(error.response.data.error);
+            } else {
+                setError('Registration failed. Please try again.');
+            }
         }
     };
 
     return (
         <form className={styles.form} onSubmit={handleSubmit}>
             <h2 className={styles.heading}>NICE TO MEET YOU!</h2>
-            {error && <p className={styles.error}>{error}</p>}
+            {/* Ensure error is a string before rendering */}
+            <p className={styles.error}>{typeof error === 'string' ? error : '\u00A0'}</p>
 
             <div className={`${styles.inputWrapper}`}>
                 <input

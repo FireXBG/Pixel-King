@@ -5,13 +5,10 @@ dotenv.config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const adminServices = require('../services/adminServices');
 const paymentServices = require('../services/paymentServices');
-const mongoose = require('mongoose');
 const User = require('../models/usersSchema');
 
-// Load the Stripe webhook secret
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-// Route to create a checkout session
 router.post('/create-checkout-session', express.json(), async (req, res) => {
     const { planId, token, planName } = req.body;
     const CORS_ORIGIN = process.env.CORS_ORIGIN;
@@ -198,7 +195,6 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 
     res.json({ received: true });
 });
-
 
 router.get('/verify-session', async (req, res) => {
     const sessionId = req.query.session_id;
@@ -398,6 +394,5 @@ router.post('/create-customer-portal-session', express.json(), async (req, res) 
         res.status(500).json({ message: 'Internal Server Error' });
     }
 });
-
 
 module.exports = router;

@@ -68,6 +68,8 @@ export default function Login() {
                     Password
                 </label>
             </div>
+            <p className={styles.error}>{error || '\u00A0'}</p>
+
 
             <button className='button1' type='submit'>LOGIN</button>
             <p className={styles.p}>DON'T HAVE AN ACCOUNT?
@@ -75,7 +77,6 @@ export default function Login() {
                     REGISTER
                 </button>
             </p>
-            {error && <p className={styles.error}>{error}</p>}
         </form>
     );
 }
