@@ -58,3 +58,8 @@
     background-color: #f44336;
     color: white;
 }
+
+.checkboxLabel {
+    color: black;
+    margin: 0.5vw;
+}
