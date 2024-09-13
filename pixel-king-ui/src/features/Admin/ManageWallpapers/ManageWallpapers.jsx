@@ -29,7 +29,7 @@ function ManageWallpapers() {
         try {
             const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/checkUploadStatus`);
             if (response.data.isUploadInProgress) {
-                setUploadProgress('Calculating...'); // Initial state before receiving progress updates
+                setUploadProgress('Calculating...');
                 // Start listening for socket updates
                 socket.on('uploadProgress', (data) => {
                     console.log('Received upload progress:', data.percentage);

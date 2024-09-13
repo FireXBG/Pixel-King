@@ -37,6 +37,12 @@ export default function Plans() {
 
     // Handle plan changes (upgrade/downgrade)
     const handleConfirm = (plan) => {
+        // Redirect to login if the user is not authenticated
+        if (!isUserAuthenticated) {
+            navigate('/login');
+            return;
+        }
+
         // Show confirmation for downgrades and upgrades
         if ((currentPlan === 'King' && plan === 'Premium') || (currentPlan === 'Premium' && plan === 'King')) {
             setPendingPlan(plan);
@@ -76,12 +82,16 @@ export default function Plans() {
                 setLoading(false);
             }
         } else if (plan === 'King') {
-            // Cancel the current subscription and then upgrade to King
+            // Upgrade to King (from free or Premium)
             setLoading(true);
             try {
-                await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/stripe/cancel-subscription`, {}, {
-                    headers: { Authorization: localStorage.getItem('userToken') }
-                });
+                const cancelCurrentSubscription = currentPlan !== 'free';
+                if (cancelCurrentSubscription) {
+                    await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/stripe/cancel-subscription`, {}, {
+                        headers: { Authorization: localStorage.getItem('userToken') }
+                    });
+                }
+
                 const { data } = await axios.post(
                     `${process.env.REACT_APP_BACKEND_URL}/api/stripe/create-checkout-session`,
                     {
@@ -218,7 +228,7 @@ export default function Plans() {
                         </ul>
                         <button
                             className={currentPlan === 'King' ? 'button2 currentPlan' : 'button2'}
-                            onClick={() => currentPlan === 'Premium' && handleConfirm('King')}
+                            onClick={() => handleConfirm('King')}
                         >
                             {currentPlan === 'King' ? 'Current Plan' : 'Upgrade Now'}
                         </button>
@@ -228,17 +238,29 @@ export default function Plans() {
 
             <h1 className="mainH1">Purchase Pixels</h1>
             <div className={styles.pixelGrid}>
-                <button className="button2" onClick={() => handlePixelPurchase(60)}>
-                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon} />{' '}
-                    <span className={styles.pixelPrice}>60<span className={styles.pixelPriceSpan}>€3.00</span></span>
+                <button className="button2" onClick={() => handlePixelPurchase(100)}>
+                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon}/>{' '}
+                    <span className={styles.pixelPrice}>100<span className={styles.pixelPriceSpan}>€5.00</span></span>
                 </button>
-                <button className="button2" onClick={() => handlePixelPurchase(120)}>
-                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon} />{' '}
-                    <span className={styles.pixelPrice}>120<span className={styles.pixelPriceSpan}>€6.00</span></span>
+                <button className="button2" onClick={() => handlePixelPurchase(250)}>
+                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon}/>{' '}
+                    <span className={styles.pixelPrice}>250<span className={styles.pixelPriceSpan}>€12.50</span></span>
                 </button>
-                <button className="button2" onClick={() => handlePixelPurchase(240)}>
-                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon} />{' '}
-                    <span className={styles.pixelPrice}>240<span className={styles.pixelPriceSpan}>€12.00</span></span>
+                <button className="button2" onClick={() => handlePixelPurchase(500)}>
+                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon}/>{' '}
+                    <span className={styles.pixelPrice}>500<span className={styles.pixelPriceSpan}>€25.00</span></span>
+                </button>
+                <button className="button2" onClick={() => handlePixelPurchase(1000)}>
+                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon}/>{' '}
+                    <span className={styles.pixelPrice}>1000<span className={styles.pixelPriceSpan}>€50.00</span></span>
+                </button>
+                <button className="button2" onClick={() => handlePixelPurchase(2500)}>
+                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon}/>{' '}
+                    <span className={styles.pixelPrice}>2500<span className={styles.pixelPriceSpan}>€125.00</span></span>
+                </button>
+                <button className="button2" onClick={() => handlePixelPurchase(5000)}>
+                    <img src={pixelImg} alt="pixel icon" className={styles.pixelIcon}/>{' '}
+                    <span className={styles.pixelPrice}>5000<span className={styles.pixelPriceSpan}>€250.00</span></span>
                 </button>
             </div>
 
