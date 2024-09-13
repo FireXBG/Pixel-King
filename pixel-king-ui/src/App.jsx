@@ -1,5 +1,3 @@
-// App.js
-
 import './App.css';
 import Header from './core/header/header';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
@@ -20,7 +18,7 @@ import UserLayout from './features/UserAuth/layout';
 import Account from './features/MyAccount/MyAccount';
 import Plans from './features/Plans/Plans';
 import Success from './features/Plans/Success/Success';
-import { PixelsProvider } from './context/pixelsContext'; // Import PixelsProvider
+import { PixelsProvider } from './context/pixelsContext';
 
 function AppLayout() {
     const location = useLocation();
@@ -29,8 +27,10 @@ function AppLayout() {
 
     return (
         <PixelsProvider> {/* Wrap the layout with PixelsProvider */}
+            {/* Show Header and Footer only for non-admin and non-auth routes */}
             {!isAdminRoute && !isAuthRoute && <Header />}
             <Routes>
+                {/* Public routes */}
                 <Route path="/" element={<Home />} />
                 <Route path="/wallpapers" element={<Wallpapers />} />
                 <Route path="/license" element={<License />} />
@@ -40,17 +40,22 @@ function AppLayout() {
                 <Route path="/login" element={<UserLayout view="login" />} />
                 <Route path="/register" element={<UserLayout view="register" />} />
                 <Route path="/success" element={<Success />} />
+
+                {/* Protected route for user account */}
                 <Route path="/account" element={
                     <ProtectedRoute>
                         <Account />
                     </ProtectedRoute>
                 } />
+
+                {/* Admin routes */}
                 <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin/*" element={
-                    <ProtectedRoute roles={['admin']}>
+                    <ProtectedRoute roles={['admin', 'editor']}>
                         <AdminLayout />
                     </ProtectedRoute>
                 }>
+                    {/* Admin sub-routes */}
                     <Route path="wallpapers" element={<ManageWallpapers />} />
                     <Route path="emails" element={
                         <ProtectedRoute roles={['admin']}>
@@ -64,6 +69,8 @@ function AppLayout() {
                     } />
                 </Route>
             </Routes>
+
+            {/* Show Footer only for non-admin and non-auth routes */}
             {!isAdminRoute && !isAuthRoute && <Footer />}
         </PixelsProvider>
     );

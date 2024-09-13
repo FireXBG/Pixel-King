@@ -28,9 +28,15 @@ const upload = multer({ storage: storage });
 const receivedChunks = {};
 let isUploadInProgress = false;
 
+const getClientIp = (req) => {
+    return req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+};
+
+// Rate limiter middleware
 const limiter = rateLimit({
     windowMs: 1 * 60 * 1000, // 1 minute
     max: 5, // limit each IP to 5 requests per windowMs
+    keyGenerator: (req) => getClientIp(req), // Use client IP for rate limiting
     handler: (req, res) => {
         res.status(429).json({
             error: 'Too many requests',
@@ -38,6 +44,7 @@ const limiter = rateLimit({
         });
     },
 });
+
 
 const assembleFile = async (fileId, totalChunks) => {
     const chunkFiles = fs.readdirSync(tempDir).filter(file => file.startsWith(fileId)).sort((a, b) => {
@@ -342,17 +349,19 @@ router.put('/users/:username/role', isAuthorized, async (req, res) => {
 });
 
 router.put('/users/:username', async (req, res) => {
-    const { username } = req.params;
-    const { password, role } = req.body;
+    const { oldUsername, newUsername, password, role } = req.body;
+
+    console.log('Received data:', { oldUsername, newUsername, password, role }); // Log everything
 
     try {
-        await adminServices.updateUser(username, password, role);
-        res.status(200).json({ message: 'User updated successfully' });
+        const updatedUser = await adminServices.updateUser(oldUsername, newUsername, password, role);
+        res.status(200).json({ message: 'User updated successfully', updatedUser });
     } catch (error) {
         console.error('Error updating user:', error);
         res.status(500).json({ error: 'An error occurred while updating the user' });
     }
 });
+
 
 router.delete('/users/:username', async (req, res) => {
     try {

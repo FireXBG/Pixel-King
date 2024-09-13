@@ -3,20 +3,29 @@ import { Navigate } from 'react-router-dom';
 import AuthContext from './AuthContext';
 
 const ProtectedRoute = ({ children, roles }) => {
-    const { isAuthenticated, isUserAuthenticated, userRole, loading } = useContext(AuthContext);
+    const { isAuthenticated, userRole, loading } = useContext(AuthContext);
+
+    // Logging the current status for debugging
+    console.log('ProtectedRoute Debug:', {
+        isAuthenticated,
+        userRole,
+        roles,
+        loading
+    });
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <div>Loading...</div>; // Keep this until the authentication check is done
     }
 
-    if (!isUserAuthenticated && !isAuthenticated) {
-        return roles && roles.includes('admin') ? <Navigate to="/admin/login" /> : <Navigate to="/login" />;
+    // Redirect to admin login if not authenticated and accessing admin roles
+    if (!isAuthenticated && roles && roles.includes('admin')) {
+        return <Navigate to="/admin/login" />;
     }
 
-    if (roles && roles.length > 0) {
-        if (roles.includes('admin') && userRole !== 'admin') {
-            return <Navigate to="/" />;
-        }
+    // Redirect if user role doesn't match the required roles
+    if (roles && roles.length > 0 && !roles.includes(userRole)) {
+        console.log('Redirecting to / because of role mismatch');
+        return <Navigate to="/" />;
     }
 
     return children;

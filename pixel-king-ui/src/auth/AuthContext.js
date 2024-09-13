@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [userRole, setUserRole] = useState(null);
     const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
-    const [loading, setLoading] = useState(true); // New loading state
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -48,7 +48,13 @@ export const AuthProvider = ({ children }) => {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         setIsAuthenticated(true);
         setUserRole(role);
-        navigate('/admin/wallpapers');
+
+        // Navigate editors and admins to the wallpapers management page
+        if (role === 'admin' || role === 'editor') {
+            navigate('/admin/wallpapers');
+        } else {
+            navigate('/');
+        }
     };
 
     const userLogin = (token) => {

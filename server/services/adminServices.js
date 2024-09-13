@@ -303,21 +303,58 @@ exports.authorizeUser = async (username, password, role) => {
     }
 };
 
-exports.updateUser = async (username, password, role) => {
+exports.updateUser = async (oldUsername, newUsername, password, role) => {
     try {
-        const updateData = { role }; // Only update role initially
+        // Find the existing user by old username
+        const user = await AdminUser.findOne({ username: oldUsername });
 
-        if (password) {
-            const hashedPassword = await bcrypt.hash(password, 12);
-            updateData.password = hashedPassword; // Only update password if provided
+        if (!user) {
+            throw new Error('User not found');
         }
 
-        await AdminUser.findOneAndUpdate({ username }, updateData, { new: true });
+        const updateData = {};
+
+        // Only update the username if it is different
+        if (newUsername && newUsername !== oldUsername) {
+            updateData.username = newUsername;
+        }
+
+        // Only update the password if it is provided
+        if (password) {
+            const hashedPassword = await bcrypt.hash(password, 12);
+            updateData.password = hashedPassword;
+        }
+
+        // Only update the role if it's different
+        if (role && role !== user.role) {
+            updateData.role = role;
+        }
+
+        // Proceed with the update only if there are changes
+        if (Object.keys(updateData).length > 0) {
+            const updatedUser = await AdminUser.findOneAndUpdate(
+                { username: oldUsername },
+                updateData,
+                { new: true }
+            );
+
+            if (!updatedUser) {
+                throw new Error('User not found');
+            }
+
+            return updatedUser;
+        } else {
+            // No changes detected, return the original user
+            return user;
+        }
+
     } catch (error) {
         console.error('Error updating user:', error);
         throw new Error('An error occurred while updating the user');
     }
 };
+
+
 
 exports.updateUserRole = async (username, role) => {
     try {
