@@ -14,10 +14,11 @@ function AdminLayout() {
         <>
             <header className={styles.header}>
                 <nav>
-                    <Link to='/admin/wallpapers' className={styles.navButton}>Manage Wallpapers</Link>
-                    <Link to='/admin/emails' className={styles.navButton}>Manage Emails</Link>
-                    <Link to='/admin/adminUsers' className={styles.navButton}>Manage Admin Users</Link>
-                    <Link to='/admin/users' className={styles.navButton}>Manage Users</Link>
+                    <Link to='/admin/wallpapers' className={styles.navButton}>Wallpapers</Link>
+                    <Link to='/admin/emails' className={styles.navButton}>Admin Emails</Link>
+                    <Link to='/admin/adminUsers' className={styles.navButton}>Admin Users</Link>
+                    <Link to='/admin/users' className={styles.navButton}>App Users</Link>
+                    <Link to='/admin/promoCodes' className={styles.navButton}>Promo Codes</Link>
                     <button onClick={handleExit} className={`${styles.navButton} ${styles.exitButton}`}>
                         Exit
                     </button>

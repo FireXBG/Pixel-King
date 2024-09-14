@@ -20,6 +20,7 @@ import Plans from './features/Plans/Plans';
 import Success from './features/Plans/Success/Success';
 import { PixelsProvider } from './context/pixelsContext';
 import ManageAppUsers from "./features/Admin/ManageAppUsers/ManageAppUsers";
+import ManagePromoCodes from "./features/Admin/ManagePromoCodes/ManagePromoCodes";
 
 function AppLayout() {
     const location = useLocation();
@@ -71,6 +72,11 @@ function AppLayout() {
                     <Route path="users" element={
                         <ProtectedRoute roles={['admin']}>
                             <ManageAppUsers />
+                        </ProtectedRoute>
+                    } />
+                    <Route path='promoCodes' element={
+                        <ProtectedRoute roles={['admin']}>
+                            <ManagePromoCodes />
                         </ProtectedRoute>
                     } />
                 </Route>

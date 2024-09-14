@@ -211,4 +211,56 @@ router.put('/edit/:id', async (req, res) => {
         res.status(500).json({ error: 'Failed to update user.' });
     }
 });
+
+
+// Generate a promo code
+router.post('/promo-codes/generate', async (req, res) => {
+    const { pixels, expirationDate } = req.body;
+
+    try {
+        const promoCode = await userServices.generatePromoCode(pixels, expirationDate);
+        res.status(201).json({ message: 'Promo code generated', promoCode });
+    } catch (error) {
+        console.error('Error generating promo code:', error);
+        res.status(500).json({ error: 'Failed to generate promo code' });
+    }
+});
+
+// Get all promo codes
+router.get('/promo-codes', async (req, res) => {
+    try {
+        const promoCodes = await userServices.getAllPromoCodes();
+        res.status(200).json({ promoCodes });
+    } catch (error) {
+        console.error('Error fetching promo codes:', error);
+        res.status(500).json({ error: 'Failed to fetch promo codes' });
+    }
+});
+
+// Delete a promo code
+router.delete('/promo-codes/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        await userServices.deletePromoCode(id);
+        res.status(200).json({ message: 'Promo code deleted' });
+    } catch (error) {
+        console.error('Error deleting promo code:', error);
+        res.status(500).json({ error: 'Failed to delete promo code' });
+    }
+});
+
+// Send promo code via email
+router.post('/promo-codes/send-email', async (req, res) => {
+    const { code, email } = req.body;
+
+    try {
+        await userServices.sendPromoCodeEmail(code, email);
+        res.status(200).json({ message: 'Promo code sent via email' });
+    } catch (error) {
+        console.error('Error sending promo code email:', error);
+        res.status(500).json({ error: 'Failed to send promo code via email' });
+    }
+});
+
 module.exports = router;

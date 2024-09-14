@@ -19,7 +19,7 @@ function ManageUsers() {
     const fetchUsers = async () => {
         try {
             setLoading(true);
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/apixq/users`);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/users`);
             setUsers(response.data.users);
             setLoading(false);
         } catch (error) {

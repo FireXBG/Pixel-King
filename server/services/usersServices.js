@@ -3,6 +3,7 @@ const DownloadLog = require('../models/downloadLogSchema');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const mongoose = require("mongoose");
+const PromoCode = require('../models/promoCodeSchema');
 
 exports.login = async (data) => {
     try {
@@ -259,4 +260,49 @@ exports.updateUserById = async (id, updatedFields) => {
     } catch (error) {
         throw new Error('Error updating user:', error);
     }
+};
+
+// Generate a promo code
+exports.generatePromoCode = async (pixels, expirationDate) => {
+    const code = Math.random().toString(36).substr(2, 8).toUpperCase();
+
+    const promoCode = new PromoCode({
+        code,
+        pixels,
+        expirationDate
+    });
+
+    await promoCode.save();
+    return promoCode;
+};
+
+// Get all active promo codes
+exports.getAllPromoCodes = async () => {
+    return await PromoCode.find({ isActive: true });
+};
+
+// Delete a promo code
+exports.deletePromoCode = async (id) => {
+    return await PromoCode.findByIdAndDelete(id);
+};
+
+// Send promo code via email
+exports.sendPromoCodeEmail = async (code, email) => {
+    // Configure nodemailer
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL,
+            pass: process.env.PASSWORD
+        }
+    });
+
+    const mailOptions = {
+        from: process.env.EMAIL,
+        to: email,
+        subject: 'Your Promo Code',
+        text: `Here is your promo code: ${code}. Use it to claim pixels!`
+    };
+
+    return transporter.sendMail(mailOptions);
 };
