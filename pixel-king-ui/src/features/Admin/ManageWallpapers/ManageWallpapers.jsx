@@ -19,9 +19,9 @@ function ManageWallpapers() {
     const [totalPages, setTotalPages] = useState(1);
     const [editingWallpaper, setEditingWallpaper] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
-    const [adminMessage, setAdminMessage] = useState(null); // Admin message state
-    const [storageQuota, setStorageQuota] = useState(null); // Storage quota state
-    const [uploadProgress, setUploadProgress] = useState(null); // Upload progress state
+    const [adminMessage, setAdminMessage] = useState(null);
+    const [storageQuota, setStorageQuota] = useState(null);
+    const [uploadProgress, setUploadProgress] = useState(null);
     const imagesPerPage = 20;
     const cancelTokenSource = useRef(null);
 
@@ -30,9 +30,7 @@ function ManageWallpapers() {
             const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/checkUploadStatus`);
             if (response.data.isUploadInProgress) {
                 setUploadProgress('Calculating...');
-                // Start listening for socket updates
                 socket.on('uploadProgress', (data) => {
-                    console.log('Received upload progress:', data.percentage);
                     setUploadProgress(data.percentage);
                 });
             } else {
@@ -44,31 +42,43 @@ function ManageWallpapers() {
     };
 
     useEffect(() => {
-        checkUploadStatus(); // Check upload status when component mounts
+        checkUploadStatus();
         fetchWallpapers();
-        fetchStorageQuota(); // Fetch storage quota on component mount
-
+        fetchStorageQuota();
         return () => {
             socket.off('uploadProgress');
         };
     }, [filter, currentPage]);
 
-    const fetchWallpapers = async () => {
+    const fetchWallpapers = async (reset = false) => {
         setLoading(true);
         try {
             let url = `${process.env.REACT_APP_BACKEND_URL}/api/wallpapers?view=${filter}&page=${currentPage}&limit=${imagesPerPage}`;
-            if (filter === 'desktop' || filter === 'mobile') {
-                url += `&preview=true`; // Add preview parameter conditionally
+
+            if (searchQuery && !reset) {
+                // If there's a search query, fetch only that wallpaper by Mongo ID
+                url = `${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/mongo/${searchQuery}`;
+                const response = await axios.get(url, { responseType: 'blob' });
+                const fileReader = new FileReader();
+
+                fileReader.readAsDataURL(response.data);
+                fileReader.onloadend = function () {
+                    const imageDataUrl = fileReader.result;
+                    setWallpapers([{ imageDataUrl }]);
+                    setTotalPages(1); // Only one result
+                    setLoading(false);
+                };
+            } else {
+                // Fetch all wallpapers with pagination
+                const response = await axios.get(url);
+                setWallpapers(response.data.wallpapers || []);
+                setTotalPages(Math.ceil(response.data.totalCount / imagesPerPage));
+                setLoading(false);
             }
-            const response = await axios.get(url);
-            const wallpapers = response.data.wallpapers || [];
-            setWallpapers(wallpapers);
-            setTotalPages(Math.ceil(response.data.totalCount / imagesPerPage));
-            setLoading(false); // Stop loading when all images are loaded
         } catch (error) {
             console.error('Error fetching wallpapers:', error);
             setError('Failed to fetch wallpapers. Please try again later.');
-            setLoading(false); // Stop loading if there's an error
+            setLoading(false);
         }
     };
 
@@ -80,10 +90,10 @@ function ManageWallpapers() {
             const formatToGB = (bytes) => (bytes / (1024 ** 3)).toFixed(2);
 
             setStorageQuota({
-                limit: formatToGB(Number(storageQuota.limit)), // Convert bytes to GB
-                usage: formatToGB(Number(storageQuota.usage)), // Convert bytes to GB
-                usageInDrive: formatToGB(Number(storageQuota.usageInDrive)), // Convert bytes to GB
-                usageInDriveTrash: formatToGB(Number(storageQuota.usageInDriveTrash)) // Convert bytes to GB
+                limit: formatToGB(Number(storageQuota.limit)),
+                usage: formatToGB(Number(storageQuota.usage)),
+                usageInDrive: formatToGB(Number(storageQuota.usageInDrive)),
+                usageInDriveTrash: formatToGB(Number(storageQuota.usageInDriveTrash))
             });
         } catch (error) {
             console.error('Error fetching storage quota:', error);
@@ -92,13 +102,10 @@ function ManageWallpapers() {
     };
 
     const handleUploadSuccess = () => {
-        console.log("Upload success handler called");
         setUploadWallpapersMenu(false);
-        setUploadProgress('Calculating...'); // Set initial state before receiving progress updates
+        setUploadProgress('Calculating...');
         fetchWallpapers();
-        fetchStorageQuota(); // Fetch updated storage quota after upload
-
-        // Check upload status after 2 seconds
+        fetchStorageQuota();
         setTimeout(checkUploadStatus, 2000);
     };
 
@@ -107,7 +114,7 @@ function ManageWallpapers() {
         try {
             await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaperId}`);
             fetchWallpapers();
-            fetchStorageQuota(); // Fetch updated storage quota after deletion
+            fetchStorageQuota();
         } catch (error) {
             console.error('Error deleting wallpaper:', error);
             alert('Failed to delete wallpaper');
@@ -164,20 +171,14 @@ function ManageWallpapers() {
             fetchWallpapers();
             return;
         }
-
         setLoading(true);
-        try {
-            const url = `${process.env.REACT_APP_BACKEND_URL}/api/wallpapers?view=${filter}&id=${searchQuery}`;
-            const response = await axios.get(url);
-            const wallpapers = response.data.wallpapers || [];
-            setWallpapers(wallpapers);
-            setTotalPages(1);
-            setLoading(false); // Stop loading when all images are loaded
-        } catch (error) {
-            console.error('Error searching wallpaper by ID:', error);
-            setError('Failed to search wallpaper. Please try again later.');
-            setLoading(false); // Stop loading if there's an error
-        }
+        fetchWallpapers();
+    };
+
+    const handleReset = () => {
+        setSearchQuery('');
+        setCurrentPage(1);
+        fetchWallpapers(true); // Fetch wallpapers with reset
     };
 
     const handleMessageClose = () => {
@@ -188,9 +189,8 @@ function ManageWallpapers() {
         if (uploadProgress === 100) {
             setTimeout(() => {
                 setUploadProgress(null);
-            }, 2000); // Hide the progress bar after 2 seconds when it reaches 100%
+            }, 2000);
         }
-        console.log('Upload progress updated:', uploadProgress);
     }, [uploadProgress]);
 
     return (
@@ -225,11 +225,12 @@ function ManageWallpapers() {
                 <input
                     type="text"
                     className={styles.search}
-                    placeholder="Search by ID"
+                    placeholder="Search by MongoDB ID"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 <button className={styles.submit__button} onClick={handleSearch}>Search</button>
+                <button className={styles.submit__button} onClick={handleReset}>Reset</button>
             </div>
 
             {storageQuota && (
@@ -248,11 +249,11 @@ function ManageWallpapers() {
                 </div>
             ) : (
                 <div className={`${styles.wallpapersGrid} ${styles.fadeIn}`}>
-                    {wallpapers.map((wallpaper) => (
-                        <div key={wallpaper._id} className={styles.wallpaperItem}>
+                    {wallpapers.map((wallpaper, index) => (
+                        <div key={index} className={styles.wallpaperItem}>
                             <img
-                                src={`${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaper.thumbnailID}?preview=true`}
-                                alt={wallpaper.name}
+                                src={wallpaper.imageDataUrl ? wallpaper.imageDataUrl : `${process.env.REACT_APP_BACKEND_URL}/api/wallpapers/${wallpaper.thumbnailID}?preview=true`}
+                                alt={wallpaper.name || 'Wallpaper'}
                                 className={styles.wallpaperImage}
                             />
                             <div className={styles.wallpaperActions}>
@@ -270,14 +271,14 @@ function ManageWallpapers() {
                                 {wallpaper.isPaid ? 'Paid' : 'Free'}
                             </div>
                             <div className={styles.tagsPreview}>
-                                {wallpaper.tags.join(', ')}
+                                {wallpaper.tags ? wallpaper.tags.join(', ') : 'No tags'}
                             </div>
                         </div>
                     ))}
                 </div>
             )}
 
-            {!loading && wallpapers.length > 0 && (
+            {!loading && wallpapers.length > 0 && totalPages > 1 && (
                 <div className={styles.pagination}>
                     <button
                         disabled={currentPage === 1}

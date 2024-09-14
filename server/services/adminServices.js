@@ -208,24 +208,69 @@ exports.updateWallpaperTagsAndIsPaid = async (wallpaperId, newTags, isPaid) => {
     }
 };
 
-exports.getWallpaperById = async (id, isPreview = false, userId) => {
+exports.getWallpaperById = async (id, isPreview = false) => {
     try {
+        if (!id) {
+            console.error('Error: No ID provided for wallpaper.');
+            throw new Error('Wallpaper ID is required.');
+        }
+
+        console.log(`Fetching wallpaper with ID: ${id}`);
+
         const fileContent = await getFile(id);
         if (!fileContent) {
-            throw new Error('File not found');
+            console.error(`No file content returned for ID: ${id}`);
+            throw new Error('File not found or failed to retrieve from storage.');
         }
 
         if (isPreview) {
-            const reducedQualityBuffer = await reduceImageQuality(fileContent, 60); // Example quality reduction to 60%
+            console.log(`Generating reduced quality preview for wallpaper ID: ${id}`);
+            const reducedQualityBuffer = await reduceImageQuality(fileContent, 60); // Reduce quality to 60%
             return reducedQualityBuffer;
         }
 
         return fileContent;
     } catch (error) {
-        console.error('Error fetching wallpaper by ID:', error);
-        throw new Error('An error occurred while fetching the wallpaper');
+        console.error(`Error fetching wallpaper by ID: ${id}`, error.message || error);
+        throw new Error('An error occurred while fetching the wallpaper.');
     }
 };
+
+exports.getWallpaperByMongoId = async (mongoId, isPreview = false) => {
+    try {
+        // First, find the wallpaper in MongoDB using the provided mongoId
+        const wallpaper = await AdminWallpapers.findById(mongoId);
+
+        if (!wallpaper) {
+            throw new Error('Wallpaper not found in database');
+        }
+
+        const driveID = wallpaper.driveID_8K; // Assuming 8K image is required, adjust this as needed
+
+        console.log(`Fetching wallpaper from storage with drive ID: ${driveID}`);
+
+        // Fetch the file from storage (Google Drive in this case)
+        const fileContent = await getFile(driveID);
+
+        if (!fileContent) {
+            throw new Error('File not found in external storage');
+        }
+
+        if (isPreview) {
+            // If preview, return a lower quality version
+            const reducedQualityBuffer = await reduceImageQuality(fileContent, 60);
+            return reducedQualityBuffer;
+        }
+
+        console.log(`Returning wallpaper with ID: ${driveID}`);
+
+        return fileContent;
+    } catch (error) {
+        console.error(`Error fetching wallpaper by MongoDB ID: ${mongoId}`, error.message);
+        throw new Error('An error occurred while fetching the wallpaper.');
+    }
+};
+
 
 exports.getWallpaperDataById = async (id) => {
     try {
@@ -353,8 +398,6 @@ exports.updateUser = async (oldUsername, newUsername, password, role) => {
         throw new Error('An error occurred while updating the user');
     }
 };
-
-
 
 exports.updateUserRole = async (username, role) => {
     try {
