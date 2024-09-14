@@ -311,7 +311,7 @@ exports.sendPromoCodeEmail = async (code, email) => {
 };
 
 exports.sendPromoCodeEmail = async (code, email) => {
-    // Check if email is being passed correctly
+    // Log to verify email is being passed correctly
     console.log("Sending promo code to email:", email);
 
     // Configure nodemailer
@@ -323,17 +323,46 @@ exports.sendPromoCodeEmail = async (code, email) => {
         }
     });
 
-    console.log(email)
+    // Define the HTML template with the promo code dynamically included
+    const htmlTemplate = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta content="width=device-width, initial-scale=1" name="viewport">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Your Promo Code</title>
+        <style type="text/css">
+            body { font-family: Arial, sans-serif; background-color: #090A1F; color: #FFFFFF; }
+            .container { width: 100%; max-width: 600px; margin: 0 auto; padding: 20px; text-align: center; }
+            h1 { font-size: 36px; color: #8A4CF0; }
+            h2 { font-size: 26px; }
+            p { font-size: 14px; color: #FFFFFF; }
+            .promo-code { font-size: 46px; color: #8A4CF0; font-weight: bold; }
+            .btn { display: inline-block; padding: 10px 30px; background-color: #8A4CF0; color: #FFFFFF; text-decoration: none; border-radius: 6px; margin-top: 20px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h2>You Received a Gift!</h2>
+            <h1>${code}</h1>
+            <p>Use this promo code to claim your pixels. Celebrate with us and enjoy the benefits!</p>
+            <a href="https://www.pixel-king.com/upgrade" class="btn">Claim Your Pixels</a>
+        </div>
+    </body>
+    </html>
+    `;
 
+    // Mail options including HTML template
     const mailOptions = {
         from: process.env.MAILING_SMTP_ADDRESS,
-        to: email, // Ensure email is passed here correctly
-        subject: 'Your Promo Code',
-        text: `Here is your promo code: ${code}. Use it to claim pixels!`
+        to: email,
+        subject: 'Your Promo Code - Claim Your Pixels',
+        html: htmlTemplate,  // Using the dynamic HTML template
     };
 
     try {
-        // Log mailOptions to see if all fields are correct
+        // Log the mail options to ensure correctness
         console.log("Mail options:", mailOptions);
 
         await transporter.sendMail(mailOptions);
