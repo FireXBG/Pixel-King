@@ -46,6 +46,10 @@
     background-color: #4A2CAF;
 }
 
+.generateButton {
+    margin-top: 2vw;
+}
+
 .successMessage {
     margin-top: 1.6vw;
     color: #4CAF50;
@@ -100,4 +104,8 @@
     top: 1vw;
     right: 1vw;
     cursor: pointer;
+}
+
+.section h2 {
+    margin-bottom: 2vw;
 }

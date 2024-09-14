@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import styles from './ManagePromoCodes.module.css';
-import SendEmailModal from './sendByEmail/sendByEmail'; // Assuming this is your modal component
+import SendEmailModal from './sendByEmail/sendByEmail';
 
 export default function ManagePromoCodes() {
     const [email, setEmail] = useState('');
@@ -63,7 +63,6 @@ export default function ManagePromoCodes() {
         }
     };
 
-    // Handle sending promo code by email
     const handleSendPromoCodeByEmail = async (email) => {
         try {
             await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/users/promo-codes/send-email`, {
@@ -82,7 +81,6 @@ export default function ManagePromoCodes() {
         <div className={styles.container}>
             <h1 className={styles.title}>Manage Promo Codes</h1>
 
-            {/* Section for generating a promo code */}
             <div className={styles.section}>
                 <h2>Generate Promo Code</h2>
                 <div className={styles.formGroup}>
@@ -101,7 +99,6 @@ export default function ManagePromoCodes() {
                 {promoCode && <p className={styles.successMessage}>Generated Code: {promoCode}</p>}
             </div>
 
-            {/* Section for managing promo codes */}
             <div className={styles.section}>
                 <h2>Manage Promo Codes</h2>
                 {promoCodesList.length === 0 ? (
