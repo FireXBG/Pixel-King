@@ -170,6 +170,45 @@ router.get('/free-downloads', async (req, res) => {
     }
 })
 
+router.get('/all-users', async (req, res) => {
+    try {
+        const users = await User.find().select('username email plan credits customer_id');
 
+        // Fetching customer details from Stripe for each user (optional)
+        const detailedUsers = await Promise.all(users.map(async (user) => {
+            let stripeInfo = null;
+            if (user.customer_id) {
+                try {
+                    const customer = await stripe.customers.retrieve(user.customer_id);
+                    stripeInfo = customer; // Add any specific stripe information if needed
+                } catch (error) {
+                    console.error('Error fetching Stripe details for customer:', user.customer_id);
+                }
+            }
 
+            return {
+                ...user._doc,
+                stripe: stripeInfo ? stripeInfo : null
+            };
+        }));
+
+        res.status(200).json({ users: detailedUsers });
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.status(500).json({ error: 'Failed to fetch users.' });
+    }
+});
+
+router.put('/edit/:id', async (req, res) => {
+    const userId = req.params.id;
+    const updatedData = req.body;
+
+    try {
+        const updatedUser = await userServices.updateUserById(userId, updatedData);
+        res.status(200).json({ updatedUser });
+    } catch (error) {
+        console.error('Error updating user:', error);
+        res.status(500).json({ error: 'Failed to update user.' });
+    }
+});
 module.exports = router;

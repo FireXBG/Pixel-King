@@ -1,0 +1,88 @@
+.container {
+    padding: 1.6vw;
+}
+
+.title {
+    font-size: 2vw;
+    color: #FFFFFF;
+    margin-bottom: 1.6vw;
+}
+
+.userTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.userTable th,
+.userTable td {
+    border: 0.1vw solid #ddd;
+    padding: 0.8vw;
+    text-align: left;
+    color: #FFFFFF;
+    background-color: #222222;
+}
+
+.userTable th {
+    background-color: #8A4CF0;
+}
+
+.userTable tr:nth-child(even) {
+    background-color: #4A2CAF;
+}
+
+.userTable tr:nth-child(odd) {
+    background-color: #8A4CF0;
+}
+
+.stripeLink {
+    color: #4CAF50;
+    text-decoration: none;
+}
+
+.stripeLink:hover {
+    text-decoration: underline;
+}
+
+.editButton {
+    background-color: #4CAF50;
+    color: white;
+    padding: 0.05vw 1vw;
+    border: none;
+    border-radius: 100vw;
+    cursor: pointer;
+}
+
+.editButton:hover {
+    background-color: #45a049;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    position: relative;
+    color: black;
+}
+
+.closeButton {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+}

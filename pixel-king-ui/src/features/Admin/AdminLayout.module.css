@@ -21,3 +21,33 @@
 .main__container {
     padding: 3vw 10vw;
 }
+
+.navButton {
+    background-color: #8A4CF0;
+}
+
+.exitButton {
+    background-color: #ff0000;
+}
+
+.navButton:hover {
+    background-color: #6e3cc4;
+    text-decoration: none !important;
+}
+
+.exitButton:hover {
+    background-color: #cc0000;
+    text-decoration: none !important;
+}
+
+.navButton,
+.exitButton {
+    width: 15%;
+    text-align: center;
+    transition: 0.3s ease;
+    border-radius: 100vw;
+    cursor: pointer;
+    border: none;
+    padding: 0.5vw 1vw;
+    color: #fff;
+}

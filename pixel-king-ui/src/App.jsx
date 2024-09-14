@@ -19,6 +19,7 @@ import Account from './features/MyAccount/MyAccount';
 import Plans from './features/Plans/Plans';
 import Success from './features/Plans/Success/Success';
 import { PixelsProvider } from './context/pixelsContext';
+import ManageAppUsers from "./features/Admin/ManageAppUsers/ManageAppUsers";
 
 function AppLayout() {
     const location = useLocation();
@@ -62,9 +63,14 @@ function AppLayout() {
                             <ManageEmails />
                         </ProtectedRoute>
                     } />
-                    <Route path="users" element={
+                    <Route path="adminUsers" element={
                         <ProtectedRoute roles={['admin']}>
                             <ManageUsers />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="users" element={
+                        <ProtectedRoute roles={['admin']}>
+                            <ManageAppUsers />
                         </ProtectedRoute>
                     } />
                 </Route>

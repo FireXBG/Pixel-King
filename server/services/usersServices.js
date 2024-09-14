@@ -239,3 +239,24 @@ exports.getFreeDownloads = async (userId) => {
         throw new Error(error);
     }
 }
+
+exports.updateUserById = async (id, updatedFields) => {
+    try {
+        const user = await User.findById(id);
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        // Update user fields
+        if (updatedFields.username) user.username = updatedFields.username;
+        if (updatedFields.email) user.email = updatedFields.email;
+        if (updatedFields.password) user.password = updatedFields.password; // Hash password if needed
+        if (updatedFields.plan) user.plan = updatedFields.plan;
+        if (updatedFields.credits) user.credits = updatedFields.credits;
+
+        await user.save();
+        return user;
+    } catch (error) {
+        throw new Error('Error updating user:', error);
+    }
+};
