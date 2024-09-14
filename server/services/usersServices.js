@@ -323,7 +323,7 @@ exports.sendPromoCodeEmail = async (code, email) => {
         }
     });
 
-    // Define the HTML template with the promo code dynamically included
+    // Define the HTML template with mobile optimizations
     const htmlTemplate = `
     <!DOCTYPE html>
     <html lang="en">
@@ -333,13 +333,23 @@ exports.sendPromoCodeEmail = async (code, email) => {
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <title>Your Promo Code</title>
         <style type="text/css">
-            body { font-family: Arial, sans-serif; background-color: #090A1F; color: #FFFFFF; }
-            .container { width: 100%; max-width: 600px; margin: 0 auto; padding: 20px; text-align: center; }
-            h1 { font-size: 36px; color: #8A4CF0; }
-            h2 { font-size: 26px; }
-            p { font-size: 14px; color: #FFFFFF; }
-            .promo-code { font-size: 46px; color: #8A4CF0; font-weight: bold; }
+            body { font-family: Arial, sans-serif; background-color: #090A1F; color: #FFFFFF; margin: 0; padding: 0; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+            .container { width: 100%; max-width: 600px; margin: 0 auto; padding: 20px; text-align: center; box-sizing: border-box; }
+            h1 { font-size: 36px; color: #8A4CF0; margin: 0 0 10px; }
+            h2 { font-size: 26px; margin: 0 0 20px; }
+            p { font-size: 14px; color: #FFFFFF; margin: 0 0 20px; }
+            .promo-code { font-size: 46px; color: #8A4CF0; font-weight: bold; margin: 20px 0; }
             .btn { display: inline-block; padding: 10px 30px; background-color: #8A4CF0; color: #FFFFFF; text-decoration: none; border-radius: 6px; margin-top: 20px; }
+            .btn:hover { background-color: #7a3dc4; }
+
+            /* Responsive styles */
+            @media only screen and (max-width: 600px) {
+                h1 { font-size: 28px; }
+                h2 { font-size: 22px; }
+                .promo-code { font-size: 36px; }
+                .btn { padding: 12px 24px; }
+                .container { padding: 15px; }
+            }
         </style>
     </head>
     <body>
@@ -372,3 +382,4 @@ exports.sendPromoCodeEmail = async (code, email) => {
         throw new Error(error);
     }
 };
+
