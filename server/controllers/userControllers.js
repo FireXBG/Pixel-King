@@ -250,16 +250,16 @@ router.delete('/promo-codes/:id', async (req, res) => {
     }
 });
 
-// Send promo code via email
-router.post('/promo-codes/send-email', async (req, res) => {
-    const { code, email } = req.body;
+router.post('/send-promo-code', async (req, res) => {
+    const { email, promoCode } = req.body; // Ensure you're destructuring the correct field names
+    console.log('Sending promo code:', promoCode.code, 'to email:', email);
 
     try {
-        await userServices.sendPromoCodeEmail(code, email);
-        res.status(200).json({ message: 'Promo code sent via email' });
+        await userServices.sendPromoCodeEmail(promoCode.code, email); // Make sure `promoCode` is passed correctly here
+        res.status(200).json({ message: 'Promo code sent successfully' });
     } catch (error) {
-        console.error('Error sending promo code email:', error);
-        res.status(500).json({ error: 'Failed to send promo code via email' });
+        console.error('Error sending promo code:', error);
+        res.status(500).json({ error: 'Failed to send promo code' });
     }
 });
 

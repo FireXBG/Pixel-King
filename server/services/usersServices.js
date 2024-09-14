@@ -4,6 +4,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const mongoose = require("mongoose");
 const PromoCode = require('../models/promoCodeSchema');
+const nodemailer = require('nodemailer');
+const dotenv = require('dotenv');
+dotenv.config();
 
 exports.login = async (data) => {
     try {
@@ -305,4 +308,38 @@ exports.sendPromoCodeEmail = async (code, email) => {
     };
 
     return transporter.sendMail(mailOptions);
+};
+
+exports.sendPromoCodeEmail = async (code, email) => {
+    // Check if email is being passed correctly
+    console.log("Sending promo code to email:", email);
+
+    // Configure nodemailer
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.MAILING_SMTP_ADDRESS,
+            pass: process.env.MAILING_SMTP_APP_PASS
+        }
+    });
+
+    console.log(email)
+
+    const mailOptions = {
+        from: process.env.MAILING_SMTP_ADDRESS,
+        to: email, // Ensure email is passed here correctly
+        subject: 'Your Promo Code',
+        text: `Here is your promo code: ${code}. Use it to claim pixels!`
+    };
+
+    try {
+        // Log mailOptions to see if all fields are correct
+        console.log("Mail options:", mailOptions);
+
+        await transporter.sendMail(mailOptions);
+        console.log('Promo code sent via email');
+    } catch (error) {
+        console.error('Error sending promo code via email:', error);
+        throw new Error(error);
+    }
 };
